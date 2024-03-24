@@ -20,11 +20,10 @@ namespace TouchPanelUpdater
 {
     public partial class Form1 : MaterialForm
     {
-
         StreamWriter stdin = null;
         String path = null;
         String formname = "Touch Panel Updater";
-        String pathwithot = "";
+        
         int install_count = 0;
         private Process cmdProcess;
 
@@ -33,11 +32,15 @@ namespace TouchPanelUpdater
             this.BackColor = Color.Black;
             InitializeComponent();
             this.Text = formname;
-
-            var materialSkinManager = MaterialSkinManager.Instance;
+              var materialSkinManager = MaterialSkinManager.Instance;
+            materialSkinManager.EnforceBackcolorOnAllComponents = false;
             materialSkinManager.AddFormToManage(this);
             materialSkinManager.Theme = MaterialSkinManager.Themes.LIGHT;
             materialSkinManager.ColorScheme = new ColorScheme(Primary.Grey900, Primary.Grey900, Primary.Yellow100, Accent.Yellow200, TextShade.WHITE);
+            button3.SendToBack();
+            
+            label5.Size = new Size(400, 50);
+            
 
         }
 
@@ -75,6 +78,16 @@ namespace TouchPanelUpdater
         {
             //                 
 
+        }
+
+        private void Button2_MouseEnter(object sender, EventArgs e)
+        {
+            button1.Text = "Disconnect";
+        }
+
+        private void Button2_MouseLeave(object sender, EventArgs e)
+        {
+            button1.Text ="Disconnect";
         }
 
 
@@ -178,8 +191,7 @@ namespace TouchPanelUpdater
         }
         void loadtext()
         {
-            materialMultiLineTextBox1.AppendText("..... (¯`v´¯)♥" + Environment.NewLine + ".......•.¸.•´" + Environment.NewLine + "....¸.•´" + Environment.NewLine + "... (" + Environment.NewLine + "☻/" + Environment.NewLine + "/▌♥♥" + Environment.NewLine + "/ \u005C ♥♥" + Environment.NewLine);
-
+           
         }
         void replace()
         {
@@ -224,6 +236,7 @@ namespace TouchPanelUpdater
         private async void button1_Click_1Async(object sender, EventArgs e)
         {
 
+            materialMultiLineTextBox3.Text = "";
             Console.WriteLine(Application.StartupPath);
             string websiteUrl = "https://innovo.net/repo/TP4/nice-latest.apk";
             string solutionDirectory = Directory.GetParent(AppDomain.CurrentDomain.BaseDirectory).Parent.Parent.FullName;
@@ -240,6 +253,10 @@ namespace TouchPanelUpdater
             {
                 Console.WriteLine($"Error downloading file: {ex.Message}");
             }
+
+            WebClient client = new WebClient(); 
+            string latest_version = client.DownloadString("https://innovo.net/repo/TP4/version");
+
 
 
 
@@ -289,15 +306,22 @@ namespace TouchPanelUpdater
             if (wordFound)
             {
 
-                if (!materialMultiLineTextBox2.Text.Contains(ipPort))
+                if (label5.Text == "No Connected Device")
                 {
-                    materialMultiLineTextBox2.AppendText(ipPort + Environment.NewLine);
+                    label5.Text = ipPort;
+                }
+
+                else if (label5.Text != ipPort)
+                {
+                    MessageBox.Show("Disconnect device first to connect to a new one", "Disconnect", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
 
             }
             else if (wordFound2)
             {
-                materialMultiLineTextBox3.AppendText("Device unable to connect, please check IP and port" + Environment.NewLine); 
+                
+                materialMultiLineTextBox3.AppendText("Device unable to connect, please check IP and port" + Environment.NewLine);
+                
                 return;
             }
             else
@@ -307,12 +331,46 @@ namespace TouchPanelUpdater
             }
 
             cmdProcess.CloseMainWindow();
-            Task.Delay(5000);
+            await Task.Delay(5000);
 
 
-            materialMultiLineTextBox3.AppendText("Starting Installation Process, This can take up to 20 seconds " + Environment.NewLine); 
+
+            string version = "adb shell dumpsys package com.homelogic | grep versionName";
+            StartCmdProcess();
+
+            try
+            {
+                stdin.Write("\u0040echo off" + Environment.NewLine);
+                stdin.Write("---------------------------------------------------------------" + Environment.NewLine + "-- Checking App Version --" + Environment.NewLine + "---------------------------------------------------------------" + Environment.NewLine);
+                stdin.Write(version + Environment.NewLine);
+
+            }
+
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+
+            lines = materialMultiLineTextBox1.Lines;
+            foreach(string line in lines)
+            {
+                if (line.Contains("version"))
+                {
+                    if (line.Contains(latest_version))
+                    {
+                        MessageBox.Show("Panel already up to date ! ","Up to Date",MessageBoxButtons.OK,MessageBoxIcon.Information);
+                        return;
+                    }
+                }
+            }
+
+
+
+
+            materialMultiLineTextBox3.AppendText("Starting Installation Process, This can take up to 20 seconds " + Environment.NewLine);
             string installcom = $@"for %f in ({downloadDirectory}\*.apk) do adb install -g -r -d ""%f""";
             StartCmdProcess();
+            MessageBox.Show("Installation can take up to 20 seconds, please wait", "Installation", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
             try
             {
@@ -326,16 +384,17 @@ namespace TouchPanelUpdater
             }
             finally
             {
-                materialMultiLineTextBox3.AppendText("Installation was successful, please wait for device reboot" + Environment.NewLine);
-                cmdProcess.CloseMainWindow();
-
-                Task.Delay(5000);
 
 
 
             }
+
+            await Task.Delay(5000);
+            materialMultiLineTextBox3.AppendText("Installation was successful, please wait for device reboot" + Environment.NewLine);
+            cmdProcess.CloseMainWindow();
+            await Task.Delay(2000);
             materialMultiLineTextBox3.AppendText("Rebooting Device ,This can take up to 20 seconds, please Wait" + Environment.NewLine);
-            ipPort = materialMultiLineTextBox2.Text;
+            ipPort = label5.Text;
             string rebootCommand = "adb reboot";
 
             StartCmdProcess();
@@ -351,13 +410,14 @@ namespace TouchPanelUpdater
             }
             materialMultiLineTextBox3.AppendText("Rebooting Device in 3 ... 2 ... 1 ... " + Environment.NewLine);
             materialMultiLineTextBox3.AppendText("Please wait at until reboot is complete" + Environment.NewLine);
+            MessageBox.Show("Device reboot can take up to 20 seconds, please wait", "Reboot", MessageBoxButtons.OK, MessageBoxIcon.Information);
             await Task.Delay(20000);
 
 
-            
+
             // Add a delay to allow time for the reboot process
 
-            materialMultiLineTextBox2.Text = string.Empty; // Clear the device information after rebooting
+           label5.Text = string.Empty; // Clear the device information after rebooting
             materialMultiLineTextBox3.AppendText("Reboot completed successfully" + Environment.NewLine);
             materialMultiLineTextBox1.Text = "Device Rebooted Successfully";
 
@@ -386,14 +446,57 @@ namespace TouchPanelUpdater
 
         }
 
-        private void pictureBox1_Click(object sender, EventArgs e)
+        private void materialMultiLineTextBox1_TextChanged_1(object sender, EventArgs e)
         {
 
         }
 
-        private void label4_Click(object sender, EventArgs e)
+        private void label1_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            materialMultiLineTextBox3.Text = string.Empty;
+            string disconnect = "adb disconnect ";
+            MessageBox.Show("Disconnecting  devices...", "Disconnect", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            StartCmdProcess();
+            try
+            {
+                stdin.Write("\u0040echo off" + Environment.NewLine);
+                stdin.Write("---------------------------------------------------------------" + Environment.NewLine + "-- Trying to establish connection --" + Environment.NewLine + "---------------------------------------------------------------" + Environment.NewLine);
+                stdin.Write(disconnect + Environment.NewLine);
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+
+            materialMultiLineTextBox3.AppendText("Disconnected Device Successfully" + Environment.NewLine);
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            DialogResult result = MessageBox.Show("Warning, This will delete all application data and reset the app from scratch, Do you want to continue?","Reset", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
+            if (result == DialogResult.No) return;
+
+            string reset = "adb shell pm clear com.homelogic";
+            StartCmdProcess();
+            try
+            {
+                stdin.Write("\u0040echo off" + Environment.NewLine);
+                stdin.Write("---------------------------------------------------------------" + Environment.NewLine + "-- Trying to establish connection --" + Environment.NewLine + "---------------------------------------------------------------" + Environment.NewLine);
+                stdin.Write(reset + Environment.NewLine);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+
+            materialMultiLineTextBox3.AppendText("Application reseted successfully" + Environment.NewLine);
         }
     }
 }

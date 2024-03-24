@@ -121,7 +121,19 @@
   <data name="InnovoLogoWhiteOnBlack480" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\InnovoLogoWhiteOnBlack480.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="disconnect" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\disconnect.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="4inch-1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\4inch-1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="4in_logo_white_bg" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\4in_logo_white_bg.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="InnovoLogoWhiteOnBlack4801" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\InnovoLogoWhiteOnBlack4801.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="off" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\off.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

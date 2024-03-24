@@ -63,6 +63,36 @@ namespace TouchPanelUpdater.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap _4in_logo_white_bg {
+            get {
+                object obj = ResourceManager.GetObject("4in_logo_white_bg", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap _4inch_1 {
+            get {
+                object obj = ResourceManager.GetObject("4inch-1", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap disconnect {
+            get {
+                object obj = ResourceManager.GetObject("disconnect", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap InnovoLogoWhiteOnBlack480 {
             get {
                 object obj = ResourceManager.GetObject("InnovoLogoWhiteOnBlack480", resourceCulture);
@@ -76,6 +106,16 @@ namespace TouchPanelUpdater.Properties {
         internal static System.Drawing.Bitmap InnovoLogoWhiteOnBlack4801 {
             get {
                 object obj = ResourceManager.GetObject("InnovoLogoWhiteOnBlack4801", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap off {
+            get {
+                object obj = ResourceManager.GetObject("off", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

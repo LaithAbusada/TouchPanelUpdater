@@ -110,6 +110,10 @@
     <Content Include="Downloads\adb.exe" />
     <Content Include="Downloads\AdbWinApi.dll" />
     <Content Include="Downloads\AdbWinUsbApi.dll" />
+    <None Include="Resources\off.png" />
+    <None Include="Resources\disconnect.png" />
+    <None Include="Resources\4in_logo_white_bg.png" />
+    <None Include="Resources\4inch-1.png" />
     <None Include="Resources\InnovoLogoWhiteOnBlack4801.jpg" />
     <None Include="Resources\InnovoLogoWhiteOnBlack480.jpg" />
   </ItemGroup>
