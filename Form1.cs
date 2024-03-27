@@ -15,6 +15,7 @@ using AltoHttp;
 using System.Drawing;
 using System.Web.UI.Design;
 using MaterialSkin;
+using System.Reflection;
 
 namespace TouchPanelUpdater
 {
@@ -23,7 +24,7 @@ namespace TouchPanelUpdater
         StreamWriter stdin = null;
         String path = null;
         String formname = "Touch Panel Updater";
-        
+
         int install_count = 0;
         private Process cmdProcess;
 
@@ -32,15 +33,15 @@ namespace TouchPanelUpdater
             this.BackColor = Color.Black;
             InitializeComponent();
             this.Text = formname;
-              var materialSkinManager = MaterialSkinManager.Instance;
+            var materialSkinManager = MaterialSkinManager.Instance;
             materialSkinManager.EnforceBackcolorOnAllComponents = false;
             materialSkinManager.AddFormToManage(this);
             materialSkinManager.Theme = MaterialSkinManager.Themes.LIGHT;
-            materialSkinManager.ColorScheme = new ColorScheme(Primary.Grey900, Primary.Grey900, Primary.Yellow100, Accent.Yellow200, TextShade.WHITE);
-            button3.SendToBack();
-            
+            materialSkinManager.ColorScheme = new ColorScheme(Primary.Yellow400, Primary.Yellow400, Primary.Yellow100, Accent.Yellow200, TextShade.BLACK);
+
+            button3.BringToFront();
             label5.Size = new Size(400, 50);
-            
+
 
         }
 
@@ -70,6 +71,10 @@ namespace TouchPanelUpdater
         {
             installadb();
             loadtext();
+          
+
+            // Start with the PasswordForm
+           
 
 
         }
@@ -87,7 +92,7 @@ namespace TouchPanelUpdater
 
         private void Button2_MouseLeave(object sender, EventArgs e)
         {
-            button1.Text ="Disconnect";
+            button1.Text = "Disconnect";
         }
 
 
@@ -191,7 +196,7 @@ namespace TouchPanelUpdater
         }
         void loadtext()
         {
-           
+
         }
         void replace()
         {
@@ -254,7 +259,7 @@ namespace TouchPanelUpdater
                 Console.WriteLine($"Error downloading file: {ex.Message}");
             }
 
-            WebClient client = new WebClient(); 
+            WebClient client = new WebClient();
             string latest_version = client.DownloadString("https://innovo.net/repo/TP4/version");
 
 
@@ -263,8 +268,11 @@ namespace TouchPanelUpdater
 
 
             string ipAddress = textBoxIP.Text;
+            ipAddress = ipAddress.Replace(" ", "");
             int port = int.Parse(textBoxPort.Text);
+
             string connect = "adb connect " + ipAddress + ":" + port;
+            materialMultiLineTextBox3.AppendText("Attempting to connect to device, Please wait" + Environment.NewLine);
 
             StartCmdProcess();
             try
@@ -319,9 +327,9 @@ namespace TouchPanelUpdater
             }
             else if (wordFound2)
             {
-                
+
                 materialMultiLineTextBox3.AppendText("Device unable to connect, please check IP and port" + Environment.NewLine);
-                
+
                 return;
             }
             else
@@ -331,11 +339,13 @@ namespace TouchPanelUpdater
             }
 
             cmdProcess.CloseMainWindow();
-            await Task.Delay(5000);
+            materialMultiLineTextBox3.AppendText("Connected successfully" + Environment.NewLine);
+            materialMultiLineTextBox3.AppendText(Environment.NewLine);
+            await Task.Delay(4000);
 
 
 
-            string version = "adb shell dumpsys package com.homelogic | grep versionName";
+            string version = "adb shell dumpsys package com.homelogic | findstr versionName";
             StartCmdProcess();
 
             try
@@ -351,18 +361,31 @@ namespace TouchPanelUpdater
                 MessageBox.Show(ex.Message);
             }
 
+
+            cmdProcess.CloseMainWindow();
+            materialMultiLineTextBox3.AppendText("Checking if update is available, Please wait " + Environment.NewLine);
+            await Task.Delay(4000);
+
             lines = materialMultiLineTextBox1.Lines;
-            foreach(string line in lines)
+            foreach (string line in lines)
             {
+                Console.WriteLine(line);
                 if (line.Contains("version"))
                 {
+                    Console.WriteLine(line);
+                    Console.WriteLine(latest_version);
                     if (line.Contains(latest_version))
                     {
-                        MessageBox.Show("Panel already up to date ! ","Up to Date",MessageBoxButtons.OK,MessageBoxIcon.Information);
+                        MessageBox.Show("Panel already up to date ! ", "Up to Date", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         return;
                     }
                 }
             }
+
+            materialMultiLineTextBox3.AppendText("Update Available" + Environment.NewLine);
+            materialMultiLineTextBox3.AppendText(Environment.NewLine);
+
+
 
 
 
@@ -417,13 +440,13 @@ namespace TouchPanelUpdater
 
             // Add a delay to allow time for the reboot process
 
-           label5.Text = string.Empty; // Clear the device information after rebooting
+            label5.Text = string.Empty; // Clear the device information after rebooting
             materialMultiLineTextBox3.AppendText("Reboot completed successfully" + Environment.NewLine);
             materialMultiLineTextBox1.Text = "Device Rebooted Successfully";
 
             cmdProcess.CloseMainWindow();
 
-
+            materialMultiLineTextBox3.AppendText(Environment.NewLine);
             string disconnect = "adb disconnect ";
             MessageBox.Show("Disconnecting  devices...", "Disconnect", MessageBoxButtons.OK, MessageBoxIcon.Information);
             StartCmdProcess();
@@ -477,11 +500,20 @@ namespace TouchPanelUpdater
             materialMultiLineTextBox3.AppendText("Disconnected Device Successfully" + Environment.NewLine);
         }
 
-        private void button3_Click(object sender, EventArgs e)
+        private async void button3_Click(object sender, EventArgs e)
         {
-            DialogResult result = MessageBox.Show("Warning, This will delete all application data and reset the app from scratch, Do you want to continue?","Reset", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+            DialogResult result = MessageBox.Show("Warning, This will delete all application data and reset the app from scratch, Do you want to continue?", "Reset", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
 
             if (result == DialogResult.No) return;
+
+            materialMultiLineTextBox1.Text = String.Empty;
+            materialMultiLineTextBox3.Text = String.Empty;
+            materialMultiLineTextBox3.AppendText("Attempting to connect and reset, please wait" + Environment.NewLine);
+            string ipAddress = textBoxIP.Text;
+            ipAddress = ipAddress.Replace(" ", "");
+            int port = int.Parse(textBoxPort.Text);
+
+            string connect = "adb connect " + ipAddress + ":" + port;
 
             string reset = "adb shell pm clear com.homelogic";
             StartCmdProcess();
@@ -489,6 +521,71 @@ namespace TouchPanelUpdater
             {
                 stdin.Write("\u0040echo off" + Environment.NewLine);
                 stdin.Write("---------------------------------------------------------------" + Environment.NewLine + "-- Trying to establish connection --" + Environment.NewLine + "---------------------------------------------------------------" + Environment.NewLine);
+                stdin.Write(connect + Environment.NewLine);
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+
+            await Task.Delay(7000);
+
+            // Now check if the connection was successful by searching for the confirmation message
+            string[] lines = materialMultiLineTextBox1.Lines;
+            string searchWord = "connected"; // Update this with the confirmation message
+            bool wordFound = false;
+            string searchWord2 = "cannot";
+            bool wordFound2 = false;
+
+            foreach (string line in lines)
+            {
+                if (line.Contains(searchWord))
+                {
+                    // Word found in this line
+                    wordFound = true;
+                    // Exit the loop since we found the word
+                }
+                if (line.Contains(searchWord2))
+                {
+                    wordFound2 = true;
+                }
+            }
+            string ipPort = ipAddress + ':' + port;
+            if (wordFound)
+            {
+
+                if (label5.Text == "No Connected Device")
+                {
+                    label5.Text = ipPort;
+                }
+
+                else if (label5.Text != ipPort)
+                {
+                    MessageBox.Show("Disconnect device first to connect to a new one", "Disconnect", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+            }
+            else if (wordFound2)
+            {
+
+                materialMultiLineTextBox3.AppendText("Device unable to connect, please check IP and port" + Environment.NewLine);
+
+                return;
+            }
+            else
+            {
+                materialMultiLineTextBox3.AppendText("Device unable to connect, please check IP and port" + Environment.NewLine);
+                return;
+            }
+
+            materialMultiLineTextBox3.AppendText("Connected Successfully" + Environment.NewLine);
+            StartCmdProcess();
+            try
+            {
+                stdin.Write("\u0040echo off" + Environment.NewLine);
+                stdin.Write("---------------------------------------------------------------" + Environment.NewLine + "-- Rebooting Device --" + Environment.NewLine + "---------------------------------------------------------------" + Environment.NewLine);
                 stdin.Write(reset + Environment.NewLine);
             }
             catch (Exception ex)
@@ -497,6 +594,117 @@ namespace TouchPanelUpdater
             }
 
             materialMultiLineTextBox3.AppendText("Application reseted successfully" + Environment.NewLine);
+
+            string rebootCommand = "adb reboot";
+            StartCmdProcess();
+            try
+            {
+                stdin.Write("\u0040echo off" + Environment.NewLine);
+                stdin.Write("---------------------------------------------------------------" + Environment.NewLine + "-- Rebooting Device --" + Environment.NewLine + "---------------------------------------------------------------" + Environment.NewLine);
+                stdin.Write(rebootCommand + Environment.NewLine);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            materialMultiLineTextBox3.AppendText("Rebooting Device in 3 ... 2 ... 1 ... " + Environment.NewLine);
+            materialMultiLineTextBox3.AppendText("Please wait at until reboot is complete" + Environment.NewLine);
+            MessageBox.Show("Device reboot can take up to 20 seconds, please wait", "Reboot", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            await Task.Delay(20000);
+        }
+
+        private async void button4_Click_1(object sender, EventArgs e)
+        {
+            materialMultiLineTextBox1.Text = String.Empty;
+            materialMultiLineTextBox3.Text = String.Empty;
+            string ipAddress = textBoxIP.Text;
+            ipAddress = ipAddress.Replace(" ", "");
+            int port = int.Parse(textBoxPort.Text);
+            string connect = "adb connect " + ipAddress + ":" + port;
+
+
+            materialMultiLineTextBox3.AppendText("Attempting to connect and reboot, please wait" + Environment.NewLine);
+            StartCmdProcess();
+            try
+            {
+                stdin.Write("\u0040echo off" + Environment.NewLine);
+                stdin.Write("---------------------------------------------------------------" + Environment.NewLine + "-- Trying to establish connection --" + Environment.NewLine + "---------------------------------------------------------------" + Environment.NewLine);
+                stdin.Write(connect + Environment.NewLine);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+
+            await Task.Delay(7000);
+
+            string[] lines = materialMultiLineTextBox1.Lines;
+            string searchWord = "connected"; // Update this with the confirmation message
+            bool wordFound = false;
+            string searchWord2 = "cannot";
+            bool wordFound2 = false;
+
+            foreach (string line in lines)
+            {
+                if (line.Contains(searchWord))
+                {
+                    // Word found in this line
+                    wordFound = true;
+                    // Exit the loop since we found the word
+                }
+                if (line.Contains(searchWord2))
+                {
+                    wordFound2 = true;
+                }
+            }
+            string ipPort = ipAddress + ':' + port;
+            if (wordFound)
+            {
+
+                if (label5.Text == "No Connected Device")
+                {
+                    label5.Text = ipPort;
+                }
+
+                else if (label5.Text != ipPort)
+                {
+                    MessageBox.Show("Disconnect device first to connect to a new one", "Disconnect", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+            }
+            else if (wordFound2)
+            {
+
+                materialMultiLineTextBox3.AppendText("Device unable to connect, please check IP and port" + Environment.NewLine);
+
+                return;
+            }
+            else
+            {
+                materialMultiLineTextBox3.AppendText("Device unable to connect, please check IP and port" + Environment.NewLine);
+                return;
+            }
+            cmdProcess.CloseMainWindow();
+
+            string rebootCommand = "adb reboot";
+            StartCmdProcess();
+            try
+            {
+                stdin.Write("\u0040echo off" + Environment.NewLine);
+                stdin.Write("---------------------------------------------------------------" + Environment.NewLine + "-- Rebooting Device --" + Environment.NewLine + "---------------------------------------------------------------" + Environment.NewLine);
+                stdin.Write(rebootCommand + Environment.NewLine);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            materialMultiLineTextBox3.AppendText("Rebooting Device in 3 ... 2 ... 1 ... " + Environment.NewLine);
+            materialMultiLineTextBox3.AppendText("Please wait at until reboot is complete" + Environment.NewLine);
+            MessageBox.Show("Device reboot can take up to 20 seconds, please wait", "Reboot", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            await Task.Delay(20000);
         }
     }
 }
+
+
