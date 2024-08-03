@@ -1,4 +1,4 @@
-﻿namespace TouchPanelUpdater
+﻿namespace Innovo_TP4_Updater
 {
     partial class Form1
     {
@@ -54,7 +54,7 @@
             this.IP.ForeColor = System.Drawing.SystemColors.ActiveCaptionText;
             this.IP.Location = new System.Drawing.Point(47, 245);
             this.IP.Name = "IP";
-            this.IP.Size = new System.Drawing.Size(22, 17);
+            this.IP.Size = new System.Drawing.Size(19, 15);
             this.IP.TabIndex = 0;
             this.IP.Text = "IP";
             // 
@@ -65,7 +65,7 @@
             this.label2.ForeColor = System.Drawing.SystemColors.ActiveCaptionText;
             this.label2.Location = new System.Drawing.Point(286, 245);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(35, 17);
+            this.label2.Size = new System.Drawing.Size(29, 15);
             this.label2.TabIndex = 1;
             this.label2.Text = "Port";
             // 
@@ -73,14 +73,14 @@
             // 
             this.textBoxIP.Location = new System.Drawing.Point(80, 242);
             this.textBoxIP.Name = "textBoxIP";
-            this.textBoxIP.Size = new System.Drawing.Size(167, 25);
+            this.textBoxIP.Size = new System.Drawing.Size(167, 21);
             this.textBoxIP.TabIndex = 2;
             // 
             // textBoxPort
             // 
             this.textBoxPort.Location = new System.Drawing.Point(352, 245);
             this.textBoxPort.Name = "textBoxPort";
-            this.textBoxPort.Size = new System.Drawing.Size(78, 25);
+            this.textBoxPort.Size = new System.Drawing.Size(78, 21);
             this.textBoxPort.TabIndex = 3;
             this.textBoxPort.Text = "5555";
             // 
@@ -119,7 +119,7 @@
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(47, 386);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(62, 17);
+            this.label1.Size = new System.Drawing.Size(53, 15);
             this.label1.TabIndex = 9;
             this.label1.Text = "Console";
             this.label1.Click += new System.EventHandler(this.label1_Click);
@@ -145,7 +145,7 @@
             this.label4.AutoSize = true;
             this.label4.Location = new System.Drawing.Point(401, 386);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(77, 17);
+            this.label4.Size = new System.Drawing.Size(62, 15);
             this.label4.TabIndex = 11;
             this.label4.Text = "Messages";
             // 
@@ -155,13 +155,13 @@
             this.label5.Font = new System.Drawing.Font("MV Boli", 10.8F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label5.Location = new System.Drawing.Point(609, 108);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(192, 23);
+            this.label5.Size = new System.Drawing.Size(153, 20);
             this.label5.TabIndex = 13;
             this.label5.Text = "No Connected Device";
             // 
             // button2
             // 
-            this.button2.BackgroundImage = global::TouchPanelUpdater.Properties.Resources.off;
+            this.button2.BackgroundImage = global::Innovo_TP4_Updater.Properties.Resources.off;
             this.button2.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.button2.Location = new System.Drawing.Point(707, 134);
             this.button2.Name = "button2";
@@ -173,14 +173,15 @@
             // 
             // pictureBox2
             // 
-            this.pictureBox2.BackgroundImage = global::TouchPanelUpdater.Properties.Resources._4in_logo_white_bg;
-            this.pictureBox2.Image = global::TouchPanelUpdater.Properties.Resources._4in_logo_white_bg;
+            this.pictureBox2.BackgroundImage = global::Innovo_TP4_Updater.Properties.Resources._4in_logo_white_bg;
+            this.pictureBox2.Image = global::Innovo_TP4_Updater.Properties.Resources._4in_logo_white_bg;
             this.pictureBox2.Location = new System.Drawing.Point(1, 65);
             this.pictureBox2.Name = "pictureBox2";
             this.pictureBox2.Size = new System.Drawing.Size(800, 800);
             this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.pictureBox2.TabIndex = 12;
             this.pictureBox2.TabStop = false;
+            this.pictureBox2.Click += new System.EventHandler(this.pictureBox2_Click);
             // 
             // button3
             // 
@@ -212,7 +213,7 @@
             // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 17F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ActiveCaptionText;
             this.CausesValidation = false;

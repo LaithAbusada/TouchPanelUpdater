@@ -10,7 +10,7 @@ using System.Windows.Forms;
 using System.Security.Cryptography;
 
 
-namespace TouchPanelUpdater
+namespace Innovo_TP4_Updater
 {
     public partial class PasswordForm : Form
     {

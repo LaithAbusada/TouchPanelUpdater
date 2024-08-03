@@ -1,4 +1,4 @@
-﻿namespace TouchPanelUpdater
+﻿namespace Innovo_TP4_Updater
 {
     partial class PasswordForm
     {
@@ -30,62 +30,59 @@
         {
             this.button1 = new System.Windows.Forms.Button();
             this.txtPassword = new System.Windows.Forms.TextBox();
-            this.Password = new System.Windows.Forms.Label();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            this.pictureBox2 = new System.Windows.Forms.PictureBox();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             this.SuspendLayout();
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(302, 203);
+            this.button1.BackColor = System.Drawing.Color.Yellow;
+            this.button1.Font = new System.Drawing.Font("Microsoft Sans Serif", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button1.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.button1.Location = new System.Drawing.Point(298, 605);
+            this.button1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(139, 51);
+            this.button1.Size = new System.Drawing.Size(222, 90);
             this.button1.TabIndex = 0;
             this.button1.Text = "Login";
-            this.button1.UseVisualStyleBackColor = true;
+            this.button1.UseVisualStyleBackColor = false;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // txtPassword
             // 
-            this.txtPassword.Location = new System.Drawing.Point(354, 154);
+            this.txtPassword.Font = new System.Drawing.Font("Microsoft Sans Serif", 20.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtPassword.Location = new System.Drawing.Point(171, 412);
+            this.txtPassword.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.txtPassword.Multiline = true;
             this.txtPassword.Name = "txtPassword";
             this.txtPassword.PasswordChar = '*';
-            this.txtPassword.Size = new System.Drawing.Size(139, 22);
+            this.txtPassword.Size = new System.Drawing.Size(454, 175);
             this.txtPassword.TabIndex = 1;
             // 
-            // Password
+            // pictureBox2
             // 
-            this.Password.AutoSize = true;
-            this.Password.Location = new System.Drawing.Point(242, 154);
-            this.Password.Name = "Password";
-            this.Password.Size = new System.Drawing.Size(67, 16);
-            this.Password.TabIndex = 2;
-            this.Password.Text = "Password";
-            // 
-            // pictureBox1
-            // 
-            this.pictureBox1.Image = global::TouchPanelUpdater.Properties.Resources.InnovoLogoWhiteOnBlack480;
-            this.pictureBox1.Location = new System.Drawing.Point(245, 52);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(265, 86);
-            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.pictureBox1.TabIndex = 3;
-            this.pictureBox1.TabStop = false;
+            this.pictureBox2.BackgroundImage = global::Innovo_TP4_Updater.Properties.Resources.TP4UpdaterLoginForm;
+            this.pictureBox2.Image = global::Innovo_TP4_Updater.Properties.Resources.TP4UpdaterLoginForm;
+            this.pictureBox2.Location = new System.Drawing.Point(-2, -5);
+            this.pictureBox2.Name = "pictureBox2";
+            this.pictureBox2.Size = new System.Drawing.Size(800, 800);
+            this.pictureBox2.TabIndex = 4;
+            this.pictureBox2.TabStop = false;
             // 
             // PasswordForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.DimGray;
-            this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Controls.Add(this.pictureBox1);
-            this.Controls.Add(this.Password);
+            this.ClientSize = new System.Drawing.Size(884, 861);
             this.Controls.Add(this.txtPassword);
             this.Controls.Add(this.button1);
+            this.Controls.Add(this.pictureBox2);
+            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.Name = "PasswordForm";
             this.Text = "PasswordForm";
             this.Load += new System.EventHandler(this.PasswordForm_Load);
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -95,7 +92,6 @@
 
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.TextBox txtPassword;
-        private System.Windows.Forms.Label Password;
-        private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.PictureBox pictureBox2;
     }
 }

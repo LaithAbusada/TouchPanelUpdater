@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace TouchPanelUpdater
+namespace Innovo_TP4_Updater
 {
     internal static class Program
     {

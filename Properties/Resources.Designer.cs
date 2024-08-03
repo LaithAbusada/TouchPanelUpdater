@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace TouchPanelUpdater.Properties {
+namespace Innovo_TP4_Updater.Properties {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace TouchPanelUpdater.Properties {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("TouchPanelUpdater.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Innovo_TP4_Updater.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -116,6 +116,16 @@ namespace TouchPanelUpdater.Properties {
         internal static System.Drawing.Bitmap off {
             get {
                 object obj = ResourceManager.GetObject("off", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap TP4UpdaterLoginForm {
+            get {
+                object obj = ResourceManager.GetObject("TP4UpdaterLoginForm", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
