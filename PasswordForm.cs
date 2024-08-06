@@ -64,5 +64,10 @@ namespace Innovo_TP4_Updater
             byte[] inArray = HashAlgorithm.Create("SHA1").ComputeHash(bytes);
             return Convert.ToBase64String(inArray);
         }
+
+        private void pictureBox2_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }
