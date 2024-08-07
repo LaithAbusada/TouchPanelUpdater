@@ -4,23 +4,17 @@ namespace Innovo_TP4_Updater
 {
     partial class SettingsForm
     {
-        /// <summary>
-        /// Required designer variable.
-        /// </summary>
         private System.ComponentModel.IContainer components = null;
         private System.Windows.Forms.Panel settingsPanel;
         private Guna.UI2.WinForms.Guna2Button btnWiFi;
         private Guna.UI2.WinForms.Guna2Button btnBluetooth;
         private Guna.UI2.WinForms.Guna2Button btnUpdate;
         private Guna.UI2.WinForms.Guna2Button btnDisplay;
-        private Guna.UI2.WinForms.Guna2Button btnNotifications;
+        private Guna.UI2.WinForms.Guna2Button btnConnectDisconnect;
         private Guna.UI2.WinForms.Guna2Button btnSound;
         private Guna.UI2.WinForms.Guna2Button btnTimeZone;
         private Guna.UI2.WinForms.Guna2Button btnReset;
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -30,25 +24,21 @@ namespace Innovo_TP4_Updater
             base.Dispose(disposing);
         }
 
-        #region Windows Form Designer generated code
-
-        /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
-        /// </summary>
-        private void InitializeComponent()
+        private async void InitializeComponent()
         {
             this.settingsPanel = new System.Windows.Forms.Panel();
             this.btnWiFi = new Guna.UI2.WinForms.Guna2Button();
             this.btnBluetooth = new Guna.UI2.WinForms.Guna2Button();
             this.btnUpdate = new Guna.UI2.WinForms.Guna2Button();
             this.btnDisplay = new Guna.UI2.WinForms.Guna2Button();
-            this.btnNotifications = new Guna.UI2.WinForms.Guna2Button();
+            this.btnConnectDisconnect = new Guna.UI2.WinForms.Guna2Button();
             this.btnSound = new Guna.UI2.WinForms.Guna2Button();
             this.btnTimeZone = new Guna.UI2.WinForms.Guna2Button();
             this.btnReset = new Guna.UI2.WinForms.Guna2Button();
+
             this.settingsPanel.SuspendLayout();
             this.SuspendLayout();
+
             // 
             // settingsPanel
             // 
@@ -57,15 +47,16 @@ namespace Innovo_TP4_Updater
             this.settingsPanel.Controls.Add(this.btnBluetooth);
             this.settingsPanel.Controls.Add(this.btnUpdate);
             this.settingsPanel.Controls.Add(this.btnDisplay);
-            this.settingsPanel.Controls.Add(this.btnNotifications);
+            this.settingsPanel.Controls.Add(this.btnConnectDisconnect);
             this.settingsPanel.Controls.Add(this.btnSound);
             this.settingsPanel.Controls.Add(this.btnTimeZone);
             this.settingsPanel.Controls.Add(this.btnReset);
             this.settingsPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.settingsPanel.Location = new System.Drawing.Point(0, 0);
             this.settingsPanel.Name = "settingsPanel";
-            this.settingsPanel.Size = new System.Drawing.Size(800, 600);
+            this.settingsPanel.Size = new System.Drawing.Size(843, 641);
             this.settingsPanel.TabIndex = 0;
+
             // 
             // btnWiFi
             // 
@@ -81,6 +72,7 @@ namespace Innovo_TP4_Updater
             this.btnWiFi.Text = "Wi-Fi\n";
             this.btnWiFi.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.btnWiFi.Click += new System.EventHandler(this.SettingsButton_Click);
+
             // 
             // btnBluetooth
             // 
@@ -96,6 +88,7 @@ namespace Innovo_TP4_Updater
             this.btnBluetooth.Text = "Bluetooth\n";
             this.btnBluetooth.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.btnBluetooth.Click += new System.EventHandler(this.SettingsButton_Click);
+
             // 
             // btnUpdate
             // 
@@ -111,6 +104,7 @@ namespace Innovo_TP4_Updater
             this.btnUpdate.Text = "Update\nOTA Update";
             this.btnUpdate.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.btnUpdate.Click += new System.EventHandler(this.SettingsButton_Click);
+
             // 
             // btnDisplay
             // 
@@ -126,21 +120,22 @@ namespace Innovo_TP4_Updater
             this.btnDisplay.Text = "Display";
             this.btnDisplay.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.btnDisplay.Click += new System.EventHandler(this.SettingsButton_Click);
+
             // 
-            // btnNotifications
+            // btnConnectDisconnect
             // 
-            this.btnNotifications.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.btnNotifications.ForeColor = System.Drawing.Color.White;
-            this.btnNotifications.Image = global::Innovo_TP4_Updater.Properties.Resources.notifications;
-            this.btnNotifications.ImageAlign = System.Windows.Forms.HorizontalAlignment.Left;
-            this.btnNotifications.ImageSize = new System.Drawing.Size(40, 40);
-            this.btnNotifications.Location = new System.Drawing.Point(275, 330);
-            this.btnNotifications.Name = "btnNotifications";
-            this.btnNotifications.Size = new System.Drawing.Size(250, 60);
-            this.btnNotifications.TabIndex = 4;
-            this.btnNotifications.Text = "Notifications\n";
-            this.btnNotifications.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.btnNotifications.Click += new System.EventHandler(this.SettingsButton_Click);
+            this.btnConnectDisconnect.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.btnConnectDisconnect.ForeColor = System.Drawing.Color.White;
+            this.btnConnectDisconnect.Image = global::Innovo_TP4_Updater.Properties.Resources.connection; // Added image
+            this.btnConnectDisconnect.ImageAlign = System.Windows.Forms.HorizontalAlignment.Left;
+            this.btnConnectDisconnect.ImageSize = new System.Drawing.Size(40, 40);
+            this.btnConnectDisconnect.Location = new System.Drawing.Point(275, 330); // Adjusted location to match btnNotifications
+            this.btnConnectDisconnect.Name = "btnConnectDisconnect";
+            this.btnConnectDisconnect.Size = new System.Drawing.Size(250, 60);
+            this.btnConnectDisconnect.TabIndex = 4; // Adjusted TabIndex to match btnNotifications
+            this.btnConnectDisconnect.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.btnConnectDisconnect.Click += new System.EventHandler(this.SettingsButton_Click);
+
             // 
             // btnSound
             // 
@@ -156,6 +151,7 @@ namespace Innovo_TP4_Updater
             this.btnSound.Text = "Sound\n";
             this.btnSound.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.btnSound.Click += new System.EventHandler(this.SettingsButton_Click);
+
             // 
             // btnTimeZone
             // 
@@ -171,6 +167,7 @@ namespace Innovo_TP4_Updater
             this.btnTimeZone.Text = "Time Zone\nTime Zone";
             this.btnTimeZone.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.btnTimeZone.Click += new System.EventHandler(this.SettingsButton_Click);
+
             // 
             // btnReset
             // 
@@ -186,19 +183,15 @@ namespace Innovo_TP4_Updater
             this.btnReset.Text = "RESET\nReset to Factory Default";
             this.btnReset.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.btnReset.Click += new System.EventHandler(this.SettingsButton_Click);
+
             // 
             // SettingsForm
             // 
-            this.ClientSize = new System.Drawing.Size(800, 600);
+            this.ClientSize = new System.Drawing.Size(843, 641);
             this.Controls.Add(this.settingsPanel);
             this.Name = "SettingsForm";
             this.settingsPanel.ResumeLayout(false);
             this.ResumeLayout(false);
-
         }
-
-      
-
-        #endregion
     }
 }

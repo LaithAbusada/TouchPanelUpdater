@@ -12,10 +12,7 @@ namespace Innovo_TP4_Updater
 {
     public partial class Form1 : Form
     {
-        private StreamWriter stdin = null;
-        private Process cmdProcess;
         private readonly string formname = "Touch Panel Updater";
-        private string commandOutput = "";
         public Form1()
         {
             InitializeComponent();
@@ -39,94 +36,70 @@ namespace Innovo_TP4_Updater
             LoadText();
         }
 
-        private void StartCmdProcess()
+        public async Task<string> ExecuteAdbCommand(string command)
         {
+            string commandOutput = "";
             ProcessStartInfo pStartInfo = new ProcessStartInfo
             {
                 FileName = "cmd.exe",
-                Arguments = "/C", // Ensure the command completes
+                Arguments = "/C " + command,
                 WorkingDirectory = AppDomain.CurrentDomain.BaseDirectory,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
-                RedirectStandardInput = true,
                 UseShellExecute = false,
                 CreateNoWindow = true,
             };
 
-            cmdProcess = new Process
+            using (Process cmdProcess = new Process { StartInfo = pStartInfo })
             {
-                StartInfo = pStartInfo,
-                EnableRaisingEvents = true,
-            };
+                cmdProcess.Start();
+                commandOutput = await cmdProcess.StandardOutput.ReadToEndAsync();
+                await WaitForExitAsync(cmdProcess);
+            }
 
-            cmdProcess.OutputDataReceived += (s, evt) =>
-            {
-                if (evt.Data != null)
-                {
-                    commandOutput += evt.Data + Environment.NewLine;
-                }
-            };
-
-            cmdProcess.ErrorDataReceived += (s, evt) =>
-            {
-                if (evt.Data != null)
-                {
-                    commandOutput += "Error: " + evt.Data + Environment.NewLine;
-                }
-            };
-
-            cmdProcess.Exited += (s, evt) =>
-            {
-                BeginInvoke(new Action(() =>
-                {
-                    Console.WriteLine("Process exited.");
-                }));
-            };
-
-            cmdProcess.Start();
-            cmdProcess.BeginOutputReadLine();
-            cmdProcess.BeginErrorReadLine();
-            stdin = cmdProcess.StandardInput;
+            return commandOutput;
         }
 
-        private Task WaitForExitAsync()
+        private Task WaitForExitAsync(Process process)
         {
             var tcs = new TaskCompletionSource<object>();
 
-            void ProcessExited(object sender, EventArgs e)
+            void ProcessExitedHandler(object sender, EventArgs e)
             {
-                cmdProcess.Exited -= ProcessExited;
-                tcs.SetResult(null);
+                // Avoid multiple transitions
+                if (!tcs.Task.IsCompleted)
+                {
+                    tcs.TrySetResult(null);
+                }
+                // Clean up event handler
+                process.Exited -= ProcessExitedHandler;
             }
 
-            cmdProcess.Exited += ProcessExited;
+            process.EnableRaisingEvents = true;
+            process.Exited += ProcessExitedHandler;
 
-            if (cmdProcess.HasExited)
+            // Check if the process has already exited
+            if (process.HasExited)
             {
-                cmdProcess.Exited -= ProcessExited;
-                return Task.CompletedTask;
+                process.Exited -= ProcessExitedHandler;
+                tcs.TrySetResult(null);
             }
 
             return tcs.Task;
         }
 
-        public async Task<string> ExecuteAdbCommand(string command)
+        public async Task<Dictionary<string, int>> GetCurrentVolumeLevels()
         {
-            commandOutput = "";
-            StartCmdProcess();
-            try
+            Dictionary<string, int> volumeLevels = new Dictionary<string, int>
             {
-                stdin.WriteLine(command);
-                stdin.WriteLine("exit"); // Ensure the command ends properly
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-
-            await WaitForExitAsync(); // Ensure we wait for the process to exit
-            return commandOutput;
+                { "Media", ParseVolumeLevel(await ExecuteAdbCommand("adb shell media volume --get --stream 3"), 3) },
+                { "Notifications", ParseVolumeLevel(await ExecuteAdbCommand("adb shell media volume --get --stream 5"), 5) },
+                { "Alarm", ParseVolumeLevel(await ExecuteAdbCommand("adb shell media volume --get --stream 4"), 4) },
+                { "Bluetooth", ParseVolumeLevel(await ExecuteAdbCommand("adb shell media volume --get --stream 6"), 6) } // Assuming stream 6 for Bluetooth
+            };
+            return volumeLevels;
         }
+
         private int ParseVolumeLevel(string output, int stream)
         {
             string[] lines = output.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
@@ -142,18 +115,6 @@ namespace Innovo_TP4_Updater
                 }
             }
             return 0;
-        }
-
-        public async Task<Dictionary<string, int>> GetCurrentVolumeLevels()
-        {
-            Dictionary<string, int> volumeLevels = new Dictionary<string, int>
-            {
-                { "Media", ParseVolumeLevel(await ExecuteAdbCommand("adb shell media volume --get --stream 3"), 3) },
-                { "Notifications", ParseVolumeLevel(await ExecuteAdbCommand("adb shell media volume --get --stream 5"), 5) },
-                { "Alarm", ParseVolumeLevel(await ExecuteAdbCommand("adb shell media volume --get --stream 4"), 4) },
-                { "Bluetooth", ParseVolumeLevel(await ExecuteAdbCommand("adb shell media volume --get --stream 6"), 6) } // Assuming stream 6 for Bluetooth
-            };
-            return volumeLevels;
         }
 
         private void InstallAdb()
@@ -175,23 +136,11 @@ namespace Innovo_TP4_Updater
 
         private void LoadText() { }
 
-        public async void Disconnect()
+        public async Task Disconnect()
         {
-            label1.Text = string.Empty;
-            string disconnect = "adb disconnect ";
-            StartCmdProcess();
-            try
-            {
-                stdin.Write("\u0040echo off" + Environment.NewLine);
-                stdin.Write("---------------------------------------------------------------" + Environment.NewLine + "-- Trying to establish connection --" + Environment.NewLine + "---------------------------------------------------------------" + Environment.NewLine);
-                stdin.Write(disconnect + Environment.NewLine);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-            await Task.Delay(4000);
-            Console.WriteLine("Disconnect Devices successfully");
+            string disconnect = "adb disconnect";
+            await ExecuteAdbCommand(disconnect);
+            Console.WriteLine("Disconnected devices successfully");
         }
 
         public void LoadFormIntoPanel(Form form)
@@ -220,7 +169,9 @@ namespace Innovo_TP4_Updater
         public async Task<bool> IsConnected()
         {
             string output = await ExecuteAdbCommand("adb devices");
+            MessageBox.Show(output);
             return output.Contains("\tdevice");
         }
+
     }
 }

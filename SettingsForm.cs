@@ -6,11 +6,28 @@ namespace Innovo_TP4_Updater
     public partial class SettingsForm : Form
     {
         private Form1 parentForm;
-
+        private bool Connected;
         public SettingsForm(Form1 parent)
         {
             InitializeComponent();
             parentForm = parent;
+            UpdateConnectDisconnectButton();
+
+        }
+        private async void UpdateConnectDisconnectButton()
+        {
+            bool isConnected = await parentForm.IsConnected();
+            if (isConnected)
+            {
+                btnConnectDisconnect.Text = "Disconnect Device";
+                Connected = true;
+            }
+            else
+            {
+                btnConnectDisconnect.Text = "Connect Device";
+                Connected = false;
+            }
+            MessageBox.Show(isConnected.ToString());
         }
 
         private void SettingsButton_Click(object sender, EventArgs e)
@@ -33,6 +50,11 @@ namespace Innovo_TP4_Updater
             {
                 UpdateAppForm updateAppForm = new UpdateAppForm(parentForm);
                 parentForm.LoadFormIntoPanel(updateAppForm);
+            }
+            else if(button == btnConnectDisconnect)
+            {
+                ConnectDisconnectForm connetDisconnectForm = new ConnectDisconnectForm(parentForm, Connected);
+                parentForm.LoadFormIntoPanel(connetDisconnectForm);
             }
         }
     }

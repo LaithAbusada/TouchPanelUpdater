@@ -23,6 +23,7 @@ namespace Innovo_TP4_Updater
             if (!await parentForm.IsConnected())
             {
                 MessageBox.Show("Device should be connected.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ClearControls();
                 return;
             }
 
@@ -38,6 +39,21 @@ namespace Innovo_TP4_Updater
 
             bluetoothTrackBar.Value = volumeLevels["Bluetooth"];
             lblBluetoothVolume.Text = $"Bluetooth Volume: {bluetoothTrackBar.Value}";
+        }
+
+        private void ClearControls()
+        {
+            soundTrackBar.Value = 0;
+            lblMediaVolume.Text = "Media Volume: N/A";
+
+            notificationsTrackBar.Value = 0;
+            lblNotificationsVolume.Text = "Notifications Volume: N/A";
+
+            alarmTrackBar.Value = 0;
+            lblAlarmVolume.Text = "Alarm Volume: N/A";
+
+            bluetoothTrackBar.Value = 0;
+            lblBluetoothVolume.Text = "Bluetooth Volume: N/A";
         }
 
         private async void soundTrackBar_Scroll(object sender, ScrollEventArgs e)
@@ -57,6 +73,9 @@ namespace Innovo_TP4_Updater
             if (!await parentForm.IsConnected())
             {
                 MessageBox.Show("Device should be connected.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                SettingsForm settingsForm = new SettingsForm(parentForm);
+                parentForm.LoadFormIntoPanel(settingsForm);
+                ClearControls();
                 return;
             }
 
