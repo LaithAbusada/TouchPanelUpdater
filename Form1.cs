@@ -169,7 +169,6 @@ namespace Innovo_TP4_Updater
         public async Task<bool> IsConnected()
         {
             string output = await ExecuteAdbCommand("adb devices");
-            MessageBox.Show(output);
             return output.Contains("\tdevice");
         }
 
