@@ -16,6 +16,9 @@ namespace Innovo_TP4_Updater
         private Panel adaptiveBrightnessPanel;
         private Panel screenSaverPanel;
         private Panel sleepModePanel;
+        private Guna.UI2.WinForms.Guna2Button btnBalanced;
+        private Guna.UI2.WinForms.Guna2Button btnAlwaysReady;
+        private Guna.UI2.WinForms.Guna2Button btnRestMode;
 
         protected override void Dispose(bool disposing)
         {
@@ -39,6 +42,9 @@ namespace Innovo_TP4_Updater
             this.adaptiveBrightnessPanel = new System.Windows.Forms.Panel();
             this.screenSaverPanel = new System.Windows.Forms.Panel();
             this.sleepModePanel = new System.Windows.Forms.Panel();
+            this.btnBalanced = new Guna.UI2.WinForms.Guna2Button();
+            this.btnAlwaysReady = new Guna.UI2.WinForms.Guna2Button();
+            this.btnRestMode = new Guna.UI2.WinForms.Guna2Button();
             this.adaptiveBrightnessPanel.SuspendLayout();
             this.screenSaverPanel.SuspendLayout();
             this.sleepModePanel.SuspendLayout();
@@ -154,10 +160,40 @@ namespace Innovo_TP4_Updater
             this.sleepModePanel.Size = new System.Drawing.Size(360, 50);
             this.sleepModePanel.TabIndex = 10;
             // 
+            // btnBalanced
+            // 
+            this.btnBalanced.Location = new System.Drawing.Point(300, 500);
+            this.btnBalanced.Name = "btnBalanced";
+            this.btnBalanced.Size = new System.Drawing.Size(100, 30);
+            this.btnBalanced.TabIndex = 11;
+            this.btnBalanced.Text = "Balanced";
+            this.btnBalanced.Click += new System.EventHandler(this.btnBalanced_Click);
+            // 
+            // btnAlwaysReady
+            // 
+            this.btnAlwaysReady.Location = new System.Drawing.Point(420, 500);
+            this.btnAlwaysReady.Name = "btnAlwaysReady";
+            this.btnAlwaysReady.Size = new System.Drawing.Size(120, 30);
+            this.btnAlwaysReady.TabIndex = 12;
+            this.btnAlwaysReady.Text = "Always Ready";
+            this.btnAlwaysReady.Click += new System.EventHandler(this.btnAlwaysReady_Click);
+            // 
+            // btnRestMode
+            // 
+            this.btnRestMode.Location = new System.Drawing.Point(560, 500);
+            this.btnRestMode.Name = "btnRestMode";
+            this.btnRestMode.Size = new System.Drawing.Size(100, 30);
+            this.btnRestMode.TabIndex = 13;
+            this.btnRestMode.Text = "Rest Mode";
+            this.btnRestMode.Click += new System.EventHandler(this.btnRestMode_Click);
+            // 
             // DisplaySettingsForm
             // 
             this.BackColor = System.Drawing.Color.AliceBlue;
             this.ClientSize = new System.Drawing.Size(976, 605);
+            this.Controls.Add(this.btnRestMode);
+            this.Controls.Add(this.btnAlwaysReady);
+            this.Controls.Add(this.btnBalanced);
             this.Controls.Add(this.sleepModePanel);
             this.Controls.Add(this.screenSaverPanel);
             this.Controls.Add(this.adaptiveBrightnessPanel);

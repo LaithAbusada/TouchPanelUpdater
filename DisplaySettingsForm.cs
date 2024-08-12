@@ -32,7 +32,8 @@ namespace Innovo_TP4_Updater
                 if (!await parentForm.IsConnected())
                 {
                     MessageBox.Show("Device should be connected.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    ClearControls();
+                    parentForm.clearMainPanel();
+
                     return;
                 }
 
@@ -65,19 +66,10 @@ namespace Innovo_TP4_Updater
 
             adaptiveBrightnessSwitch.Checked = adaptiveBrightnessOutput.Trim() == "1";
             screenSaverSwitch.Checked = screenSaverOutput.Trim() == "1"; // Assuming 1 means enabled
-            sleepModeSwitch.Checked = int.Parse(screenOffTimeoutOutput.Trim())  > 0; // Assuming 5 minutes as on for sleep mode
+            sleepModeSwitch.Checked = int.Parse(screenOffTimeoutOutput.Trim()) > 0; // Assuming 5 minutes as on for sleep mode
         }
 
-        private void ClearControls()
-        {
-            brightnessTrackBar.Value = 0;
-            lblBrightness.Text = "Brightness: N/A";
-
-            adaptiveBrightnessSwitch.Checked = false;
-            screenSaverSwitch.Checked = false;
-            sleepModeSwitch.Checked = false;
-        }
-
+      
         private async void adaptiveBrightnessSwitch_CheckedChanged(object sender, EventArgs e)
         {
             await CheckAndExecuteCommand(async () =>
@@ -131,7 +123,8 @@ namespace Innovo_TP4_Updater
                 if (!await parentForm.IsConnected())
                 {
                     MessageBox.Show("Device should be connected.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    ClearControls();
+                    parentForm.clearMainPanel();
+                       
                     return;
                 }
 
@@ -141,6 +134,37 @@ namespace Innovo_TP4_Updater
             {
                 isCheckingConnection = false;
             }
+        }
+
+        private async void btnBalanced_Click(object sender, EventArgs e)
+        {
+            await SetDisplayMode(true, true); // Screen saver on, sleep mode on
+        }
+
+        private async void btnAlwaysReady_Click(object sender, EventArgs e)
+        {
+            await SetDisplayMode(false, false); // Screen saver off, sleep mode off
+        }
+
+        private async void btnRestMode_Click(object sender, EventArgs e)
+        {
+            await SetDisplayMode(false, true); // Screen saver off, sleep mode on
+        }
+
+        private async Task SetDisplayMode(bool screenSaver, bool sleepMode)
+        {
+            await CheckAndExecuteCommand(async () =>
+            {
+                // Set screen saver
+                string screenSaverSetting = screenSaver ? "1" : "0";
+                await parentForm.ExecuteAdbCommand($"adb shell settings put secure screensaver_enabled {screenSaverSetting}");
+                screenSaverSwitch.Checked = screenSaver;
+
+                // Set sleep mode
+                string sleepModeSetting = sleepMode ? "300000" : "0"; // 5 minutes for sleep mode
+                await parentForm.ExecuteAdbCommand($"adb shell settings put system screen_off_timeout {sleepModeSetting}");
+                sleepModeSwitch.Checked = sleepMode;
+            });
         }
     }
 }

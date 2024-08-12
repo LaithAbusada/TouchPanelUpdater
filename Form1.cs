@@ -163,14 +163,57 @@ namespace Innovo_TP4_Updater
 
         private void button7_Click(object sender, EventArgs e)
         {
-            LoadFormIntoPanel(new SettingsForm(this));
+            LoadFormIntoSidebarPanel(new SettingsForm(this));
         }
 
+        public void LoadFormIntoSidebarPanel(Form form)
+        {
+            form.TopLevel = false;
+            form.FormBorderStyle = FormBorderStyle.None;
+            form.Dock = DockStyle.Fill;
+
+            // Clear any existing controls and add the new form to the sidebarPanel
+            this.sidebarPanel.Controls.Clear();
+            this.sidebarPanel.Controls.Add(form);
+
+            // Ensure the form size matches the sidebarPanel size
+            form.Size = sidebarPanel.ClientSize;
+
+            // Set the form's location to the top-left of the sidebarPanel
+            form.Location = new Point(0, 0);
+
+            // Show the form
+            form.Show();
+        }
         public async Task<bool> IsConnected()
         {
             string output = await ExecuteAdbCommand("adb devices");
             return output.Contains("\tdevice");
         }
 
+        public void LoadMainOptionsIntoSidebar()
+        {
+            // Clear the sidebar panel
+            sidebarPanel.Controls.Clear();
+
+            // Recreate the original sidebar options (Controller, Apps, Settings)
+            sidebarPanel.Controls.Add(button5);
+            sidebarPanel.Controls.Add(button6);
+            sidebarPanel.Controls.Add(button7);
+
+            // Reset the location of the buttons
+            button5.Location = new Point(14, 177);
+            button6.Location = new Point(11, 253);
+            button7.Location = new Point(12, 331);
+        }
+
+        public void clearMainPanel()
+        {
+            this.mainPanel.Controls.Clear();
+        }
+        private void mainPanel_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
     }
 }

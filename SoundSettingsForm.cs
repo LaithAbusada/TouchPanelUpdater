@@ -23,63 +23,59 @@ namespace Innovo_TP4_Updater
             if (!await parentForm.IsConnected())
             {
                 MessageBox.Show("Device should be connected.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                ClearControls();
+                parentForm.clearMainPanel();
                 return;
             }
 
             try
             {
-                // Fetching the volume levels directly using ExecuteAdbCommand
-                string mediaVolumeOutput = await parentForm.ExecuteAdbCommand("adb shell settings get system volume_music");
-                string notificationsVolumeOutput = await parentForm.ExecuteAdbCommand("adb shell settings get system volume_notification");
-                string alarmVolumeOutput = await parentForm.ExecuteAdbCommand("adb shell settings get system volume_alarm");
-                string bluetoothVolumeOutput = await parentForm.ExecuteAdbCommand("adb shell settings get system volume_bluetooth_sco");
+                // Set the range for Main Volume and Notifications Volume
+                mainTrackBar.Minimum = 0;
+                mainTrackBar.Maximum = 15;
 
-                // Parsing the output and setting the trackbars
-                soundTrackBar.Value = int.TryParse(mediaVolumeOutput.Trim(), out int mediaVolume) ? mediaVolume : 0;
-                lblMediaVolume.Text = $"Media Volume: {soundTrackBar.Value}";
-                soundTrackBar.Maximum = 15;
-                soundTrackBar.Minimum = 0;
-
-                notificationsTrackBar.Value = int.TryParse(notificationsVolumeOutput.Trim(), out int notificationsVolume) ? notificationsVolume : 0;
-                lblNotificationsVolume.Text = $"Notifications Volume: {notificationsTrackBar.Value}";
-                notificationsTrackBar.Maximum = 15;
                 notificationsTrackBar.Minimum = 0;
+                notificationsTrackBar.Maximum = 7;
+                // Correct ADB command for retrieving volume levels
+                string mainVolumeOutput = await parentForm.ExecuteAdbCommand("adb shell media volume --get --stream 3");
+                string notificationsVolumeOutput = await parentForm.ExecuteAdbCommand("adb shell media volume --get --stream 5");
 
-                alarmTrackBar.Value = int.TryParse(alarmVolumeOutput.Trim(), out int alarmVolume) ? alarmVolume : 0;
-                lblAlarmVolume.Text = $"Alarm Volume: {alarmTrackBar.Value}";
-                alarmTrackBar.Maximum = 15;
-                alarmTrackBar.Minimum = 0;
+                // Parsing the output, extracting the volume
+                int mainVolume = ParseVolume(mainVolumeOutput, 15); // Main volume range 0-15
+                int notificationsVolume = ParseVolume(notificationsVolumeOutput, 7); // Notifications volume range 0-7
 
-                bluetoothTrackBar.Value = int.TryParse(bluetoothVolumeOutput.Trim(), out int bluetoothVolume) ? bluetoothVolume : 0;
-                lblBluetoothVolume.Text = $"Bluetooth Volume: {bluetoothTrackBar.Value}";
-                bluetoothTrackBar.Maximum = 15;
-                bluetoothTrackBar.Minimum = 0;
+                // Set trackbar values
+                mainTrackBar.Value = mainVolume;
+                lblMainVolume.Text = $"Main Volume: {mainTrackBar.Value}";
+
+                notificationsTrackBar.Value = notificationsVolume;
+                lblNotificationsVolume.Text = $"Notifications Volume: {notificationsTrackBar.Value}";
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error retrieving volume levels: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                ClearControls();
+                parentForm.clearMainPanel(); ;
             }
         }
 
-
-        private void ClearControls()
+        private int ParseVolume(string volumeOutput, int maxVolume)
         {
-            soundTrackBar.Value = 0;
-            lblMediaVolume.Text = "Media Volume: N/A";
-
-            notificationsTrackBar.Value = 0;
-            lblNotificationsVolume.Text = "Notifications Volume: N/A";
-
-            alarmTrackBar.Value = 0;
-            lblAlarmVolume.Text = "Alarm Volume: N/A";
-
-            bluetoothTrackBar.Value = 0;
-            lblBluetoothVolume.Text = "Bluetooth Volume: N/A";
+            // Example parsing logic for the output format "volume is x in range [0..y]"
+            const string volumePrefix = "volume is ";
+            int volumeIndex = volumeOutput.IndexOf(volumePrefix);
+            if (volumeIndex >= 0)
+            {
+                string volumeString = volumeOutput.Substring(volumeIndex + volumePrefix.Length).Split(' ')[0];
+                if (int.TryParse(volumeString, out int volume))
+                {
+                    return Math.Min(volume, maxVolume); // Ensure volume is within the expected range
+                }
+            }
+            return 0; // Default to 0 if parsing fails
         }
 
-        private async void soundTrackBar_Scroll(object sender, EventArgs e)
+   
+
+        private async void mainTrackBar_Scroll(object sender, EventArgs e)
         {
             if (!await parentForm.IsConnected())
             {
@@ -89,12 +85,12 @@ namespace Innovo_TP4_Updater
 
             try
             {
-                lblMediaVolume.Text = $"Media Volume: {soundTrackBar.Value}";
-                await parentForm.ExecuteAdbCommand($"adb shell media volume --show --stream 3 --set {soundTrackBar.Value}");
+                lblMainVolume.Text = $"Main Volume: {mainTrackBar.Value}";
+                await parentForm.ExecuteAdbCommand($"adb shell media volume --show --stream 3 --set {mainTrackBar.Value}");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error setting media volume: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error setting main volume: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -117,67 +113,16 @@ namespace Innovo_TP4_Updater
             }
         }
 
-        private async void alarmTrackBar_Scroll(object sender, EventArgs e)
-        {
-            if (!await parentForm.IsConnected())
-            {
-                MessageBox.Show("Device should be connected.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            try
-            {
-                lblAlarmVolume.Text = $"Alarm Volume: {alarmTrackBar.Value}";
-                await parentForm.ExecuteAdbCommand($"adb shell media volume --show --stream 4 --set {alarmTrackBar.Value}");
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error setting alarm volume: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        private async void bluetoothTrackBar_Scroll(object sender, EventArgs e)
-        {
-            if (!await parentForm.IsConnected())
-            {
-                MessageBox.Show("Device should be connected.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            try
-            {
-                lblBluetoothVolume.Text = $"Bluetooth Volume: {bluetoothTrackBar.Value}";
-                await parentForm.ExecuteAdbCommand($"adb shell media volume --show --stream 6 --set {bluetoothTrackBar.Value}");  // Use stream 6 for Bluetooth SCO
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error setting Bluetooth volume: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-
-
-        private void lblMediaVolume_Click(object sender, EventArgs e)
-        {
-            // Optional: handle label click event if necessary
-        }
-
         private void CenterControls()
         {
             int formWidth = this.ClientSize.Width;
             int formHeight = this.ClientSize.Height;
 
-            lblMediaVolume.Location = new Point((formWidth - lblMediaVolume.Width) / 2, 20);
-            soundTrackBar.Location = new Point((formWidth - soundTrackBar.Width) / 2, lblMediaVolume.Bottom + 30);
+            lblMainVolume.Location = new Point((formWidth - lblMainVolume.Width) / 2, 20);
+            mainTrackBar.Location = new Point((formWidth - mainTrackBar.Width) / 2, lblMainVolume.Bottom + 30);
 
-            lblNotificationsVolume.Location = new Point((formWidth - lblNotificationsVolume.Width) / 2, soundTrackBar.Bottom + 40);
+            lblNotificationsVolume.Location = new Point((formWidth - lblNotificationsVolume.Width) / 2, mainTrackBar.Bottom + 40);
             notificationsTrackBar.Location = new Point((formWidth - notificationsTrackBar.Width) / 2, lblNotificationsVolume.Bottom + 30);
-
-            lblAlarmVolume.Location = new Point((formWidth - lblAlarmVolume.Width) / 2, notificationsTrackBar.Bottom + 40);
-            alarmTrackBar.Location = new Point((formWidth - alarmTrackBar.Width) / 2, lblAlarmVolume.Bottom + 30);
-
-            lblBluetoothVolume.Location = new Point((formWidth - lblBluetoothVolume.Width) / 2, alarmTrackBar.Bottom + 40);
-            bluetoothTrackBar.Location = new Point((formWidth - bluetoothTrackBar.Width) / 2, lblBluetoothVolume.Bottom + 30);
         }
     }
 }

@@ -86,7 +86,7 @@
             this.textBoxIP.Location = new System.Drawing.Point(132, 148);
             this.textBoxIP.Margin = new System.Windows.Forms.Padding(4);
             this.textBoxIP.Name = "textBoxIP";
-            this.textBoxIP.Size = new System.Drawing.Size(248, 20);
+            this.textBoxIP.Size = new System.Drawing.Size(248, 22);
             this.textBoxIP.TabIndex = 2;
             // 
             // textBoxPort
@@ -94,7 +94,7 @@
             this.textBoxPort.Location = new System.Drawing.Point(458, 148);
             this.textBoxPort.Margin = new System.Windows.Forms.Padding(4);
             this.textBoxPort.Name = "textBoxPort";
-            this.textBoxPort.Size = new System.Drawing.Size(115, 20);
+            this.textBoxPort.Size = new System.Drawing.Size(115, 22);
             this.textBoxPort.TabIndex = 3;
             this.textBoxPort.Text = "5555";
             // 
@@ -190,6 +190,7 @@
             // 
             // sidebarPanel
             // 
+            this.sidebarPanel.AutoScroll = true;
             this.sidebarPanel.BackColor = System.Drawing.SystemColors.Highlight;
             this.sidebarPanel.Controls.Add(this.button5);
             this.sidebarPanel.Controls.Add(this.button6);
@@ -265,6 +266,7 @@
             this.mainPanel.Name = "mainPanel";
             this.mainPanel.Size = new System.Drawing.Size(900, 588);
             this.mainPanel.TabIndex = 0;
+            this.mainPanel.Paint += new System.Windows.Forms.PaintEventHandler(this.mainPanel_Paint);
             // 
             // contentPanel
             // 
@@ -276,7 +278,7 @@
             // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ButtonFace;
             this.CausesValidation = false;
