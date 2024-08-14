@@ -52,8 +52,16 @@ namespace Innovo_TP4_Updater
             }
             else if (button == btnConnectDisconnect)
             {
-                ConnectDisconnectForm connetDisconnectForm = new ConnectDisconnectForm(parentForm, Connected);
-                parentForm.LoadFormIntoPanel(connetDisconnectForm);
+                ConnectDisconnectForm connectDisconnectForm = new ConnectDisconnectForm(parentForm, Connected);
+
+                // Subscribe to the ConnectionStatusChanged event
+                connectDisconnectForm.ConnectionStatusChanged += (isConnected) =>
+                {
+                    Connected = isConnected;
+                    UpdateConnectDisconnectButton();
+                };
+
+                parentForm.LoadFormIntoPanel(connectDisconnectForm);
             }
             else if (button == btnReboot)
             {
@@ -64,7 +72,13 @@ namespace Innovo_TP4_Updater
                 ResetForm resetForm = new ResetForm(parentForm);
                 parentForm.LoadFormIntoPanel(resetForm);
             }
+            else if (button == btnTimeZone)
+            {
+                TimeZoneForm timeZoneForm = new TimeZoneForm(parentForm);
+                parentForm.LoadFormIntoPanel(timeZoneForm);
+            }
         }
+
 
 
 

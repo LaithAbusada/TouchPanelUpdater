@@ -7,6 +7,7 @@ namespace Innovo_TP4_Updater
     {
         private Form1 parentForm;
         private bool isConnected;
+        public event Action<bool> ConnectionStatusChanged;
 
         public ConnectDisconnectForm(Form1 parentForm, bool isConnected)
         {
@@ -68,6 +69,7 @@ namespace Innovo_TP4_Updater
                     isConnected = true;
                 }
             }
+            ConnectionStatusChanged?.Invoke(isConnected);
 
             UpdateFormState();
         }
