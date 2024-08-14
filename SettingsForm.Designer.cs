@@ -8,7 +8,6 @@ namespace Innovo_TP4_Updater
         private System.ComponentModel.IContainer components = null;
         private System.Windows.Forms.Panel settingsPanel;
         private Guna.UI2.WinForms.Guna2Button btnBack;
-        private Guna.UI2.WinForms.Guna2Button btnWiFi;
         private Guna.UI2.WinForms.Guna2Button btnUpdate;
         private Guna.UI2.WinForms.Guna2Button btnDisplay;
         private Guna.UI2.WinForms.Guna2Button btnConnectDisconnect;
@@ -30,7 +29,6 @@ namespace Innovo_TP4_Updater
         {
             this.settingsPanel = new System.Windows.Forms.Panel();
             this.btnBack = new Guna.UI2.WinForms.Guna2Button();
-            this.btnWiFi = new Guna.UI2.WinForms.Guna2Button();
             this.btnUpdate = new Guna.UI2.WinForms.Guna2Button();
             this.btnDisplay = new Guna.UI2.WinForms.Guna2Button();
             this.btnConnectDisconnect = new Guna.UI2.WinForms.Guna2Button();
@@ -46,7 +44,6 @@ namespace Innovo_TP4_Updater
             this.settingsPanel.AutoScroll = true;
             this.settingsPanel.BackColor = System.Drawing.SystemColors.Highlight;
             this.settingsPanel.Controls.Add(this.btnBack);
-            this.settingsPanel.Controls.Add(this.btnWiFi);
             this.settingsPanel.Controls.Add(this.btnUpdate);
             this.settingsPanel.Controls.Add(this.btnDisplay);
             this.settingsPanel.Controls.Add(this.btnConnectDisconnect);
@@ -73,21 +70,6 @@ namespace Innovo_TP4_Updater
             this.btnBack.Text = "Back";
             this.btnBack.Click += new System.EventHandler(this.btnBack_Click);
             // 
-            // btnWiFi
-            // 
-            this.btnWiFi.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.btnWiFi.ForeColor = System.Drawing.Color.White;
-            this.btnWiFi.Image = global::Innovo_TP4_Updater.Properties.Resources.wifi;
-            this.btnWiFi.ImageAlign = System.Windows.Forms.HorizontalAlignment.Left;
-            this.btnWiFi.ImageSize = new System.Drawing.Size(40, 40);
-            this.btnWiFi.Location = new System.Drawing.Point(12, 232);
-            this.btnWiFi.Name = "btnWiFi";
-            this.btnWiFi.Size = new System.Drawing.Size(250, 60);
-            this.btnWiFi.TabIndex = 0;
-            this.btnWiFi.Text = "Wi-Fi\n";
-            this.btnWiFi.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.btnWiFi.Click += new System.EventHandler(this.SettingsButton_Click);
-            // 
             // btnUpdate
             // 
             this.btnUpdate.Font = new System.Drawing.Font("Segoe UI", 9F);
@@ -110,7 +92,7 @@ namespace Innovo_TP4_Updater
             this.btnDisplay.Image = global::Innovo_TP4_Updater.Properties.Resources.display;
             this.btnDisplay.ImageAlign = System.Windows.Forms.HorizontalAlignment.Left;
             this.btnDisplay.ImageSize = new System.Drawing.Size(40, 40);
-            this.btnDisplay.Location = new System.Drawing.Point(12, 307);
+            this.btnDisplay.Location = new System.Drawing.Point(12, 231);
             this.btnDisplay.Name = "btnDisplay";
             this.btnDisplay.Size = new System.Drawing.Size(250, 60);
             this.btnDisplay.TabIndex = 3;
@@ -139,7 +121,7 @@ namespace Innovo_TP4_Updater
             this.btnSound.Image = global::Innovo_TP4_Updater.Properties.Resources.sound;
             this.btnSound.ImageAlign = System.Windows.Forms.HorizontalAlignment.Left;
             this.btnSound.ImageSize = new System.Drawing.Size(40, 40);
-            this.btnSound.Location = new System.Drawing.Point(12, 382);
+            this.btnSound.Location = new System.Drawing.Point(12, 311);
             this.btnSound.Name = "btnSound";
             this.btnSound.Size = new System.Drawing.Size(250, 60);
             this.btnSound.TabIndex = 5;
@@ -154,7 +136,7 @@ namespace Innovo_TP4_Updater
             this.btnTimeZone.Image = global::Innovo_TP4_Updater.Properties.Resources.timezone;
             this.btnTimeZone.ImageAlign = System.Windows.Forms.HorizontalAlignment.Left;
             this.btnTimeZone.ImageSize = new System.Drawing.Size(40, 40);
-            this.btnTimeZone.Location = new System.Drawing.Point(12, 459);
+            this.btnTimeZone.Location = new System.Drawing.Point(12, 398);
             this.btnTimeZone.Name = "btnTimeZone";
             this.btnTimeZone.Size = new System.Drawing.Size(250, 60);
             this.btnTimeZone.TabIndex = 6;
@@ -169,7 +151,7 @@ namespace Innovo_TP4_Updater
             this.btnReset.Image = global::Innovo_TP4_Updater.Properties.Resources.reset;
             this.btnReset.ImageAlign = System.Windows.Forms.HorizontalAlignment.Left;
             this.btnReset.ImageSize = new System.Drawing.Size(40, 40);
-            this.btnReset.Location = new System.Drawing.Point(12, 535);
+            this.btnReset.Location = new System.Drawing.Point(12, 476);
             this.btnReset.Name = "btnReset";
             this.btnReset.Size = new System.Drawing.Size(250, 60);
             this.btnReset.TabIndex = 7;
@@ -184,7 +166,7 @@ namespace Innovo_TP4_Updater
             this.btnReboot.Image = global::Innovo_TP4_Updater.Properties.Resources.reboot;
             this.btnReboot.ImageAlign = System.Windows.Forms.HorizontalAlignment.Left;
             this.btnReboot.ImageSize = new System.Drawing.Size(40, 40);
-            this.btnReboot.Location = new System.Drawing.Point(12, 612);
+            this.btnReboot.Location = new System.Drawing.Point(12, 561);
             this.btnReboot.Name = "btnReboot";
             this.btnReboot.Size = new System.Drawing.Size(250, 60);
             this.btnReboot.TabIndex = 9;

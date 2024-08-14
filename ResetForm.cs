@@ -33,7 +33,7 @@ namespace Innovo_TP4_Updater
         private async void btnApp1_Click(object sender, EventArgs e)
         {
             Guna.UI2.WinForms.Guna2Button button = sender as Guna.UI2.WinForms.Guna2Button;
-            await ResetApplication("com.example.app1", button.Text); // Replace with your actual app package name
+            await ResetApplication("com.homelogic", button.Text); // Replace with your actual app package name
         }
 
         private async void btnApp2_Click(object sender, EventArgs e)
@@ -74,22 +74,43 @@ namespace Innovo_TP4_Updater
 
             if (result == DialogResult.Yes)
             {
+                LoadingForm loadingForm = null;
+
                 try
                 {
-                    // Show loading form
-                    LoadingForm loadingForm = new LoadingForm("Resetting cache and storage... Please wait.");
+                    // Show loading form for resetting cache and storage
+                    loadingForm = new LoadingForm("Resetting cache and storage... Please wait.");
                     loadingForm.Show();
 
-                    // Execute the adb commands to reset the cache and storage
+                    // Execute the adb command to reset the cache and storage
                     await parentForm.ExecuteAdbCommand($"adb shell pm clear {packageName}");
 
                     MessageBox.Show($"{appName} cache and storage reset successfully.", "Reset Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                    // Close the first loading form
+                    loadingForm.Close();
+
+                    // Show a new loading form for rebooting
+                    loadingForm = new LoadingForm("Rebooting the device... Please wait.");
+                    loadingForm.Show();
+
+                    // Execute the adb command to reboot the device
+                    await parentForm.ExecuteAdbCommand("adb reboot");
+
+                    MessageBox.Show("The device is rebooting.", "Rebooting", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 catch (Exception ex)
                 {
                     MessageBox.Show($"Error during reset: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
+                finally
+                {
+                    // Ensure the loading form is closed in all cases
+                    loadingForm?.Close();
+                }
             }
         }
+
+
     }
 }

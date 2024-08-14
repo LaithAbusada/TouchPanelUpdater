@@ -93,7 +93,7 @@ namespace Innovo_TP4_Updater
             this.lblBrightness.ForeColor = System.Drawing.SystemColors.Highlight;
             this.lblBrightness.Location = new System.Drawing.Point(394, 34);
             this.lblBrightness.Name = "lblBrightness";
-            this.lblBrightness.Size = new System.Drawing.Size(139, 26);
+            this.lblBrightness.Size = new System.Drawing.Size(115, 22);
             this.lblBrightness.TabIndex = 4;
             this.lblBrightness.Text = "Brightness: 0";
             // 
@@ -103,7 +103,7 @@ namespace Innovo_TP4_Updater
             this.lblAdaptiveBrightness.ForeColor = System.Drawing.SystemColors.Highlight;
             this.lblAdaptiveBrightness.Location = new System.Drawing.Point(10, 15);
             this.lblAdaptiveBrightness.Name = "lblAdaptiveBrightness";
-            this.lblAdaptiveBrightness.Size = new System.Drawing.Size(127, 16);
+            this.lblAdaptiveBrightness.Size = new System.Drawing.Size(101, 13);
             this.lblAdaptiveBrightness.TabIndex = 5;
             this.lblAdaptiveBrightness.Text = "Adaptive Brightness";
             // 
@@ -113,7 +113,7 @@ namespace Innovo_TP4_Updater
             this.lblScreenSaver.ForeColor = System.Drawing.SystemColors.Highlight;
             this.lblScreenSaver.Location = new System.Drawing.Point(10, 15);
             this.lblScreenSaver.Name = "lblScreenSaver";
-            this.lblScreenSaver.Size = new System.Drawing.Size(89, 16);
+            this.lblScreenSaver.Size = new System.Drawing.Size(72, 13);
             this.lblScreenSaver.TabIndex = 6;
             this.lblScreenSaver.Text = "Screen Saver";
             // 
@@ -123,7 +123,7 @@ namespace Innovo_TP4_Updater
             this.lblSleepMode.ForeColor = System.Drawing.SystemColors.Highlight;
             this.lblSleepMode.Location = new System.Drawing.Point(10, 15);
             this.lblSleepMode.Name = "lblSleepMode";
-            this.lblSleepMode.Size = new System.Drawing.Size(81, 16);
+            this.lblSleepMode.Size = new System.Drawing.Size(64, 13);
             this.lblSleepMode.TabIndex = 7;
             this.lblSleepMode.Text = "Sleep Mode";
             // 
@@ -144,6 +144,7 @@ namespace Innovo_TP4_Updater
             this.screenSaverPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.screenSaverPanel.Controls.Add(this.screenSaverSwitch);
             this.screenSaverPanel.Controls.Add(this.lblScreenSaver);
+            this.screenSaverPanel.Enabled = false;
             this.screenSaverPanel.Location = new System.Drawing.Point(300, 300);
             this.screenSaverPanel.Name = "screenSaverPanel";
             this.screenSaverPanel.Size = new System.Drawing.Size(360, 50);
@@ -155,6 +156,7 @@ namespace Innovo_TP4_Updater
             this.sleepModePanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.sleepModePanel.Controls.Add(this.sleepModeSwitch);
             this.sleepModePanel.Controls.Add(this.lblSleepMode);
+            this.sleepModePanel.Enabled = false;
             this.sleepModePanel.Location = new System.Drawing.Point(300, 411);
             this.sleepModePanel.Name = "sleepModePanel";
             this.sleepModePanel.Size = new System.Drawing.Size(360, 50);
@@ -162,6 +164,8 @@ namespace Innovo_TP4_Updater
             // 
             // btnBalanced
             // 
+            this.btnBalanced.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.btnBalanced.ForeColor = System.Drawing.Color.White;
             this.btnBalanced.Location = new System.Drawing.Point(300, 500);
             this.btnBalanced.Name = "btnBalanced";
             this.btnBalanced.Size = new System.Drawing.Size(100, 30);
@@ -171,6 +175,8 @@ namespace Innovo_TP4_Updater
             // 
             // btnAlwaysReady
             // 
+            this.btnAlwaysReady.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.btnAlwaysReady.ForeColor = System.Drawing.Color.White;
             this.btnAlwaysReady.Location = new System.Drawing.Point(420, 500);
             this.btnAlwaysReady.Name = "btnAlwaysReady";
             this.btnAlwaysReady.Size = new System.Drawing.Size(120, 30);
@@ -180,6 +186,8 @@ namespace Innovo_TP4_Updater
             // 
             // btnRestMode
             // 
+            this.btnRestMode.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.btnRestMode.ForeColor = System.Drawing.Color.White;
             this.btnRestMode.Location = new System.Drawing.Point(560, 500);
             this.btnRestMode.Name = "btnRestMode";
             this.btnRestMode.Size = new System.Drawing.Size(100, 30);

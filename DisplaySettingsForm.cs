@@ -138,23 +138,26 @@ namespace Innovo_TP4_Updater
 
         private async void btnBalanced_Click(object sender, EventArgs e)
         {
-            await SetDisplayMode(true, true); // Screen saver on, sleep mode on
+            await SetDisplayMode(true, true, "Balanced"); // Screen saver on, sleep mode on
         }
 
         private async void btnAlwaysReady_Click(object sender, EventArgs e)
         {
-            await SetDisplayMode(false, false); // Screen saver off, sleep mode off
+            await SetDisplayMode(false, false, "Always Ready"); // Screen saver off, sleep mode off
         }
 
         private async void btnRestMode_Click(object sender, EventArgs e)
         {
-            await SetDisplayMode(false, true); // Screen saver off, sleep mode on
+            await SetDisplayMode(false, true, "Rest"); // Screen saver off, sleep mode on
         }
-
-        private async Task SetDisplayMode(bool screenSaver, bool sleepMode)
+        private async Task SetDisplayMode(bool screenSaver, bool sleepMode, string modeName)
         {
             await CheckAndExecuteCommand(async () =>
             {
+                // Enable switches temporarily
+                screenSaverSwitch.Enabled = true;
+                sleepModeSwitch.Enabled = true;
+
                 // Set screen saver
                 string screenSaverSetting = screenSaver ? "1" : "0";
                 await parentForm.ExecuteAdbCommand($"adb shell settings put secure screensaver_enabled {screenSaverSetting}");
@@ -164,6 +167,13 @@ namespace Innovo_TP4_Updater
                 string sleepModeSetting = sleepMode ? "300000" : "0"; // 5 minutes for sleep mode
                 await parentForm.ExecuteAdbCommand($"adb shell settings put system screen_off_timeout {sleepModeSetting}");
                 sleepModeSwitch.Checked = sleepMode;
+
+                // Disable switches again after updating
+                screenSaverSwitch.Enabled = false;
+                sleepModeSwitch.Enabled = false;
+
+                // Show a message indicating the mode is now on
+                MessageBox.Show($"{modeName} mode is now on.", "Mode Change", MessageBoxButtons.OK, MessageBoxIcon.Information);
             });
         }
     }
