@@ -2,8 +2,10 @@
 using System;
 using System.IO;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Newtonsoft.Json.Linq;
 
 namespace Innovo_TP4_Updater
 {
@@ -17,191 +19,261 @@ namespace Innovo_TP4_Updater
             parentForm = parent;
         }
 
-        public void AppendTextToMaterialMultiLineTextBox3(string text)
+        private async void UpdateAppForm_Load(object sender, EventArgs e)
         {
-            if (InvokeRequired)
+            try
             {
-                BeginInvoke(new Action(() =>
+                string connectedDevices = await parentForm.ExecuteAdbCommand("adb devices -l");
+
+                if (connectedDevices.Contains("device"))
                 {
-                    materialMultiLineTextBox3.AppendText(text);
-                }));
+                    string[] lines = connectedDevices.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+
+                    string ipAddressAndPort = null;
+
+                    foreach (string line in lines)
+                    {
+                        if (line.Contains("device") && line.Contains(":"))
+                        {
+                            ipAddressAndPort = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[0];
+                            break;
+                        }
+                    }
+
+                    if (!string.IsNullOrEmpty(ipAddressAndPort))
+                    {
+                        label5.Text = $"Connected: {ipAddressAndPort}";
+                    }
+                    else
+                    {
+                        label5.Text = "No Connected Device";
+                    }
+                }
+                else
+                {
+                    label5.Text = "No Connected Device";
+                }
             }
-            else
+            catch (Exception ex)
             {
-                materialMultiLineTextBox3.AppendText(text);
+                label5.Text = $"Error: {ex.Message}";
             }
         }
 
-        private async void buttonUpdate_Click(object sender, EventArgs e)
+        private async void UpdateApp(string appName, Button clickedButton)
         {
-            materialMultiLineTextBox3.Text = "Please wait... Attempting to connect to the device.\n";
-            string websiteUrl = "https://innovo.net/repo/TP4/nice-latest.apk";
+            DisableOtherButtons(clickedButton);
+            materialMultiLineTextBox3.Text = $"Please wait... Checking for updates for {appName}.\n";
+
+            string jsonUrl = "https://innovo.net/repo/TP4/files.json";
+            string jsonString = string.Empty;
+
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    jsonString = await client.GetStringAsync(jsonUrl);
+                }
+            }
+            catch (Exception ex)
+            {
+                materialMultiLineTextBox3.AppendText($"Error fetching JSON: {ex.Message}\n");
+                EnableAllButtons();
+                return;
+            }
+
+            JObject jsonData = JObject.Parse(jsonString);
+            string currentVersion = await GetCurrentVersion(appName);
+            string latestVersion = jsonData[appName]["version"].ToString();
+            string fileType = jsonData[appName]["type"].ToString();
+            string fileName = jsonData[appName]["filename"].ToString();
+
+            if (currentVersion == latestVersion)
+            {
+                materialMultiLineTextBox3.AppendText($"{appName} is already up to date.\n");
+                EnableAllButtons();
+                return;
+            }
+
+            string downloadUrl = $"https://innovo.net/repo/TP4/{fileName}";
             string solutionDirectory = Directory.GetParent(AppDomain.CurrentDomain.BaseDirectory).Parent.Parent.FullName;
-            string downloadDirectory = Path.Combine(solutionDirectory);
+            string downloadDirectory = Path.Combine(solutionDirectory, fileName);
 
             try
             {
                 WebClient clients = new WebClient();
-                clients.DownloadFile(websiteUrl, Path.Combine(downloadDirectory, "nice-latest.apk"));
+                await clients.DownloadFileTaskAsync(new Uri(downloadUrl), downloadDirectory);
+                materialMultiLineTextBox3.AppendText($"Downloaded {fileName} successfully.\n");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error downloading file: {ex.Message}");
                 materialMultiLineTextBox3.AppendText($"Error downloading file: {ex.Message}\n");
+                EnableAllButtons();
                 return;
             }
 
-            WebClient client = new WebClient();
-            string latest_version = client.DownloadString("https://innovo.net/repo/TP4/version");
-
-            string ipAddress = textBoxIP.Text;
-            ipAddress = ipAddress.Replace(" ", "");
-            int port = int.Parse(textBoxPort.Text);
-
-            string connect = "adb connect " + ipAddress + ":" + port;
-
-            try
+            // Use ADB to install/update the app based on file type
+            if (fileType == "file")
             {
-                string connectResult = await parentForm.ExecuteAdbCommand(connect);
-                materialMultiLineTextBox3.AppendText(connectResult);
-
-                string[] lines = connectResult.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
-                string searchWord = "connected"; // Update this with the confirmation message
-                bool wordFound = false;
-                string searchWord2 = "cannot";
-                bool wordFound2 = false;
-
-                foreach (string line in lines)
-                {
-                    if (line.Contains(searchWord))
-                    {
-                        wordFound = true;
-                    }
-                    if (line.Contains(searchWord2))
-                    {
-                        wordFound2 = true;
-                    }
-                }
-                string ipPort = ipAddress + ':' + port;
-                if (wordFound)
-                {
-                    if (label5.Text == "No Connected Device" || label5.Text == String.Empty)
-                    {
-                        label5.Text = ipPort;
-                    }
-                }
-                else if (wordFound2)
-                {
-                    materialMultiLineTextBox3.AppendText("Device unable to connect, please check IP and port" + Environment.NewLine);
-                    return;
-                }
-                else
-                {
-                    materialMultiLineTextBox3.AppendText("Device unable to connect, please check IP and port" + Environment.NewLine);
-                    return;
-                }
-
-                materialMultiLineTextBox3.AppendText("Connected successfully" + Environment.NewLine);
-                materialMultiLineTextBox3.AppendText(Environment.NewLine);
-                await Task.Delay(4000);
-
-                string version = "adb shell dumpsys package com.homelogic | findstr versionName";
-                string versionResult = await parentForm.ExecuteAdbCommand(version);
-                materialMultiLineTextBox3.AppendText(versionResult);
-
-                materialMultiLineTextBox3.AppendText("Checking if update is available, Please wait " + Environment.NewLine);
-                await Task.Delay(8000);
-                string deviceVersion = null;
-                string[] lines2 = versionResult.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
-                foreach (string line in lines2)
-                {
-                    if (line.Contains("versionName="))
-                    {
-                        deviceVersion = line.Split('=')[1].Trim(); // Extract the version name
-                        break;
-                    }
-                }
-
-                latest_version = latest_version.Trim();
-                if (deviceVersion != null && deviceVersion.Equals(latest_version.Trim(), StringComparison.OrdinalIgnoreCase))
-                {
-                    parentForm.Disconnect();
-                    MessageBox.Show("Panel already up to date!", "Up to Date", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    return;
-                }
-                else
-                {
-                    materialMultiLineTextBox3.AppendText("Update Available" + Environment.NewLine);
-                }
-
-                materialMultiLineTextBox3.AppendText("Checking device model and screen size" + Environment.NewLine);
-                string modelCommand = "adb shell getprop ro.product.model";
-                string versionCommand = "adb shell getprop ro.build.version.release";
-
-                string modelResult = await parentForm.ExecuteAdbCommand(modelCommand);
-                materialMultiLineTextBox3.AppendText(modelResult);
-                string deviceModel = null;
-
-                var lines3 = modelResult.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
-                bool captureNextLine = false;
-                foreach (string line in lines3)
-                {
-                    if (captureNextLine)
-                    {
-                        deviceModel = line.Trim();
-                        break;
-                    }
-                    if (line.Contains("ro.product.model"))
-                    {
-                        captureNextLine = true;
-                    }
-                }
-
-                string versionResult2 = await parentForm.ExecuteAdbCommand(versionCommand);
-                materialMultiLineTextBox3.AppendText(versionResult2);
-
-                materialMultiLineTextBox3.AppendText("Model: " + deviceModel + ", Version: " + deviceVersion + Environment.NewLine);
-
-                if (deviceModel == "P4" && string.Compare(deviceVersion, "8.9.02") > 0)
-                {
-                    string changeSizeCommand = "adb shell wm size 479x480";
-                    await parentForm.ExecuteAdbCommand(changeSizeCommand);
-                    MessageBox.Show("Changed screen size successfully");
-                }
-
-                materialMultiLineTextBox3.AppendText("Starting Installation Process, This can take up to 20 seconds " + Environment.NewLine);
-                string installCommand = $@"for %f in ({downloadDirectory}\*.apk) do adb install -g -r -d ""%f""";
-                MessageBox.Show("Installation can take up to 20 seconds, please wait", "Installation", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                string installResult = await parentForm.ExecuteAdbCommand(installCommand);
-                materialMultiLineTextBox3.AppendText(installResult);
-
-                materialMultiLineTextBox3.AppendText("Installation was successful, please wait for device reboot" + Environment.NewLine);
-
-                await Task.Delay(2000);
-
-                materialMultiLineTextBox3.AppendText("Rebooting Device ,This can take up to 20 seconds, please Wait" + Environment.NewLine);
-                string rebootCommand = "adb reboot";
-
-                string rebootResult = await parentForm.ExecuteAdbCommand(rebootCommand);
-                materialMultiLineTextBox3.AppendText(rebootResult);
-
-                materialMultiLineTextBox3.AppendText("Rebooting Device in 3 ... 2 ... 1 ... " + Environment.NewLine);
-                materialMultiLineTextBox3.AppendText("Please wait at until reboot is complete" + Environment.NewLine);
-                MessageBox.Show("Device reboot can take up to 20 seconds, please wait", "Reboot", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                await Task.Delay(20000);
-
-                label5.Text = string.Empty;
-                materialMultiLineTextBox3.AppendText("Reboot completed successfully" + Environment.NewLine);
-
-                parentForm.Disconnect();
-                MessageBox.Show("Upgrade for NICE was installed successfully", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                await InstallApk(downloadDirectory);
             }
-            catch (Exception ex)
+            else if (fileType == "zip")
             {
-                MessageBox.Show($"An error occurred: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                materialMultiLineTextBox3.AppendText($"An error occurred: {ex.Message}\n");
+                await UnzipAndInstall(downloadDirectory);
             }
+
+            materialMultiLineTextBox3.AppendText($"Successfully updated {appName} to version {latestVersion}.\n");
+
+            EnableAllButtons();
+            RebootApp();
+        }
+
+        private async Task<string> GetCurrentVersion(string appName)
+        {
+            string packageName = GetPackageName(appName);
+            if (string.IsNullOrEmpty(packageName))
+            {
+                return null;
+            }
+
+            string command = $"adb shell dumpsys package {packageName} | grep versionName";
+            string output = await parentForm.ExecuteAdbCommand(command);
+
+            if (!string.IsNullOrEmpty(output))
+            {
+                // Extract the version name from the output
+                string versionLine = output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)[0];
+                string versionName = versionLine.Split('=')[1].Trim();
+                return versionName;
+            }
+
+            return null;
+        }
+
+        private string GetPackageName(string appName)
+        {
+            switch (appName)
+            {
+                case "Nice":
+                    return "com.homelogic";
+                case "Lutron":
+                    return "com.lutron.mmw";
+                case "Control4":
+                    return "com.control4.phoenix";
+                case "Rako":
+                    return "com.android.rk";
+                default:
+                    return null;
+            }
+        }
+
+        private async Task InstallApk(string filePath)
+        {
+            materialMultiLineTextBox3.AppendText($"Installing {Path.GetFileName(filePath)}...\n");
+            string installCommand = $"adb install -r {filePath}";
+            await parentForm.ExecuteAdbCommand(installCommand);
+            materialMultiLineTextBox3.AppendText($"Installed {Path.GetFileName(filePath)}.\n");
+        }
+
+        private async Task UnzipAndInstall(string zipFilePath)
+        {
+            materialMultiLineTextBox3.AppendText($"Extracting {Path.GetFileName(zipFilePath)}...\n");
+            string extractPath = Path.Combine(Path.GetDirectoryName(zipFilePath), Path.GetFileNameWithoutExtension(zipFilePath));
+
+            // Delete the directory if it already exists
+            if (Directory.Exists(extractPath))
+            {
+                Directory.Delete(extractPath, true);
+            }
+
+            System.IO.Compression.ZipFile.ExtractToDirectory(zipFilePath, extractPath);
+
+            string[] extractedFiles = Directory.GetFiles(extractPath, "*.apk", SearchOption.AllDirectories);
+            if (extractedFiles.Length > 0)
+            {
+                materialMultiLineTextBox3.AppendText("Installing multiple APKs...\n");
+
+                // Prepare the adb install-multiple command
+                string installCommand = "adb install-multiple -r --user 0 ";
+                foreach (string apkFile in extractedFiles)
+                {
+                    installCommand += $"\"{apkFile}\" ";
+                }
+
+                await parentForm.ExecuteAdbCommand(installCommand.TrimEnd());
+                materialMultiLineTextBox3.AppendText("Installed all APKs.\n");
+            }
+            else
+            {
+                materialMultiLineTextBox3.AppendText("No APK files found in the extracted ZIP.\n");
+            }
+        }
+
+        private void RebootApp()
+        {
+            materialMultiLineTextBox3.AppendText("Rebooting the device...\n");
+            string rebootCommand = "adb reboot";
+            parentForm.ExecuteAdbCommand(rebootCommand);
+            materialMultiLineTextBox3.AppendText("Device rebooted.\n");
+        }
+
+        private void DisableOtherButtons(Button clickedButton)
+        {
+            // Disable the clicked button and keep it visible
+            clickedButton.Enabled = false;
+            clickedButton.Visible = true;
+
+            // Hide the other buttons
+            if (clickedButton != buttonUpdateNice)
+            {
+                buttonUpdateNice.Visible = false;
+            }
+            if (clickedButton != buttonUpdateRako)
+            {
+                buttonUpdateRako.Visible = false;
+            }
+            if (clickedButton != buttonUpdateLutron)
+            {
+                buttonUpdateLutron.Visible = false;
+            }
+            if (clickedButton != buttonUpdateControl4)
+            {
+                buttonUpdateControl4.Visible = false;
+            }
+        }
+
+        private void EnableAllButtons()
+        {
+            // Re-enable and show all buttons
+            buttonUpdateNice.Enabled = true;
+            buttonUpdateRako.Enabled = true;
+            buttonUpdateLutron.Enabled = true;
+            buttonUpdateControl4.Enabled = true;
+
+            buttonUpdateNice.Visible = true;
+            buttonUpdateRako.Visible = true;
+            buttonUpdateLutron.Visible = true;
+            buttonUpdateControl4.Visible = true;
+        }
+
+        private void buttonUpdateNice_Click(object sender, EventArgs e)
+        {
+            UpdateApp("Nice", buttonUpdateNice);
+        }
+
+        private void buttonUpdateRako_Click(object sender, EventArgs e)
+        {
+            UpdateApp("Rako", buttonUpdateRako);
+        }
+
+        private void buttonUpdateLutron_Click(object sender, EventArgs e)
+        {
+            UpdateApp("Lutron", buttonUpdateLutron);
+        }
+
+        private void buttonUpdateControl4_Click(object sender, EventArgs e)
+        {
+            UpdateApp("Control4", buttonUpdateControl4);
         }
     }
 }

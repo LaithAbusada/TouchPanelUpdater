@@ -1,16 +1,17 @@
-﻿namespace Innovo_TP4_Updater
+﻿using System.Windows.Forms;
+
+namespace Innovo_TP4_Updater
 {
     partial class UpdateAppForm
     {
         private System.ComponentModel.IContainer components = null;
-        private System.Windows.Forms.Label labelIP;
-        private System.Windows.Forms.TextBox textBoxIP;
-        private System.Windows.Forms.Label labelPort;
-        private System.Windows.Forms.TextBox textBoxPort;
-        private System.Windows.Forms.Button buttonUpdate;
-        private MaterialSkin.Controls.MaterialMultiLineTextBox materialMultiLineTextBox1;
+        private System.Windows.Forms.Button buttonUpdateNice;
+        private System.Windows.Forms.Button buttonUpdateRako;
+        private System.Windows.Forms.Button buttonUpdateLutron;
+        private System.Windows.Forms.Button buttonUpdateControl4;
         private MaterialSkin.Controls.MaterialMultiLineTextBox materialMultiLineTextBox3;
         private System.Windows.Forms.Label labelStatus;
+        private System.Windows.Forms.Label label5; // This will be used to display IP and Port at the top right
 
         /// <summary>
         /// Clean up any resources being used.
@@ -29,82 +30,82 @@
 
         private void InitializeComponent()
         {
-            this.labelIP = new System.Windows.Forms.Label();
-            this.textBoxIP = new System.Windows.Forms.TextBox();
-            this.labelPort = new System.Windows.Forms.Label();
-            this.textBoxPort = new System.Windows.Forms.TextBox();
-            this.buttonUpdate = new System.Windows.Forms.Button();
-            this.materialMultiLineTextBox1 = new MaterialSkin.Controls.MaterialMultiLineTextBox();
+            this.buttonUpdateNice = new System.Windows.Forms.Button();
+            this.buttonUpdateRako = new System.Windows.Forms.Button();
+            this.buttonUpdateLutron = new System.Windows.Forms.Button();
+            this.buttonUpdateControl4 = new System.Windows.Forms.Button();
             this.materialMultiLineTextBox3 = new MaterialSkin.Controls.MaterialMultiLineTextBox();
             this.labelStatus = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
-            // labelIP
+            // buttonUpdateNice
             // 
-            this.labelIP.AutoSize = true;
-            this.labelIP.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.labelIP.ForeColor = System.Drawing.Color.Blue;
-            this.labelIP.Location = new System.Drawing.Point(34, 32);
-            this.labelIP.Name = "labelIP";
-            this.labelIP.Size = new System.Drawing.Size(78, 20);
-            this.labelIP.TabIndex = 0;
-            this.labelIP.Text = "IP Address";
+            this.buttonUpdateNice.BackColor = System.Drawing.SystemColors.Highlight;
+            this.buttonUpdateNice.BackgroundImage = global::Innovo_TP4_Updater.Properties.Resources.Nice;
+            this.buttonUpdateNice.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.buttonUpdateNice.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.buttonUpdateNice.ForeColor = System.Drawing.Color.White;
+            this.buttonUpdateNice.Location = new System.Drawing.Point(29, 20);
+            this.buttonUpdateNice.Name = "buttonUpdateNice";
+            this.buttonUpdateNice.Size = new System.Drawing.Size(200, 115);
+            this.buttonUpdateNice.TabIndex = 4;
+            this.buttonUpdateNice.Text = "Update Nice";
+            this.buttonUpdateNice.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+            this.buttonUpdateNice.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+            this.buttonUpdateNice.UseVisualStyleBackColor = false;
+            this.buttonUpdateNice.Click += new System.EventHandler(this.buttonUpdateNice_Click);
             // 
-            // textBoxIP
+            // buttonUpdateRako
             // 
-            this.textBoxIP.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.textBoxIP.Location = new System.Drawing.Point(137, 32);
-            this.textBoxIP.Name = "textBoxIP";
-            this.textBoxIP.Size = new System.Drawing.Size(171, 27);
-            this.textBoxIP.TabIndex = 1;
+            this.buttonUpdateRako.BackColor = System.Drawing.SystemColors.Highlight;
+            this.buttonUpdateRako.BackgroundImage = global::Innovo_TP4_Updater.Properties.Resources.ral;
+            this.buttonUpdateRako.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.buttonUpdateRako.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.buttonUpdateRako.ForeColor = System.Drawing.Color.White;
+            this.buttonUpdateRako.Location = new System.Drawing.Point(254, 20);
+            this.buttonUpdateRako.Name = "buttonUpdateRako";
+            this.buttonUpdateRako.Size = new System.Drawing.Size(206, 115);
+            this.buttonUpdateRako.TabIndex = 5;
+            this.buttonUpdateRako.Text = "Update Rako";
+            this.buttonUpdateRako.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+            this.buttonUpdateRako.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+            this.buttonUpdateRako.UseVisualStyleBackColor = false;
+            this.buttonUpdateRako.Click += new System.EventHandler(this.buttonUpdateRako_Click);
             // 
-            // labelPort
+            // buttonUpdateLutron
             // 
-            this.labelPort.AutoSize = true;
-            this.labelPort.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.labelPort.ForeColor = System.Drawing.Color.Blue;
-            this.labelPort.Location = new System.Drawing.Point(34, 75);
-            this.labelPort.Name = "labelPort";
-            this.labelPort.Size = new System.Drawing.Size(35, 20);
-            this.labelPort.TabIndex = 2;
-            this.labelPort.Text = "Port";
+            this.buttonUpdateLutron.BackColor = System.Drawing.SystemColors.Highlight;
+            this.buttonUpdateLutron.BackgroundImage = global::Innovo_TP4_Updater.Properties.Resources.Lutron;
+            this.buttonUpdateLutron.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.buttonUpdateLutron.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.buttonUpdateLutron.ForeColor = System.Drawing.Color.White;
+            this.buttonUpdateLutron.Location = new System.Drawing.Point(29, 164);
+            this.buttonUpdateLutron.Name = "buttonUpdateLutron";
+            this.buttonUpdateLutron.Size = new System.Drawing.Size(206, 115);
+            this.buttonUpdateLutron.TabIndex = 6;
+            this.buttonUpdateLutron.Text = "Update Lutron";
+            this.buttonUpdateLutron.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+            this.buttonUpdateLutron.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+            this.buttonUpdateLutron.UseVisualStyleBackColor = false;
+            this.buttonUpdateLutron.Click += new System.EventHandler(this.buttonUpdateLutron_Click);
             // 
-            // textBoxPort
+            // buttonUpdateControl4
             // 
-            this.textBoxPort.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.textBoxPort.Location = new System.Drawing.Point(137, 75);
-            this.textBoxPort.Name = "textBoxPort";
-            this.textBoxPort.Size = new System.Drawing.Size(171, 27);
-            this.textBoxPort.TabIndex = 3;
-            // 
-            // buttonUpdate
-            // 
-            this.buttonUpdate.BackColor = System.Drawing.SystemColors.Highlight;
-            this.buttonUpdate.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.buttonUpdate.ForeColor = System.Drawing.Color.White;
-            this.buttonUpdate.Location = new System.Drawing.Point(34, 117);
-            this.buttonUpdate.Name = "buttonUpdate";
-            this.buttonUpdate.Size = new System.Drawing.Size(274, 32);
-            this.buttonUpdate.TabIndex = 4;
-            this.buttonUpdate.Text = "Update App";
-            this.buttonUpdate.UseVisualStyleBackColor = false;
-            this.buttonUpdate.Click += new System.EventHandler(this.buttonUpdate_Click);
-            // 
-            // materialMultiLineTextBox1
-            // 
-            this.materialMultiLineTextBox1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
-            this.materialMultiLineTextBox1.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.materialMultiLineTextBox1.Depth = 0;
-            this.materialMultiLineTextBox1.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.materialMultiLineTextBox1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(222)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
-            this.materialMultiLineTextBox1.Hint = "";
-            this.materialMultiLineTextBox1.Location = new System.Drawing.Point(34, 171);
-            this.materialMultiLineTextBox1.MouseState = MaterialSkin.MouseState.HOVER;
-            this.materialMultiLineTextBox1.Name = "materialMultiLineTextBox1";
-            this.materialMultiLineTextBox1.Size = new System.Drawing.Size(846, 192);
-            this.materialMultiLineTextBox1.TabIndex = 5;
-            this.materialMultiLineTextBox1.Text = "";
+            this.buttonUpdateControl4.BackColor = System.Drawing.SystemColors.Highlight;
+            this.buttonUpdateControl4.BackgroundImage = global::Innovo_TP4_Updater.Properties.Resources.four;
+            this.buttonUpdateControl4.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.buttonUpdateControl4.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.buttonUpdateControl4.ForeColor = System.Drawing.Color.White;
+            this.buttonUpdateControl4.Location = new System.Drawing.Point(254, 164);
+            this.buttonUpdateControl4.Name = "buttonUpdateControl4";
+            this.buttonUpdateControl4.Size = new System.Drawing.Size(206, 115);
+            this.buttonUpdateControl4.TabIndex = 7;
+            this.buttonUpdateControl4.Text = "Update          Control4";
+            this.buttonUpdateControl4.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+            this.buttonUpdateControl4.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+            this.buttonUpdateControl4.UseVisualStyleBackColor = false;
+            this.buttonUpdateControl4.Click += new System.EventHandler(this.buttonUpdateControl4_Click);
             // 
             // materialMultiLineTextBox3
             // 
@@ -114,11 +115,11 @@
             this.materialMultiLineTextBox3.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.materialMultiLineTextBox3.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(222)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
             this.materialMultiLineTextBox3.Hint = "";
-            this.materialMultiLineTextBox3.Location = new System.Drawing.Point(34, 384);
+            this.materialMultiLineTextBox3.Location = new System.Drawing.Point(26, 312);
             this.materialMultiLineTextBox3.MouseState = MaterialSkin.MouseState.HOVER;
             this.materialMultiLineTextBox3.Name = "materialMultiLineTextBox3";
-            this.materialMultiLineTextBox3.Size = new System.Drawing.Size(846, 192);
-            this.materialMultiLineTextBox3.TabIndex = 6;
+            this.materialMultiLineTextBox3.Size = new System.Drawing.Size(634, 156);
+            this.materialMultiLineTextBox3.TabIndex = 8;
             this.materialMultiLineTextBox3.Text = "";
             // 
             // labelStatus
@@ -126,44 +127,45 @@
             this.labelStatus.AutoSize = true;
             this.labelStatus.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.labelStatus.ForeColor = System.Drawing.Color.White;
-            this.labelStatus.Location = new System.Drawing.Point(34, 587);
+            this.labelStatus.Location = new System.Drawing.Point(26, 477);
             this.labelStatus.Name = "labelStatus";
-            this.labelStatus.Size = new System.Drawing.Size(49, 20);
-            this.labelStatus.TabIndex = 7;
+            this.labelStatus.Size = new System.Drawing.Size(39, 15);
+            this.labelStatus.TabIndex = 9;
             this.labelStatus.Text = "Status";
             // 
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(771, 22);
+            this.label5.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.label5.ForeColor = System.Drawing.SystemColors.Highlight;
+            this.label5.Location = new System.Drawing.Point(593, 20);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(44, 16);
-            this.label5.TabIndex = 8;
-            this.label5.Text = "label5";
+            this.label5.Size = new System.Drawing.Size(122, 15);
+            this.label5.TabIndex = 10;
+            this.label5.Text = "No Connected Device";
             // 
             // UpdateAppForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(914, 640);
+            this.BackColor = System.Drawing.Color.AliceBlue;
+            this.ClientSize = new System.Drawing.Size(900, 520);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.labelStatus);
             this.Controls.Add(this.materialMultiLineTextBox3);
-            this.Controls.Add(this.materialMultiLineTextBox1);
-            this.Controls.Add(this.buttonUpdate);
-            this.Controls.Add(this.textBoxPort);
-            this.Controls.Add(this.labelPort);
-            this.Controls.Add(this.textBoxIP);
-            this.Controls.Add(this.labelIP);
+            this.Controls.Add(this.buttonUpdateControl4);
+            this.Controls.Add(this.buttonUpdateLutron);
+            this.Controls.Add(this.buttonUpdateRako);
+            this.Controls.Add(this.buttonUpdateNice);
             this.Name = "UpdateAppForm";
             this.Text = "Update App";
+            this.Load += new System.EventHandler(this.UpdateAppForm_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 
         }
 
-        #endregion
 
-        private System.Windows.Forms.Label label5;
+        #endregion
     }
 }
