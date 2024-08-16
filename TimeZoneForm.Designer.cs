@@ -18,7 +18,6 @@
             this.timeZoneComboBox = new Guna.UI2.WinForms.Guna2ComboBox();
             this.lblChooseTimeZone = new Guna.UI2.WinForms.Guna2HtmlLabel();
             this.lblSuccessMessage = new Guna.UI2.WinForms.Guna2HtmlLabel();
-            this.linkLabelTimeZoneInfo = new System.Windows.Forms.LinkLabel();
             this.SuspendLayout();
             // 
             // timeZoneComboBox
@@ -43,7 +42,7 @@
             this.lblChooseTimeZone.Font = new System.Drawing.Font("Segoe UI", 12F);
             this.lblChooseTimeZone.Location = new System.Drawing.Point(50, 40);
             this.lblChooseTimeZone.Name = "lblChooseTimeZone";
-            this.lblChooseTimeZone.Size = new System.Drawing.Size(125, 23);
+            this.lblChooseTimeZone.Size = new System.Drawing.Size(128, 23);
             this.lblChooseTimeZone.TabIndex = 1;
             this.lblChooseTimeZone.Text = "Choose TimeZone";
             // 
@@ -54,27 +53,16 @@
             this.lblSuccessMessage.ForeColor = System.Drawing.Color.Green;
             this.lblSuccessMessage.Location = new System.Drawing.Point(50, 130);
             this.lblSuccessMessage.Name = "lblSuccessMessage";
-            this.lblSuccessMessage.Size = new System.Drawing.Size(0, 0);
+            this.lblSuccessMessage.Size = new System.Drawing.Size(3, 2);
             this.lblSuccessMessage.TabIndex = 2;
+            this.lblSuccessMessage.Text = null;
             this.lblSuccessMessage.Visible = false;
-            // 
-            // linkLabelTimeZoneInfo
-            // 
-            this.linkLabelTimeZoneInfo.AutoSize = true;
-            this.linkLabelTimeZoneInfo.Location = new System.Drawing.Point(50, 170);
-            this.linkLabelTimeZoneInfo.Name = "linkLabelTimeZoneInfo";
-            this.linkLabelTimeZoneInfo.Size = new System.Drawing.Size(172, 13);
-            this.linkLabelTimeZoneInfo.TabIndex = 3;
-            this.linkLabelTimeZoneInfo.TabStop = true;
-            this.linkLabelTimeZoneInfo.Text = "Click here to find your timezone.";
-            this.linkLabelTimeZoneInfo.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabelTimeZoneInfo_LinkClicked);
             // 
             // TimeZoneForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(400, 200);
-            this.Controls.Add(this.linkLabelTimeZoneInfo);
             this.Controls.Add(this.lblSuccessMessage);
             this.Controls.Add(this.lblChooseTimeZone);
             this.Controls.Add(this.timeZoneComboBox);
@@ -83,11 +71,11 @@
             this.Load += new System.EventHandler(this.TimeZoneForm_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
+
         }
 
         private Guna.UI2.WinForms.Guna2ComboBox timeZoneComboBox;
         private Guna.UI2.WinForms.Guna2HtmlLabel lblChooseTimeZone;
         private Guna.UI2.WinForms.Guna2HtmlLabel lblSuccessMessage;
-        private System.Windows.Forms.LinkLabel linkLabelTimeZoneInfo;
     }
 }

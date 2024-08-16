@@ -33,28 +33,28 @@ namespace Innovo_TP4_Updater
         private async void btnApp1_Click(object sender, EventArgs e)
         {
             Guna.UI2.WinForms.Guna2Button button = sender as Guna.UI2.WinForms.Guna2Button;
-            await ResetApplication("com.homelogic", button.Text); // Replace with your actual app package name
+            await ResetApplication("Nice"); // Use the app name to determine the package name
         }
 
         private async void btnApp2_Click(object sender, EventArgs e)
         {
             Guna.UI2.WinForms.Guna2Button button = sender as Guna.UI2.WinForms.Guna2Button;
-            await ResetApplication("com.example.app2", button.Text); // Replace with your actual app package name
+            await ResetApplication("Control4");
         }
 
         private async void btnApp3_Click(object sender, EventArgs e)
         {
             Guna.UI2.WinForms.Guna2Button button = sender as Guna.UI2.WinForms.Guna2Button;
-            await ResetApplication("com.example.app3", button.Text); // Replace with your actual app package name
+            await ResetApplication("Rako");
         }
 
         private async void btnApp4_Click(object sender, EventArgs e)
         {
             Guna.UI2.WinForms.Guna2Button button = sender as Guna.UI2.WinForms.Guna2Button;
-            await ResetApplication("com.example.app4", button.Text); // Replace with your actual app package name
+            await ResetApplication("Lutron");
         }
 
-        private async Task ResetApplication(string packageName, string appName)
+        private async Task ResetApplication(string appName)
         {
             // Check if the device is connected
             bool isConnected = await parentForm.IsConnected();
@@ -62,6 +62,14 @@ namespace Innovo_TP4_Updater
             if (!isConnected)
             {
                 MessageBox.Show("No device is currently connected. Please connect a device before attempting to reset.", "Device Not Connected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // Get the package name from the app name
+            string packageName = GetPackageName(appName);
+            if (string.IsNullOrEmpty(packageName))
+            {
+                MessageBox.Show($"No package found for the app: {appName}", "Package Not Found", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -111,6 +119,21 @@ namespace Innovo_TP4_Updater
             }
         }
 
-
+        private string GetPackageName(string appName)
+        {
+            switch (appName)
+            {
+                case "Nice":
+                    return "com.homelogic";
+                case "Lutron":
+                    return "com.lutron.mmw";
+                case "Control4":
+                    return "com.control4.phoenix";
+                case "Rako":
+                    return "com.rakocontrols.android";
+                default:
+                    return null;
+            }
+        }
     }
 }

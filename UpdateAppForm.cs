@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Newtonsoft.Json.Linq;
+using System.Linq;
 
 namespace Innovo_TP4_Updater
 {
@@ -62,71 +63,113 @@ namespace Innovo_TP4_Updater
 
         private async void UpdateApp(string appName, Button clickedButton)
         {
-            DisableOtherButtons(clickedButton);
-            materialMultiLineTextBox3.Text = $"Please wait... Checking for updates for {appName}.\n";
+            // Step 1: Check for connected devices
+            string connectedDevices = await parentForm.ExecuteAdbCommand("adb devices -l");
 
-            string jsonUrl = "https://innovo.net/repo/TP4/files.json";
-            string jsonString = string.Empty;
+            if (!connectedDevices.Contains("device"))
+            {
+                materialMultiLineTextBox3.Text = "No connected device detected. Please connect a device and try again.\n";
+                label5.Text = "no connected devices";
+                return;
+            }
+
+            // Step 2: Retrieve the device model name
+            string deviceModel = await GetDeviceModel();
+
+            if (deviceModel != "P4")
+            {
+                materialMultiLineTextBox3.Text = $"Connected device is {deviceModel}, but only P4 devices are supported for updates.\n";
+                return;
+            }
+
+            // Step 3: Show LoadingForm
+            LoadingForm loadingForm = new LoadingForm("Please wait attempting to install update");
+            loadingForm.Show();
+            loadingForm.BringToFront();
 
             try
             {
-                using (HttpClient client = new HttpClient())
+                await parentForm.ExecuteAdbCommand("adb shell wm size 479x480");
+                DisableOtherButtons(clickedButton);
+                materialMultiLineTextBox3.Text = $"Please wait... Checking for updates for {appName}.\n";
+
+                string jsonUrl = "https://innovo.net/repo/TP4/files.json";
+                string jsonString = string.Empty;
+
+                try
                 {
-                    jsonString = await client.GetStringAsync(jsonUrl);
+                    using (HttpClient client = new HttpClient())
+                    {
+                        jsonString = await client.GetStringAsync(jsonUrl);
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                materialMultiLineTextBox3.AppendText($"Error fetching JSON: {ex.Message}\n");
-                EnableAllButtons();
-                return;
-            }
+                catch (Exception ex)
+                {
+                    materialMultiLineTextBox3.AppendText($"Error fetching JSON: {ex.Message}\n");
+                    EnableAllButtons();
+                    return;
+                }
 
-            JObject jsonData = JObject.Parse(jsonString);
-            string currentVersion = await GetCurrentVersion(appName);
-            string latestVersion = jsonData[appName]["version"].ToString();
-            string fileType = jsonData[appName]["type"].ToString();
-            string fileName = jsonData[appName]["filename"].ToString();
+                JObject jsonData = JObject.Parse(jsonString);
+                string currentVersion = await GetCurrentVersion(appName);
+                string latestVersion = jsonData[appName]["version"].ToString();
+                string fileType = jsonData[appName]["type"].ToString();
+                string fileName = jsonData[appName]["filename"].ToString();
 
-            if (currentVersion == latestVersion)
-            {
-                materialMultiLineTextBox3.AppendText($"{appName} is already up to date.\n");
-                EnableAllButtons();
-                return;
-            }
+                if (currentVersion == latestVersion)
+                {
+                    materialMultiLineTextBox3.AppendText($"{appName} is already up to date.\n");
+                    EnableAllButtons();
+                    return;
+                }
 
-            string downloadUrl = $"https://innovo.net/repo/TP4/{fileName}";
-            string solutionDirectory = Directory.GetParent(AppDomain.CurrentDomain.BaseDirectory).Parent.Parent.FullName;
-            string downloadDirectory = Path.Combine(solutionDirectory, fileName);
+                string downloadUrl = $"https://innovo.net/repo/TP4/{fileName}";
+                string solutionDirectory = Directory.GetParent(AppDomain.CurrentDomain.BaseDirectory).Parent.Parent.FullName;
+                string downloadDirectory = Path.Combine(solutionDirectory, fileName);
 
-            try
-            {
-                WebClient clients = new WebClient();
-                await clients.DownloadFileTaskAsync(new Uri(downloadUrl), downloadDirectory);
-                materialMultiLineTextBox3.AppendText($"Downloaded {fileName} successfully.\n");
-            }
-            catch (Exception ex)
-            {
-                materialMultiLineTextBox3.AppendText($"Error downloading file: {ex.Message}\n");
-                EnableAllButtons();
-                return;
-            }
+                try
+                {
+                    WebClient clients = new WebClient();
+                    await clients.DownloadFileTaskAsync(new Uri(downloadUrl), downloadDirectory);
+                    materialMultiLineTextBox3.AppendText($"Downloaded {fileName} successfully.\n");
+                }
+                catch (Exception ex)
+                {
+                    materialMultiLineTextBox3.AppendText($"Error downloading file: {ex.Message}\n");
+                    EnableAllButtons();
+                    return;
+                }
 
-            // Use ADB to install/update the app based on file type
-            if (fileType == "file")
-            {
-                await InstallApk(downloadDirectory);
-            }
-            else if (fileType == "zip")
-            {
-                await UnzipAndInstall(downloadDirectory);
-            }
+                // Use ADB to install/update the app based on file type
+                if (fileType == "file")
+                {
+                    await InstallApk(downloadDirectory);
+                }
+                else if (fileType == "zip")
+                {
+                    await UnzipAndInstall(downloadDirectory);
+                }
 
-            materialMultiLineTextBox3.AppendText($"Successfully updated {appName} to version {latestVersion}.\n");
+                materialMultiLineTextBox3.AppendText($"Successfully updated {appName} to version {latestVersion}.\n");
+            }
+            finally
+            {
+                // Ensure that the loading form is closed after the update process completes
+                loadingForm.Close();
+            }
 
             EnableAllButtons();
             RebootApp();
         }
+
+        // Helper method to get the device model
+        private async Task<string> GetDeviceModel()
+        {
+            string modelCommand = "adb shell getprop ro.product.model";
+            string modelOutput = await parentForm.ExecuteAdbCommand(modelCommand);
+            return modelOutput.Trim();
+        }
+
 
         private async Task<string> GetCurrentVersion(string appName)
         {
@@ -136,7 +179,7 @@ namespace Innovo_TP4_Updater
                 return null;
             }
 
-            string command = $"adb shell dumpsys package {packageName} | grep versionName";
+            string command = $"adb shell dumpsys package {packageName} | findstr versionName";
             string output = await parentForm.ExecuteAdbCommand(command);
 
             if (!string.IsNullOrEmpty(output))
@@ -161,7 +204,7 @@ namespace Innovo_TP4_Updater
                 case "Control4":
                     return "com.control4.phoenix";
                 case "Rako":
-                    return "com.android.rk";
+                    return "com.rakocontrols.android";
                 default:
                     return null;
             }
@@ -174,6 +217,8 @@ namespace Innovo_TP4_Updater
             await parentForm.ExecuteAdbCommand(installCommand);
             materialMultiLineTextBox3.AppendText($"Installed {Path.GetFileName(filePath)}.\n");
         }
+
+     
 
         private async Task UnzipAndInstall(string zipFilePath)
         {
@@ -275,5 +320,6 @@ namespace Innovo_TP4_Updater
         {
             UpdateApp("Control4", buttonUpdateControl4);
         }
+
     }
 }

@@ -36,6 +36,7 @@ namespace Innovo_TP4_Updater
             this.btnTimeZone = new Guna.UI2.WinForms.Guna2Button();
             this.btnReset = new Guna.UI2.WinForms.Guna2Button();
             this.btnReboot = new Guna.UI2.WinForms.Guna2Button();
+            this.btnFactory = new Guna.UI2.WinForms.Guna2Button();
             this.settingsPanel.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -43,6 +44,7 @@ namespace Innovo_TP4_Updater
             // 
             this.settingsPanel.AutoScroll = true;
             this.settingsPanel.BackColor = System.Drawing.SystemColors.Highlight;
+            this.settingsPanel.Controls.Add(this.btnFactory);
             this.settingsPanel.Controls.Add(this.btnBack);
             this.settingsPanel.Controls.Add(this.btnUpdate);
             this.settingsPanel.Controls.Add(this.btnDisplay);
@@ -155,7 +157,7 @@ namespace Innovo_TP4_Updater
             this.btnReset.Name = "btnReset";
             this.btnReset.Size = new System.Drawing.Size(250, 60);
             this.btnReset.TabIndex = 7;
-            this.btnReset.Text = "RESET\nReset to Factory Default";
+            this.btnReset.Text = "RESET\nReset Applications";
             this.btnReset.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.btnReset.Click += new System.EventHandler(this.SettingsButton_Click);
             // 
@@ -166,13 +168,30 @@ namespace Innovo_TP4_Updater
             this.btnReboot.Image = global::Innovo_TP4_Updater.Properties.Resources.reboot;
             this.btnReboot.ImageAlign = System.Windows.Forms.HorizontalAlignment.Left;
             this.btnReboot.ImageSize = new System.Drawing.Size(40, 40);
-            this.btnReboot.Location = new System.Drawing.Point(12, 561);
+            this.btnReboot.Location = new System.Drawing.Point(12, 639);
             this.btnReboot.Name = "btnReboot";
             this.btnReboot.Size = new System.Drawing.Size(250, 60);
             this.btnReboot.TabIndex = 9;
             this.btnReboot.Text = "REBOOT\nRestart Device";
             this.btnReboot.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.btnReboot.Click += new System.EventHandler(this.SettingsButton_Click);
+            // 
+            // btnFactory
+            // 
+            this.btnFactory.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.btnFactory.ForeColor = System.Drawing.Color.White;
+            this.btnFactory.Image = global::Innovo_TP4_Updater.Properties.Resources.reset;
+            this.btnFactory.ImageAlign = System.Windows.Forms.HorizontalAlignment.Left;
+            this.btnFactory.ImageSize = new System.Drawing.Size(40, 40);
+            this.btnFactory.Location = new System.Drawing.Point(12, 555);
+            this.btnFactory.Name = "btnFactory";
+            this.btnFactory.Size = new System.Drawing.Size(250, 60);
+            this.btnFactory.TabIndex = 10;
+            this.btnFactory.Text = "RESET\nReset to Factory Default";
+            this.btnFactory.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.btnFactory.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SystemDefault;
+            this.btnFactory.Click += new System.EventHandler(this.SettingsButton_Click);
+
             // 
             // SettingsForm
             // 
@@ -183,5 +202,7 @@ namespace Innovo_TP4_Updater
             this.ResumeLayout(false);
 
         }
+
+        private Guna.UI2.WinForms.Guna2Button btnFactory;
     }
 }

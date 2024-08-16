@@ -30,12 +30,22 @@ namespace Innovo_TP4_Updater
             this.MaximizeBox = true;
         }
 
-        private void Form1_Load(object sender, EventArgs e)
+        private async void Form1_Load(object sender, EventArgs e)
         {
             InstallAdb();
             LoadText();
-        }
 
+            // Load the SettingsForm on startup
+            var settingsForm = new SettingsForm(this);
+            LoadFormIntoSidebarPanel(settingsForm);
+
+            // Check if the device is connected
+            bool isConnected = await IsConnected();
+            if (!isConnected)
+            {
+                settingsForm.LoadConnectDisconnectForm();
+            }
+        }
         public async Task<string> ExecuteAdbCommand(string command)
         {
             string commandOutput = "";

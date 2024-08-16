@@ -14,6 +14,7 @@ namespace Innovo_TP4_Updater
             InitializeComponent();
             parentForm = parent;
             UpdateConnectDisconnectButton();
+            this.btnBack.Visible = false;
         }
 
         private async void UpdateConnectDisconnectButton()
@@ -76,6 +77,11 @@ namespace Innovo_TP4_Updater
             {
                 TimeZoneForm timeZoneForm = new TimeZoneForm(parentForm);
                 parentForm.LoadFormIntoPanel(timeZoneForm);
+            }
+            else if (button== btnFactory)
+            {
+                FactoryDefaultForm factoryDefaultForm = new FactoryDefaultForm(parentForm);
+                parentForm.LoadFormIntoPanel(factoryDefaultForm);
             }
         }
 
@@ -162,6 +168,11 @@ namespace Innovo_TP4_Updater
                     loadingForm.Close(); // Close the loading form when done
                 }
             }
+        }
+        public void LoadConnectDisconnectForm()
+        {
+            ConnectDisconnectForm connectDisconnectForm = new ConnectDisconnectForm(parentForm, Connected);
+            parentForm.LoadFormIntoPanel(connectDisconnectForm);
         }
 
         private void btnBack_Click(object sender, EventArgs e)
