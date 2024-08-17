@@ -162,6 +162,8 @@ namespace Innovo_TP4_Updater
                 return;
             }
 
+            string downloadDirectory = string.Empty;
+
             try
             {
                 // Step 3: Set resolution for update
@@ -188,7 +190,7 @@ namespace Innovo_TP4_Updater
                 string fileName = jsonData[appName]["filename"].ToString();
 
                 string downloadUrl = $"https://innovo.net/repo/TP4/{fileName}";
-                string downloadDirectory = Path.Combine(Path.GetTempPath(), fileName);
+                downloadDirectory = Path.Combine(Path.GetTempPath(), fileName);
 
                 using (WebClient client = new WebClient())
                 {
@@ -210,6 +212,21 @@ namespace Innovo_TP4_Updater
             catch (Exception ex)
             {
                 MessageBox.Show($"Error during update: {ex.Message}", "Update Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                // Clean up downloaded files
+                if (!string.IsNullOrEmpty(downloadDirectory) && File.Exists(downloadDirectory))
+                {
+                    try
+                    {
+                        File.Delete(downloadDirectory);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Error deleting downloaded file: {ex.Message}", "Cleanup Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    }
+                }
             }
         }
 
@@ -240,37 +257,77 @@ namespace Innovo_TP4_Updater
 
         private async Task InstallApk(string filePath)
         {
-            string installCommand = $"adb install -r {filePath}";
-            await parentForm.ExecuteAdbCommand(installCommand);
+            try
+            {
+                string installCommand = $"adb install -r {filePath}";
+                await parentForm.ExecuteAdbCommand(installCommand);
+
+                // Attempt to delete the file after installation
+                if (File.Exists(filePath))
+                {
+                    File.Delete(filePath);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error installing APK: {ex.Message}", "Installation Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private async Task UnzipAndInstall(string zipFilePath)
         {
             string extractPath = Path.Combine(Path.GetDirectoryName(zipFilePath), Path.GetFileNameWithoutExtension(zipFilePath));
 
-            // Delete the directory if it already exists
-            if (Directory.Exists(extractPath))
+            try
             {
-                Directory.Delete(extractPath, true);
-            }
-
-            System.IO.Compression.ZipFile.ExtractToDirectory(zipFilePath, extractPath);
-
-            string[] extractedFiles = Directory.GetFiles(extractPath, "*.apk", SearchOption.AllDirectories);
-            if (extractedFiles.Length > 0)
-            {
-                // Prepare the adb install-multiple command
-                string installCommand = "adb install-multiple -r --user 0 ";
-                foreach (string apkFile in extractedFiles)
+                // Delete the directory if it already exists
+                if (Directory.Exists(extractPath))
                 {
-                    installCommand += $"\"{apkFile}\" ";
+                    Directory.Delete(extractPath, true);
                 }
 
-                await parentForm.ExecuteAdbCommand(installCommand.TrimEnd());
+                System.IO.Compression.ZipFile.ExtractToDirectory(zipFilePath, extractPath);
+
+                string[] extractedFiles = Directory.GetFiles(extractPath, "*.apk", SearchOption.AllDirectories);
+                if (extractedFiles.Length > 0)
+                {
+                    // Prepare the adb install-multiple command
+                    string installCommand = "adb install-multiple -r --user 0 ";
+                    foreach (string apkFile in extractedFiles)
+                    {
+                        installCommand += $"\"{apkFile}\" ";
+                    }
+
+                    await parentForm.ExecuteAdbCommand(installCommand.TrimEnd());
+                }
+                else
+                {
+                    MessageBox.Show("No APK files found in the extracted ZIP.", "Installation Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                MessageBox.Show("No APK files found in the extracted ZIP.", "Installation Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error during ZIP extraction and installation: {ex.Message}", "Installation Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                // Clean up downloaded and extracted files
+                try
+                {
+                    if (File.Exists(zipFilePath))
+                    {
+                        File.Delete(zipFilePath);
+                    }
+
+                    if (Directory.Exists(extractPath))
+                    {
+                        Directory.Delete(extractPath, true);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error cleaning up files: {ex.Message}", "Cleanup Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
             }
         }
     }

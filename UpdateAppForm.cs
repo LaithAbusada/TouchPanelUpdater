@@ -87,6 +87,8 @@ namespace Innovo_TP4_Updater
             loadingForm.Show();
             loadingForm.BringToFront();
 
+            string downloadDirectory = string.Empty;
+
             try
             {
                 await parentForm.ExecuteAdbCommand("adb shell wm size 479x480");
@@ -125,7 +127,7 @@ namespace Innovo_TP4_Updater
 
                 string downloadUrl = $"https://innovo.net/repo/TP4/{fileName}";
                 string solutionDirectory = Directory.GetParent(AppDomain.CurrentDomain.BaseDirectory).Parent.Parent.FullName;
-                string downloadDirectory = Path.Combine(solutionDirectory, fileName);
+                downloadDirectory = Path.Combine(solutionDirectory, fileName);
 
                 try
                 {
@@ -156,10 +158,27 @@ namespace Innovo_TP4_Updater
             {
                 // Ensure that the loading form is closed after the update process completes
                 loadingForm.Close();
-            }
 
-            EnableAllButtons();
-            RebootApp();
+                // Clean up downloaded files
+                if (!string.IsNullOrEmpty(downloadDirectory) && File.Exists(downloadDirectory))
+                {
+                    try
+                    {
+                        File.Delete(downloadDirectory);
+                        materialMultiLineTextBox3.AppendText($"Deleted downloaded file: {downloadDirectory}\n");
+                    }
+                    catch (Exception ex)
+                    {
+                        materialMultiLineTextBox3.AppendText($"Error deleting file: {ex.Message}\n");
+                    }
+                }
+
+                // Enable all buttons again
+                EnableAllButtons();
+
+                // Reboot the device
+                RebootApp();
+            }
         }
 
         // Helper method to get the device model
@@ -212,13 +231,36 @@ namespace Innovo_TP4_Updater
 
         private async Task InstallApk(string filePath)
         {
-            materialMultiLineTextBox3.AppendText($"Installing {Path.GetFileName(filePath)}...\n");
-            string installCommand = $"adb install -r {filePath}";
-            await parentForm.ExecuteAdbCommand(installCommand);
-            materialMultiLineTextBox3.AppendText($"Installed {Path.GetFileName(filePath)}.\n");
+            try
+            {
+                materialMultiLineTextBox3.AppendText($"Installing {Path.GetFileName(filePath)}...\n");
+
+                string installCommand = $"adb install -r {filePath}";
+                await parentForm.ExecuteAdbCommand(installCommand);
+
+                materialMultiLineTextBox3.AppendText($"Installed {Path.GetFileName(filePath)}.\n");
+
+                // Attempt to delete the file after installation
+                if (File.Exists(filePath))
+                {
+                    try
+                    {
+                        File.Delete(filePath);
+                        materialMultiLineTextBox3.AppendText($"Deleted file: {filePath}\n");
+                    }
+                    catch (Exception ex)
+                    {
+                        materialMultiLineTextBox3.AppendText($"Error deleting file: {ex.Message}\n");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                materialMultiLineTextBox3.AppendText($"Error installing APK: {ex.Message}\n");
+            }
         }
 
-     
+
 
         private async Task UnzipAndInstall(string zipFilePath)
         {
@@ -251,6 +293,25 @@ namespace Innovo_TP4_Updater
             else
             {
                 materialMultiLineTextBox3.AppendText("No APK files found in the extracted ZIP.\n");
+            }
+
+            // After installation, delete the ZIP file
+            try
+            {
+                if (File.Exists(zipFilePath))
+                {
+                    File.Delete(zipFilePath);
+                    materialMultiLineTextBox3.AppendText($"Deleted ZIP file: {zipFilePath}\n");
+                }
+                if (Directory.Exists(extractPath))
+                {
+                    Directory.Delete(extractPath, true);
+                    materialMultiLineTextBox3.AppendText($"Deleted Directory : {extractPath}");
+                }
+            }
+            catch (Exception ex)
+            {
+                materialMultiLineTextBox3.AppendText($"Error deleting ZIP file: {ex.Message}\n");
             }
         }
 
