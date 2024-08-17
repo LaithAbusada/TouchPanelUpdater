@@ -15,8 +15,19 @@ namespace Innovo_TP4_Updater
             parentForm = parent;
         }
 
-        private void TimeZoneForm_Load(object sender, EventArgs e)
+        private async void TimeZoneForm_Load(object sender, EventArgs e)
         {
+            // Check if the device is connected
+            if (!await parentForm.IsConnected())
+            {
+                // If no device is connected, clear the main panel and show a warning message
+                parentForm.clearMainPanel();
+                MessageBox.Show("No device is currently connected. Please connect a device before proceeding.",
+                                "Device Not Connected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // If the device is connected, proceed to populate the timezone ComboBox
             PopulateTimeZoneComboBox();
         }
 
@@ -51,7 +62,6 @@ namespace Innovo_TP4_Updater
             try
             {
                 string selectedIanaTimeZone = timeZoneComboBox.SelectedItem.ToString();
-                MessageBox.Show(selectedIanaTimeZone);
 
                 if (!string.IsNullOrEmpty(selectedIanaTimeZone))
                 {

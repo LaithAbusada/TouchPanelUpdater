@@ -24,6 +24,15 @@ namespace Innovo_TP4_Updater
         {
             try
             {
+                bool isConnected = await parentForm.IsConnected();
+
+                if (!isConnected)
+                {
+                    parentForm.clearMainPanel();
+                    MessageBox.Show("No device is currently connected. Please connect a device before proceeding.", "Device Not Connected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
                 string connectedDevices = await parentForm.ExecuteAdbCommand("adb devices -l");
 
                 if (connectedDevices.Contains("device"))
@@ -60,6 +69,7 @@ namespace Innovo_TP4_Updater
                 label5.Text = $"Error: {ex.Message}";
             }
         }
+
 
         private async void UpdateApp(string appName, Button clickedButton)
         {

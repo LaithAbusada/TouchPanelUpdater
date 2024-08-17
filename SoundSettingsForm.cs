@@ -22,8 +22,9 @@ namespace Innovo_TP4_Updater
 
             if (!await parentForm.IsConnected())
             {
-                MessageBox.Show("Device should be connected.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 parentForm.clearMainPanel();
+                MessageBox.Show("No device is currently connected. Please connect a device before proceeding.",
+                               "Device Not Connected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 

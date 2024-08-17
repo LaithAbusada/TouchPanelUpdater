@@ -43,35 +43,78 @@ namespace Innovo_TP4_Updater
 
         private async void btnConnectDisconnect_Click(object sender, EventArgs e)
         {
+            DisableControls();
+
             if (isConnected)
             {
+                // Disconnect logic
                 await parentForm.ExecuteAdbCommand("adb disconnect");
                 MessageBox.Show("Disconnected successfully.");
                 isConnected = false;
+                ConnectionStatusChanged?.Invoke(isConnected);
+                UpdateFormState();
+                EnableControls();
             }
             else
             {
+                // Validate input
                 string ipAddress = txtIpAddress.Text;
                 string port = txtPort.Text;
 
                 if (string.IsNullOrEmpty(ipAddress) || string.IsNullOrEmpty(port))
                 {
                     MessageBox.Show("Please enter a valid IP address and port.");
+                    EnableControls();
                     return;
                 }
 
-                string command = $"adb connect {ipAddress}:{port}";
-                string result = await parentForm.ExecuteAdbCommand(command);
-                MessageBox.Show(result);
+                // Show the loading form
+                LoadingForm loadingForm = new LoadingForm("Connecting, please wait...");
+                loadingForm.Show();
+                loadingForm.BringToFront();
 
-                if (result.Contains("connected"))
+                try
                 {
-                    isConnected = true;
+                    // Attempt to connect
+                    string command = $"adb connect {ipAddress}:{port}";
+                    string result = await parentForm.ExecuteAdbCommand(command);
+
+                    // Check if the connection was successful
+                    if (result.Contains("connected to") && !result.Contains("cannot connect to"))
+                    {
+                        isConnected = true;
+                        ConnectionStatusChanged?.Invoke(isConnected);
+                        MessageBox.Show("Connected successfully.");
+                    }
+                    else
+                    {
+                        MessageBox.Show("Failed to connect. Please check the IP address and port and try again.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error during connection: {ex.Message}", "Connection Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                finally
+                {
+                    // Close the loading form
+                    loadingForm.Close();
+
+                    // Update the form state and re-enable controls
+                    UpdateFormState();
+                    EnableControls();
                 }
             }
-            ConnectionStatusChanged?.Invoke(isConnected);
+        }
 
-            UpdateFormState();
+        private void DisableControls()
+        {
+            this.Enabled = false; // Disable the entire form to prevent interaction
+        }
+
+        private void EnableControls()
+        {
+            this.Enabled = true; // Re-enable the form after the connection process is complete
         }
     }
 }
