@@ -11,11 +11,13 @@ namespace Innovo_TP4_Updater
     public partial class FactoryDefaultForm : Form
     {
         private readonly Form1 parentForm;
+        private readonly SettingsForm settingsForm;
 
-        public FactoryDefaultForm(Form1 parent)
+        public FactoryDefaultForm(Form1 parent, SettingsForm settingsForm)
         {
             InitializeComponent();
             parentForm = parent;
+            this.settingsForm = settingsForm;
 
             // Subscribe to the Load event
             this.Load += new EventHandler(ResetForm_Load);
@@ -37,28 +39,28 @@ namespace Innovo_TP4_Updater
         private async void btnApp1_Click(object sender, EventArgs e)
         {
             Guna.UI2.WinForms.Guna2Button button = sender as Guna.UI2.WinForms.Guna2Button;
-            await ResetApplication("Nice", button.Text); // Using app name to identify the package
+            await ResetApplication("Nice", button);
         }
 
         private async void btnApp2_Click(object sender, EventArgs e)
         {
             Guna.UI2.WinForms.Guna2Button button = sender as Guna.UI2.WinForms.Guna2Button;
-            await ResetApplication("Control4", button.Text);
+            await ResetApplication("Control4", button);
         }
 
         private async void btnApp3_Click(object sender, EventArgs e)
         {
             Guna.UI2.WinForms.Guna2Button button = sender as Guna.UI2.WinForms.Guna2Button;
-            await ResetApplication("Rako", button.Text);
+            await ResetApplication("Rako", button);
         }
 
         private async void btnApp4_Click(object sender, EventArgs e)
         {
             Guna.UI2.WinForms.Guna2Button button = sender as Guna.UI2.WinForms.Guna2Button;
-            await ResetApplication("Lutron", button.Text);
+            await ResetApplication("Lutron", button);
         }
 
-        private async Task ResetApplication(string appName, string displayName)
+        private async Task ResetApplication(string appName, Guna.UI2.WinForms.Guna2Button clickedButton)
         {
             // Check if the device is connected
             bool isConnected = await parentForm.IsConnected();
@@ -90,6 +92,12 @@ namespace Innovo_TP4_Updater
 
                 try
                 {
+                    // Disable and hide other buttons
+                    DisableAndHideButtons(clickedButton);
+
+                    // Disable all buttons in the SettingsForm
+                    settingsForm.DisableAllButtons();
+
                     // Show loading form for factory reset
                     loadingForm = new LoadingForm("Performing factory reset... Please wait.");
                     loadingForm.Show();
@@ -97,8 +105,11 @@ namespace Innovo_TP4_Updater
                     // Set display to always active
                     await parentForm.ExecuteAdbCommand("adb shell settings put system screen_off_timeout 2147483647");
 
-                    // Set display to adaptive
-                    await parentForm.ExecuteAdbCommand("adb shell settings put system adaptive_display 1");
+                    // Disable screensaver (Daydream)
+                    await parentForm.ExecuteAdbCommand("adb shell settings put secure screensaver_enabled 0");
+
+                    // Set display to adaptive (enable adaptive brightness)
+                    await parentForm.ExecuteAdbCommand("adb shell settings put system screen_brightness_mode 1");
 
                     // Set resolution to 479x480
                     await parentForm.ExecuteAdbCommand("adb shell wm size 479x480");
@@ -116,19 +127,14 @@ namespace Innovo_TP4_Updater
                     // Update the app using the logic from UpdateAppForm
                     await UpdateApp(appName);
 
-                    MessageBox.Show($"{displayName} factory reset and update completed successfully.", "Reset Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show($"{clickedButton.Text} factory reset and update completed successfully.", "Reset Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                     // Close the first loading form
                     loadingForm.Close();
 
-                    // Show a new loading form for rebooting
-                    loadingForm = new LoadingForm("Rebooting the device... Please wait.");
-                    loadingForm.Show();
+                    // Reboot the device
+                    await RebootDevice();
 
-                    // Execute the adb command to reboot the device
-                    await parentForm.ExecuteAdbCommand("adb reboot");
-
-                    MessageBox.Show("The device is rebooting.", "Rebooting", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 catch (Exception ex)
                 {
@@ -138,7 +144,52 @@ namespace Innovo_TP4_Updater
                 {
                     // Ensure the loading form is closed in all cases
                     loadingForm?.Close();
+
+                    // Re-enable all buttons in the SettingsForm and FactoryDefaultForm
+                    settingsForm.EnableAllButtons();
+                    ShowAndEnableButtons();
                 }
+            }
+        }
+        private async Task RebootDevice()
+        {
+            LoadingForm loadingForm = null;
+
+            try
+            {
+                // Show a new loading form for rebooting
+                loadingForm = new LoadingForm("Rebooting the device... Please wait.");
+                loadingForm.Show();
+
+                // Execute the adb command to reboot the device
+                await parentForm.ExecuteAdbCommand("adb reboot");
+
+                // Delay for 15 seconds to allow the device to turn back on
+                await Task.Delay(15000);
+
+                MessageBox.Show("The device has rebooted and should be back online now.", "Reboot Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            finally
+            {
+                // Ensure the loading form is closed
+                loadingForm?.Close();
+            }
+        }
+
+        private string GetPackageName(string appName)
+        {
+            switch (appName)
+            {
+                case "Nice":
+                    return "com.homelogic";
+                case "Lutron":
+                    return "com.lutron.mmw";
+                case "Control4":
+                    return "com.control4.phoenix";
+                case "Rako":
+                    return "com.rakocontrols.android";
+                default:
+                    return null;
             }
         }
 
@@ -238,23 +289,6 @@ namespace Innovo_TP4_Updater
             return modelOutput.Trim();
         }
 
-        private string GetPackageName(string appName)
-        {
-            switch (appName)
-            {
-                case "Nice":
-                    return "com.homelogic";
-                case "Lutron":
-                    return "com.lutron.mmw";
-                case "Control4":
-                    return "com.control4.phoenix";
-                case "Rako":
-                    return "com.rakocontrols.android";
-                default:
-                    return null;
-            }
-        }
-
         private async Task InstallApk(string filePath)
         {
             try
@@ -329,6 +363,44 @@ namespace Innovo_TP4_Updater
                     MessageBox.Show($"Error cleaning up files: {ex.Message}", "Cleanup Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
+        }
+
+        private void DisableAndHideButtons(Guna.UI2.WinForms.Guna2Button clickedButton)
+        {
+            // Disable and keep the clicked button visible
+            clickedButton.Enabled = false;
+
+            // Hide the other buttons
+            if (clickedButton != btnApp1)
+            {
+                btnApp1.Visible = false;
+            }
+            if (clickedButton != btnApp2)
+            {
+                btnApp2.Visible = false;
+            }
+            if (clickedButton != btnApp3)
+            {
+                btnApp3.Visible = false;
+            }
+            if (clickedButton != btnApp4)
+            {
+                btnApp4.Visible = false;
+            }
+        }
+
+        private void ShowAndEnableButtons()
+        {
+            // Show and enable all buttons
+            btnApp1.Visible = true;
+            btnApp2.Visible = true;
+            btnApp3.Visible = true;
+            btnApp4.Visible = true;
+
+            btnApp1.Enabled = true;
+            btnApp2.Enabled = true;
+            btnApp3.Enabled = true;
+            btnApp4.Enabled = true;
         }
     }
 }

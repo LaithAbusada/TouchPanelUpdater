@@ -31,6 +31,29 @@ namespace Innovo_TP4_Updater
                 Connected = false;
             }
         }
+        public void DisableAllButtons()
+        {
+            btnSound.Enabled = false;
+            btnDisplay.Enabled = false;
+            btnUpdate.Enabled = false;
+            btnConnectDisconnect.Enabled = false;
+            btnReboot.Enabled = false;
+            btnReset.Enabled = false;
+            btnTimeZone.Enabled = false;
+            btnFactory.Enabled = false;
+        }
+
+        public void EnableAllButtons()
+        {
+            btnSound.Enabled = true;
+            btnDisplay.Enabled = true;
+            btnUpdate.Enabled = true;
+            btnConnectDisconnect.Enabled = true;
+            btnReboot.Enabled = true;
+            btnReset.Enabled = true;
+            btnTimeZone.Enabled = true;
+            btnFactory.Enabled = true;
+        }
 
         private void SettingsButton_Click(object sender, EventArgs e)
         {
@@ -48,7 +71,7 @@ namespace Innovo_TP4_Updater
             }
             else if (button == btnUpdate)
             {
-                UpdateAppForm updateAppForm = new UpdateAppForm(parentForm);
+                UpdateAppForm updateAppForm = new UpdateAppForm(parentForm,this);
                 parentForm.LoadFormIntoPanel(updateAppForm);
             }
             else if (button == btnConnectDisconnect)
@@ -70,7 +93,7 @@ namespace Innovo_TP4_Updater
             }
             else if (button == btnReset)
             {
-                ResetForm resetForm = new ResetForm(parentForm);
+                ResetForm resetForm = new ResetForm(parentForm,this);
                 parentForm.LoadFormIntoPanel(resetForm);
             }
             else if (button == btnTimeZone)
@@ -80,7 +103,7 @@ namespace Innovo_TP4_Updater
             }
             else if (button== btnFactory)
             {
-                FactoryDefaultForm factoryDefaultForm = new FactoryDefaultForm(parentForm);
+                FactoryDefaultForm factoryDefaultForm = new FactoryDefaultForm(parentForm,this);
                 parentForm.LoadFormIntoPanel(factoryDefaultForm);
             }
         }
@@ -169,6 +192,7 @@ namespace Innovo_TP4_Updater
                 }
             }
         }
+
         public void LoadConnectDisconnectForm()
         {
             ConnectDisconnectForm connectDisconnectForm = new ConnectDisconnectForm(parentForm, Connected);

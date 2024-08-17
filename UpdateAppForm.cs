@@ -7,17 +7,20 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Newtonsoft.Json.Linq;
 using System.Linq;
+using System.Diagnostics;
 
 namespace Innovo_TP4_Updater
 {
     public partial class UpdateAppForm : Form
     {
         private readonly Form1 parentForm;
+        private readonly SettingsForm settingsForm;
 
-        public UpdateAppForm(Form1 parent)
+        public UpdateAppForm(Form1 parent, SettingsForm sets)
         {
             InitializeComponent();
             parentForm = parent;
+            settingsForm = sets;
         }
 
         private async void UpdateAppForm_Load(object sender, EventArgs e)
@@ -92,10 +95,13 @@ namespace Innovo_TP4_Updater
                 return;
             }
 
-            // Step 3: Show LoadingForm
+            // Step 3: Show LoadingForm and disable buttons
             LoadingForm loadingForm = new LoadingForm("Please wait attempting to install update");
             loadingForm.Show();
             loadingForm.BringToFront();
+
+            // Disable all buttons in the SettingsForm
+            settingsForm.DisableAllButtons();
 
             string downloadDirectory = string.Empty;
 
@@ -119,6 +125,7 @@ namespace Innovo_TP4_Updater
                 {
                     materialMultiLineTextBox3.AppendText($"Error fetching JSON: {ex.Message}\n");
                     EnableAllButtons();
+                    settingsForm.EnableAllButtons();
                     return;
                 }
 
@@ -132,6 +139,7 @@ namespace Innovo_TP4_Updater
                 {
                     materialMultiLineTextBox3.AppendText($"{appName} is already up to date.\n");
                     EnableAllButtons();
+                   settingsForm.EnableAllButtons();
                     return;
                 }
 
@@ -149,6 +157,7 @@ namespace Innovo_TP4_Updater
                 {
                     materialMultiLineTextBox3.AppendText($"Error downloading file: {ex.Message}\n");
                     EnableAllButtons();
+                   settingsForm.EnableAllButtons();
                     return;
                 }
 
@@ -163,6 +172,7 @@ namespace Innovo_TP4_Updater
                 }
 
                 materialMultiLineTextBox3.AppendText($"Successfully updated {appName} to version {latestVersion}.\n");
+               await RebootApp();
             }
             finally
             {
@@ -183,11 +193,11 @@ namespace Innovo_TP4_Updater
                     }
                 }
 
-                // Enable all buttons again
+                // Enable all buttons again in both forms
                 EnableAllButtons();
+                settingsForm.EnableAllButtons();
 
                 // Reboot the device
-                RebootApp();
             }
         }
 
@@ -245,8 +255,16 @@ namespace Innovo_TP4_Updater
             {
                 materialMultiLineTextBox3.AppendText($"Installing {Path.GetFileName(filePath)}...\n");
 
-                string installCommand = $"adb install -r {filePath}";
-                await parentForm.ExecuteAdbCommand(installCommand);
+                // Ensure the file path is correctly formatted
+                string installCommand = $"adb install -r \"{filePath}\"";
+                materialMultiLineTextBox3.AppendText($"Executing: {installCommand}\n");
+
+                string result = await parentForm.ExecuteAdbCommand(installCommand);
+
+                if (!string.IsNullOrEmpty(result))
+                {
+                    materialMultiLineTextBox3.AppendText(result);
+                }
 
                 materialMultiLineTextBox3.AppendText($"Installed {Path.GetFileName(filePath)}.\n");
 
@@ -325,13 +343,33 @@ namespace Innovo_TP4_Updater
             }
         }
 
-        private void RebootApp()
+        private async Task RebootApp()
         {
             materialMultiLineTextBox3.AppendText("Rebooting the device...\n");
             string rebootCommand = "adb reboot";
-            parentForm.ExecuteAdbCommand(rebootCommand);
-            materialMultiLineTextBox3.AppendText("Device rebooted.\n");
+
+            try
+            {
+                // Execute the reboot command
+                await parentForm.ExecuteAdbCommand(rebootCommand);
+                materialMultiLineTextBox3.AppendText("Device rebooted.\n");
+
+                // Delay for 15 seconds to allow the device to turn back on
+                materialMultiLineTextBox3.AppendText("Waiting for the device to turn back on...\n");
+                await Task.Delay(15000); // 15000 milliseconds = 15 seconds
+
+                materialMultiLineTextBox3.AppendText("Device back online now.\n");
+
+                // Re-enable all buttons and make update buttons visible only after the delay
+                EnableAllButtons();
+                settingsForm.EnableAllButtons();
+            }
+            catch (Exception ex)
+            {
+                materialMultiLineTextBox3.AppendText($"Error during reboot: {ex.Message}\n");
+            }
         }
+
 
         private void DisableOtherButtons(Button clickedButton)
         {
