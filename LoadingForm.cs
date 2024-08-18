@@ -1,20 +1,31 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Innovo_TP4_Updater
+public class LoadingForm : Form
 {
-    public partial class LoadingForm : Form
+    private Label messageLabel;
+
+    public LoadingForm(string initialMessage)
     {
-        public LoadingForm()
+        messageLabel = new Label()
         {
-            InitializeComponent();
+            Text = initialMessage,
+            Dock = DockStyle.Fill,
+            TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        };
+        Controls.Add(messageLabel);
+        this.StartPosition = FormStartPosition.CenterScreen;
+    }
+
+    public void UpdateMessage(string message)
+    {
+        if (messageLabel.InvokeRequired)
+        {
+            messageLabel.Invoke(new Action(() => messageLabel.Text = message));
+        }
+        else
+        {
+            messageLabel.Text = message;
         }
     }
 }

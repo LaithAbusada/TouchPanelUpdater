@@ -1,13 +1,12 @@
 ﻿using MaterialSkin.Controls;
 using System;
 using System.IO;
-using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Newtonsoft.Json.Linq;
 using System.Linq;
-using System.Diagnostics;
+using System.Net;
 
 namespace Innovo_TP4_Updater
 {
@@ -32,183 +31,235 @@ namespace Innovo_TP4_Updater
                 if (!isConnected)
                 {
                     parentForm.clearMainPanel();
-                    MessageBox.Show("No device is currently connected. Please connect a device before proceeding.", "Device Not Connected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    materialMultiLineTextBox3.AppendText("No device is currently connected. Please connect a device before proceeding.\n");
+                    MessageBox.Show("No device is currently connected. Please connect a device before proceeding.",
+                                   "Device Not Connected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
-                string connectedDevices = await parentForm.ExecuteAdbCommand("adb devices -l");
+                string jsonUrl = "https://innovo.net/repo/TP4/files.json";
+                string jsonString;
 
-                if (connectedDevices.Contains("device"))
+                using (HttpClient client = new HttpClient())
                 {
-                    string[] lines = connectedDevices.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+                    jsonString = await client.GetStringAsync(jsonUrl);
+                }
 
-                    string ipAddressAndPort = null;
+                JObject jsonData = JObject.Parse(jsonString);
 
-                    foreach (string line in lines)
-                    {
-                        if (line.Contains("device") && line.Contains(":"))
-                        {
-                            ipAddressAndPort = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[0];
-                            break;
-                        }
-                    }
+                // Check versions for each app and update UI
+                await CheckAndDisplayVersionStatus("Nice", jsonData, buttonUpdateNice, labelNiceStatus);
+                await CheckAndDisplayVersionStatus("Rako", jsonData, buttonUpdateRako, labelRakoStatus);
+                await CheckAndDisplayVersionStatus("Lutron", jsonData, buttonUpdateLutron, labelLutronStatus);
+                await CheckAndDisplayVersionStatus("Control4", jsonData, buttonUpdateControl4, labelControl4Status);
+            }
+            catch (Exception ex)
+            {
+                materialMultiLineTextBox3.AppendText($"Error: Unable to connect to the device. Details: {ex.Message}\n");
+            }
+        }
 
-                    if (!string.IsNullOrEmpty(ipAddressAndPort))
-                    {
-                        label5.Text = $"Connected: {ipAddressAndPort}";
-                    }
-                    else
-                    {
-                        label5.Text = "No Connected Device";
-                    }
+        private async Task CheckAndDisplayVersionStatus(string appName, JObject jsonData, Button updateButton, Label statusLabel)
+        {
+            try
+            {
+                string currentVersion = await GetCurrentVersion(appName);
+                string latestVersion = jsonData[appName]["version"].ToString();
+
+                if (currentVersion == latestVersion)
+                {
+                    statusLabel.Text = "Up to date";
+                    updateButton.Enabled = false;
                 }
                 else
                 {
-                    label5.Text = "No Connected Device";
+                    statusLabel.Text = "Update available";
+                    updateButton.Enabled = true;
                 }
             }
             catch (Exception ex)
             {
-                label5.Text = $"Error: {ex.Message}";
+                statusLabel.Text = "Error checking version";
+                materialMultiLineTextBox3.AppendText($"Error checking version for {appName}: {ex.Message}\n");
             }
         }
 
-
         private async void UpdateApp(string appName, Button clickedButton)
         {
-            // Step 1: Check for connected devices
-            string connectedDevices = await parentForm.ExecuteAdbCommand("adb devices -l");
+            int maxAttempts = 3; // Maximum number of attempts
+            int attempt = 0; // Initialize the attempt counter
+            bool success = false; // Flag to check if the installation was successful
 
-            if (!connectedDevices.Contains("device"))
-            {
-                materialMultiLineTextBox3.Text = "No connected device detected. Please connect a device and try again.\n";
-                label5.Text = "no connected devices";
-                return;
-            }
-
-            // Step 2: Retrieve the device model name
-            string deviceModel = await GetDeviceModel();
-
-            if (deviceModel != "P4")
-            {
-                materialMultiLineTextBox3.Text = $"Connected device is {deviceModel}, but only P4 devices are supported for updates.\n";
-                return;
-            }
-
-            // Step 3: Show LoadingForm and disable buttons
-            LoadingForm loadingForm = new LoadingForm("Please wait attempting to install update");
+            // Initialize the LoadingForm and display it
+            settingsForm.DisableAllButtons();
+            LoadingForm loadingForm = new LoadingForm("Checking for updates...");
+            materialMultiLineTextBox3.AppendText("Checking for Update" + Environment.NewLine);
             loadingForm.Show();
             loadingForm.BringToFront();
 
-            // Disable all buttons in the SettingsForm
-            settingsForm.DisableAllButtons();
-
             string downloadDirectory = string.Empty;
 
-            try
+            while (attempt < maxAttempts && !success)
             {
-                await parentForm.ExecuteAdbCommand("adb shell wm size 479x480");
-                DisableOtherButtons(clickedButton);
-                materialMultiLineTextBox3.Text = $"Please wait... Checking for updates for {appName}.\n";
-
-                string jsonUrl = "https://innovo.net/repo/TP4/files.json";
-                string jsonString = string.Empty;
-
+                attempt++; // Increment the attempt counter
                 try
                 {
+                    // Step 1: Check for connected devices
+                    loadingForm.UpdateMessage("Checking for connected devices...");
+                    string connectedDevices = await parentForm.ExecuteAdbCommand("adb devices -l");
+                    if (!connectedDevices.Contains("device"))
+                    {
+                        materialMultiLineTextBox3.AppendText("No connected device detected. Please connect a device and try again.\n");
+                        return;
+                    }
+
+                    // Step 2: Retrieve the device model name
+                    loadingForm.UpdateMessage("Retrieving device model...");
+                    string deviceModel = await GetDeviceModel();
+                    if (deviceModel != "P4")
+                    {
+                        materialMultiLineTextBox3.AppendText($"Connected device is {deviceModel}, but only P4 devices are supported for updates.\n");
+                        return;
+                    }
+
+                    // Step 3: Check for updates
+                    DisableOtherButtons(clickedButton);
+
+                    loadingForm.UpdateMessage("Checking for available updates...");
+                    string jsonUrl = "https://innovo.net/repo/TP4/files.json";
+                    string jsonString;
+
                     using (HttpClient client = new HttpClient())
                     {
                         jsonString = await client.GetStringAsync(jsonUrl);
                     }
-                }
-                catch (Exception ex)
-                {
-                    materialMultiLineTextBox3.AppendText($"Error fetching JSON: {ex.Message}\n");
-                    EnableAllButtons();
-                    settingsForm.EnableAllButtons();
-                    return;
-                }
 
-                JObject jsonData = JObject.Parse(jsonString);
-                string currentVersion = await GetCurrentVersion(appName);
-                string latestVersion = jsonData[appName]["version"].ToString();
-                string fileType = jsonData[appName]["type"].ToString();
-                string fileName = jsonData[appName]["filename"].ToString();
+                    JObject jsonData = JObject.Parse(jsonString);
+                    string currentVersion = await GetCurrentVersion(appName);
+                    string latestVersion = jsonData[appName]["version"].ToString();
 
-                if (currentVersion == latestVersion)
-                {
-                    materialMultiLineTextBox3.AppendText($"{appName} is already up to date.\n");
-                    EnableAllButtons();
-                   settingsForm.EnableAllButtons();
-                    return;
-                }
+                    if (currentVersion == latestVersion)
+                    {
+                        materialMultiLineTextBox3.AppendText($"{appName} is already up to date. Version: {latestVersion}\n");
+                        return;
+                    }
 
-                string downloadUrl = $"https://innovo.net/repo/TP4/{fileName}";
-                string solutionDirectory = Directory.GetParent(AppDomain.CurrentDomain.BaseDirectory).Parent.Parent.FullName;
-                downloadDirectory = Path.Combine(solutionDirectory, fileName);
+                    // Step 4: Prepare download directory and file
+                    downloadDirectory = Path.Combine(Directory.GetCurrentDirectory(), jsonData[appName]["filename"].ToString());
 
-                try
-                {
-                    WebClient clients = new WebClient();
-                    await clients.DownloadFileTaskAsync(new Uri(downloadUrl), downloadDirectory);
-                    materialMultiLineTextBox3.AppendText($"Downloaded {fileName} successfully.\n");
-                }
-                catch (Exception ex)
-                {
-                    materialMultiLineTextBox3.AppendText($"Error downloading file: {ex.Message}\n");
-                    EnableAllButtons();
-                   settingsForm.EnableAllButtons();
-                    return;
-                }
-
-                // Use ADB to install/update the app based on file type
-                if (fileType == "file")
-                {
-                    await InstallApk(downloadDirectory);
-                }
-                else if (fileType == "zip")
-                {
-                    await UnzipAndInstall(downloadDirectory);
-                }
-
-                materialMultiLineTextBox3.AppendText($"Successfully updated {appName} to version {latestVersion}.\n");
-               await RebootApp();
-            }
-            finally
-            {
-                // Ensure that the loading form is closed after the update process completes
-                loadingForm.Close();
-
-                // Clean up downloaded files
-                if (!string.IsNullOrEmpty(downloadDirectory) && File.Exists(downloadDirectory))
-                {
-                    try
+                    // Check if the file already exists and delete it
+                    if (File.Exists(downloadDirectory))
                     {
                         File.Delete(downloadDirectory);
-                        materialMultiLineTextBox3.AppendText($"Deleted downloaded file: {downloadDirectory}\n");
                     }
-                    catch (Exception ex)
+
+                    // Check if the directory already exists and delete it
+                    string extractPath = Path.Combine(Path.GetDirectoryName(downloadDirectory), Path.GetFileNameWithoutExtension(downloadDirectory));
+                    if (Directory.Exists(extractPath))
                     {
-                        materialMultiLineTextBox3.AppendText($"Error deleting file: {ex.Message}\n");
+                        Directory.Delete(extractPath, true);
+                    }
+
+                    // Step 5: Download the update
+                    materialMultiLineTextBox3.AppendText("Installing Update for " + appName + Environment.NewLine);
+
+                    loadingForm.UpdateMessage("Downloading the update...");
+                    string downloadUrl = $"https://innovo.net/repo/TP4/{jsonData[appName]["filename"]}";
+
+                    using (WebClient client = new WebClient())
+                    {
+                        await client.DownloadFileTaskAsync(new Uri(downloadUrl), downloadDirectory);
+                    }
+
+                    // Step 6: Install the app
+                    loadingForm.UpdateMessage("Installing the update...");
+                    string fileType = jsonData[appName]["type"].ToString();
+                    if (fileType == "file")
+                    {
+                        await InstallApk(downloadDirectory);
+
+                        // Delete the APK file after installation
+                        if (File.Exists(downloadDirectory))
+                        {
+                            File.Delete(downloadDirectory);
+                        }
+                    }
+                    else if (fileType == "zip")
+                    {
+                        await UnzipAndInstall(downloadDirectory);
+                    }
+
+                    // Step 7: Reboot the app and cleanup
+                    loadingForm.UpdateMessage("Rebooting the device...");
+                    bool versionCompare = await RebootApp(appName, latestVersion);
+
+                    // If everything succeeds, set success to true
+                    success = versionCompare;
+
+
+                    if (success)
+                    {// Update the label to "Up to date"
+                        if (clickedButton == buttonUpdateNice) labelNiceStatus.Text = "Up to date";
+                        else if (clickedButton == buttonUpdateRako) labelRakoStatus.Text = "Up to date";
+                        else if (clickedButton == buttonUpdateLutron) labelLutronStatus.Text = "Up to date";
+                        else if (clickedButton == buttonUpdateControl4) labelControl4Status.Text = "Up to date";
                     }
                 }
+                catch (Exception ex)
+                {
+                    materialMultiLineTextBox3.AppendText($"Attempt {attempt} failed: {ex.Message}\n");
 
-                // Enable all buttons again in both forms
-                EnableAllButtons();
-                settingsForm.EnableAllButtons();
+                    if (attempt == maxAttempts)
+                    {
+                        // If this was the last attempt, display a message to contact support
+                        MaterialMessageBox.Show($"Failed to install {appName} after {maxAttempts} attempts. Please contact support.", "Installation Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+                finally
+                {
+                    // Clean up downloaded files and directories after installation
+                    if (!string.IsNullOrEmpty(downloadDirectory) && File.Exists(downloadDirectory))
+                    {
+                        try
+                        {
+                            File.Delete(downloadDirectory);
+                        }
+                        catch (Exception ex)
+                        {
+                            materialMultiLineTextBox3.AppendText($"Error deleting file: {ex.Message}\n");
+                        }
+                    }
 
-                // Reboot the device
+                    if (!string.IsNullOrEmpty(downloadDirectory))
+                    {
+                        string extractPath = Path.Combine(Path.GetDirectoryName(downloadDirectory), Path.GetFileNameWithoutExtension(downloadDirectory));
+                        if (Directory.Exists(extractPath))
+                        {
+                            try
+                            {
+                                Directory.Delete(extractPath, true);
+                            }
+                            catch (Exception ex)
+                            {
+                                materialMultiLineTextBox3.AppendText($"Error deleting directory: {ex.Message}\n");
+                            }
+                        }
+                    }
+
+                    // Always close the LoadingForm and re-enable buttons at the end
+                    loadingForm.Close();
+                    EnableAllButtons(); // This should be called at the very end to re-enable all buttons
+                    settingsForm.EnableAllButtons();
+                }
             }
         }
 
-        // Helper method to get the device model
         private async Task<string> GetDeviceModel()
         {
             string modelCommand = "adb shell getprop ro.product.model";
             string modelOutput = await parentForm.ExecuteAdbCommand(modelCommand);
             return modelOutput.Trim();
         }
-
 
         private async Task<string> GetCurrentVersion(string appName)
         {
@@ -223,7 +274,6 @@ namespace Innovo_TP4_Updater
 
             if (!string.IsNullOrEmpty(output))
             {
-                // Extract the version name from the output
                 string versionLine = output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)[0];
                 string versionName = versionLine.Split('=')[1].Trim();
                 return versionName;
@@ -251,164 +301,139 @@ namespace Innovo_TP4_Updater
 
         private async Task InstallApk(string filePath)
         {
-            try
-            {
-                materialMultiLineTextBox3.AppendText($"Installing {Path.GetFileName(filePath)}...\n");
+            materialMultiLineTextBox3.AppendText("Please wait Installing Update, this can take up to 2 minutes\n");
 
-                // Ensure the file path is correctly formatted
-                string installCommand = $"adb install -r \"{filePath}\"";
-                materialMultiLineTextBox3.AppendText($"Executing: {installCommand}\n");
-
-                string result = await parentForm.ExecuteAdbCommand(installCommand);
-
-                if (!string.IsNullOrEmpty(result))
-                {
-                    materialMultiLineTextBox3.AppendText(result);
-                }
-
-                materialMultiLineTextBox3.AppendText($"Installed {Path.GetFileName(filePath)}.\n");
-
-                // Attempt to delete the file after installation
-                if (File.Exists(filePath))
-                {
-                    try
-                    {
-                        File.Delete(filePath);
-                        materialMultiLineTextBox3.AppendText($"Deleted file: {filePath}\n");
-                    }
-                    catch (Exception ex)
-                    {
-                        materialMultiLineTextBox3.AppendText($"Error deleting file: {ex.Message}\n");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                materialMultiLineTextBox3.AppendText($"Error installing APK: {ex.Message}\n");
-            }
+            string installCommand = $"adb install -r \"{filePath}\"";
+            await parentForm.ExecuteAdbCommand(installCommand);
         }
-
-
 
         private async Task UnzipAndInstall(string zipFilePath)
         {
-            materialMultiLineTextBox3.AppendText($"Extracting {Path.GetFileName(zipFilePath)}...\n");
+            materialMultiLineTextBox3.AppendText("Please wait Installing Update, this can take up to 2 minutes\n");
+
             string extractPath = Path.Combine(Path.GetDirectoryName(zipFilePath), Path.GetFileNameWithoutExtension(zipFilePath));
-
-            // Delete the directory if it already exists
-            if (Directory.Exists(extractPath))
-            {
-                Directory.Delete(extractPath, true);
-            }
-
             System.IO.Compression.ZipFile.ExtractToDirectory(zipFilePath, extractPath);
 
             string[] extractedFiles = Directory.GetFiles(extractPath, "*.apk", SearchOption.AllDirectories);
-            if (extractedFiles.Length > 0)
-            {
-                materialMultiLineTextBox3.AppendText("Installing multiple APKs...\n");
+            string installCommand = "adb install-multiple -r --user 0 " + string.Join(" ", extractedFiles.Select(file => $"\"{file}\""));
 
-                // Prepare the adb install-multiple command
-                string installCommand = "adb install-multiple -r --user 0 ";
-                foreach (string apkFile in extractedFiles)
-                {
-                    installCommand += $"\"{apkFile}\" ";
-                }
+            await parentForm.ExecuteAdbCommand(installCommand.TrimEnd());
 
-                await parentForm.ExecuteAdbCommand(installCommand.TrimEnd());
-                materialMultiLineTextBox3.AppendText("Installed all APKs.\n");
-            }
-            else
+            // Delete the extracted files after installation
+            if (Directory.Exists(extractPath))
             {
-                materialMultiLineTextBox3.AppendText("No APK files found in the extracted ZIP.\n");
-            }
-
-            // After installation, delete the ZIP file
-            try
-            {
-                if (File.Exists(zipFilePath))
-                {
-                    File.Delete(zipFilePath);
-                    materialMultiLineTextBox3.AppendText($"Deleted ZIP file: {zipFilePath}\n");
-                }
-                if (Directory.Exists(extractPath))
+                try
                 {
                     Directory.Delete(extractPath, true);
-                    materialMultiLineTextBox3.AppendText($"Deleted Directory : {extractPath}");
+
+                }
+                catch (Exception ex)
+                {
+                    materialMultiLineTextBox3.AppendText($"Error deleting directory: {ex.Message}\n");
                 }
             }
-            catch (Exception ex)
+            if (File.Exists(zipFilePath))
             {
-                materialMultiLineTextBox3.AppendText($"Error deleting ZIP file: {ex.Message}\n");
+                File.Delete(zipFilePath);
             }
         }
 
-        private async Task RebootApp()
+        private async Task<bool> RebootApp(string appName, string latestVersion)
         {
-            materialMultiLineTextBox3.AppendText("Rebooting the device...\n");
+            materialMultiLineTextBox3.AppendText("Please wait Rebooting Device, this can take up to 45 seconds\n");
+
             string rebootCommand = "adb reboot";
+            await parentForm.ExecuteAdbCommand(rebootCommand);
 
-            try
+            // Wait for the device to reboot
+            await Task.Delay(45000); // Adjusted to 45 seconds as per your comment
+
+            // After reboot, check the current version of the app
+            string currentVersion = await GetCurrentVersion(appName);
+
+            if (currentVersion == latestVersion)
             {
-                // Execute the reboot command
-                await parentForm.ExecuteAdbCommand(rebootCommand);
-                materialMultiLineTextBox3.AppendText("Device rebooted.\n");
-
-                // Delay for 15 seconds to allow the device to turn back on
-                materialMultiLineTextBox3.AppendText("Waiting for the device to turn back on...\n");
-                await Task.Delay(15000); // 15000 milliseconds = 15 seconds
-
-                materialMultiLineTextBox3.AppendText("Device back online now.\n");
-
-                // Re-enable all buttons and make update buttons visible only after the delay
-                EnableAllButtons();
-                settingsForm.EnableAllButtons();
+                materialMultiLineTextBox3.AppendText($"Successfully updated {appName} to version {latestVersion}\n");
+                return true; // Success
             }
-            catch (Exception ex)
+            else
             {
-                materialMultiLineTextBox3.AppendText($"Error during reboot: {ex.Message}\n");
+                materialMultiLineTextBox3.AppendText($"Failed to install {appName}. Please contact support.\n");
+                return false; // Failure
             }
         }
 
 
         private void DisableOtherButtons(Button clickedButton)
         {
-            // Disable the clicked button and keep it visible
             clickedButton.Enabled = false;
             clickedButton.Visible = true;
 
-            // Hide the other buttons
-            if (clickedButton != buttonUpdateNice)
-            {
-                buttonUpdateNice.Visible = false;
-            }
-            if (clickedButton != buttonUpdateRako)
-            {
-                buttonUpdateRako.Visible = false;
-            }
-            if (clickedButton != buttonUpdateLutron)
-            {
-                buttonUpdateLutron.Visible = false;
-            }
-            if (clickedButton != buttonUpdateControl4)
-            {
-                buttonUpdateControl4.Visible = false;
-            }
+            buttonUpdateNice.Visible = clickedButton == buttonUpdateNice;
+            labelNiceStatus.Visible = clickedButton == buttonUpdateNice;
+
+            buttonUpdateRako.Visible = clickedButton == buttonUpdateRako;
+            labelRakoStatus.Visible = clickedButton == buttonUpdateRako;
+
+            buttonUpdateLutron.Visible = clickedButton == buttonUpdateLutron;
+            labelLutronStatus.Visible = clickedButton == buttonUpdateLutron;
+
+            buttonUpdateControl4.Visible = clickedButton == buttonUpdateControl4;
+            labelControl4Status.Visible = clickedButton == buttonUpdateControl4;
         }
 
         private void EnableAllButtons()
         {
-            // Re-enable and show all buttons
-            buttonUpdateNice.Enabled = true;
-            buttonUpdateRako.Enabled = true;
-            buttonUpdateLutron.Enabled = true;
-            buttonUpdateControl4.Enabled = true;
+            
 
             buttonUpdateNice.Visible = true;
+            labelNiceStatus.Visible = true;
+
             buttonUpdateRako.Visible = true;
+            labelRakoStatus.Visible = true;
+
             buttonUpdateLutron.Visible = true;
+            labelLutronStatus.Visible = true;
+
             buttonUpdateControl4.Visible = true;
+            labelControl4Status.Visible = true;
+            if (labelNiceStatus.Text != "Up to date")
+            {
+                buttonUpdateNice.Enabled = true;
+            }
+            else
+            {
+                buttonUpdateNice.Enabled = false;
+            }
+
+            if (labelRakoStatus.Text != "Up to date")
+            {
+                buttonUpdateRako.Enabled = true;
+            }
+            else
+            {
+                buttonUpdateRako.Enabled = false;
+            }
+
+            if (labelLutronStatus.Text != "Up to date")
+            {
+                buttonUpdateLutron.Enabled = true;
+            }
+            else
+            {
+                buttonUpdateLutron.Enabled = false;
+            }
+
+            if (labelControl4Status.Text != "Up to date")
+            {
+                buttonUpdateControl4.Enabled = true;
+            }
+            else
+            {
+                buttonUpdateControl4.Enabled = false;
+            }
         }
+
 
         private void buttonUpdateNice_Click(object sender, EventArgs e)
         {
@@ -429,6 +454,5 @@ namespace Innovo_TP4_Updater
         {
             UpdateApp("Control4", buttonUpdateControl4);
         }
-
     }
 }

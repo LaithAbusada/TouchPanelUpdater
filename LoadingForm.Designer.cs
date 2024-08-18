@@ -5,6 +5,8 @@ namespace Innovo_TP4_Updater
 {
     public partial class LoadingForm : Form
     {
+        private Label lblMessage;
+
         public LoadingForm(string message)
         {
             InitializeComponent();
@@ -27,6 +29,7 @@ namespace Innovo_TP4_Updater
             this.lblMessage.Size = new System.Drawing.Size(202, 25);
             this.lblMessage.TabIndex = 0;
             this.lblMessage.Text = "Please wait, loading...";
+            this.lblMessage.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // LoadingForm
             // 
@@ -38,9 +41,18 @@ namespace Innovo_TP4_Updater
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.ResumeLayout(false);
             this.PerformLayout();
-
         }
 
-        private System.Windows.Forms.Label lblMessage;
+        public void UpdateMessage(string message)
+        {
+            if (lblMessage.InvokeRequired)
+            {
+                lblMessage.Invoke(new Action(() => lblMessage.Text = message));
+            }
+            else
+            {
+                lblMessage.Text = message;
+            }
+        }
     }
 }

@@ -13,79 +13,81 @@ namespace Innovo_TP4_Updater
         {
             InitializeComponent();
             parentForm = parent;
-            UpdateConnectDisconnectButton();
             this.btnBack.Visible = false;
         }
 
-        private async void UpdateConnectDisconnectButton()
+        private async void SettingsForm_Load(object sender, EventArgs e)
         {
-            bool isConnected = await parentForm.IsConnected();
-            if (isConnected)
+            await UpdateConnectDisconnectButton();
+
+            if (Connected)
             {
-                btnConnectDisconnect.Text = "Disconnect Device";
-                Connected = true;
+                // Add a small delay to ensure the device connection is fully established
+                await Task.Delay(500);
+
+                // Try to retrieve the IP and port information after the delay
+                string connectionDetails = await parentForm.GetDeviceIpAndPort();
+                UpdateConnectionStatusLabel($"Connected to Device at {connectionDetails}");
             }
             else
             {
-                btnConnectDisconnect.Text = "Connect Device";
-                Connected = false;
+                UpdateConnectionStatusLabel("No Connected Device");
             }
         }
+
+
+        private async Task UpdateConnectDisconnectButton()
+        {
+            Connected = await parentForm.IsConnected();
+            btnConnectDisconnect.Text = Connected ? "Disconnect Device" : "Connect Device";
+        }
+
+        public void UpdateConnectionStatusLabel(string status)
+        {
+            lblConnectionStatus.Text = status;
+        }
+
         public void DisableAllButtons()
         {
-            btnSound.Enabled = false;
-            btnDisplay.Enabled = false;
-            btnUpdate.Enabled = false;
-            btnConnectDisconnect.Enabled = false;
-            btnReboot.Enabled = false;
-            btnReset.Enabled = false;
-            btnTimeZone.Enabled = false;
-            btnFactory.Enabled = false;
+            SetButtonState(false);
         }
 
         public void EnableAllButtons()
         {
-            btnSound.Enabled = true;
-            btnDisplay.Enabled = true;
-            btnUpdate.Enabled = true;
-            btnConnectDisconnect.Enabled = true;
-            btnReboot.Enabled = true;
-            btnReset.Enabled = true;
-            btnTimeZone.Enabled = true;
-            btnFactory.Enabled = true;
+            SetButtonState(true);
+        }
+
+        private void SetButtonState(bool state)
+        {
+            btnSound.Enabled = state;
+            btnDisplay.Enabled = state;
+            btnUpdate.Enabled = state;
+            btnConnectDisconnect.Enabled = state;
+            btnReboot.Enabled = state;
+            btnReset.Enabled = state;
+            btnTimeZone.Enabled = state;
+            btnFactory.Enabled = state;
         }
 
         private void SettingsButton_Click(object sender, EventArgs e)
         {
-            Guna.UI2.WinForms.Guna2Button button = sender as Guna.UI2.WinForms.Guna2Button;
+            var button = sender as Guna.UI2.WinForms.Guna2Button;
 
             if (button == btnSound)
             {
-                SoundSettingsForm soundSettingsForm = new SoundSettingsForm(parentForm);
-                parentForm.LoadFormIntoPanel(soundSettingsForm);
+                LoadFormIntoPanel(new SoundSettingsForm(parentForm));
             }
             else if (button == btnDisplay)
             {
-                DisplaySettingsForm displaySettingsForm = new DisplaySettingsForm(parentForm);
-                parentForm.LoadFormIntoPanel(displaySettingsForm);
+                LoadFormIntoPanel(new DisplaySettingsForm(parentForm));
             }
             else if (button == btnUpdate)
             {
-                UpdateAppForm updateAppForm = new UpdateAppForm(parentForm,this);
-                parentForm.LoadFormIntoPanel(updateAppForm);
+                LoadFormIntoPanel(new UpdateAppForm(parentForm, this));
             }
             else if (button == btnConnectDisconnect)
             {
-                ConnectDisconnectForm connectDisconnectForm = new ConnectDisconnectForm(parentForm, Connected);
-
-                // Subscribe to the ConnectionStatusChanged event
-                connectDisconnectForm.ConnectionStatusChanged += (isConnected) =>
-                {
-                    Connected = isConnected;
-                    UpdateConnectDisconnectButton();
-                };
-
-                parentForm.LoadFormIntoPanel(connectDisconnectForm);
+                LoadConnectDisconnectForm();
             }
             else if (button == btnReboot)
             {
@@ -93,115 +95,117 @@ namespace Innovo_TP4_Updater
             }
             else if (button == btnReset)
             {
-                ResetForm resetForm = new ResetForm(parentForm,this);
-                parentForm.LoadFormIntoPanel(resetForm);
+                LoadFormIntoPanel(new ResetForm(parentForm, this));
             }
             else if (button == btnTimeZone)
             {
-                TimeZoneForm timeZoneForm = new TimeZoneForm(parentForm);
-                parentForm.LoadFormIntoPanel(timeZoneForm);
+                LoadFormIntoPanel(new TimeZoneForm(parentForm));
             }
-            else if (button== btnFactory)
+            else if (button == btnFactory)
             {
-                FactoryDefaultForm factoryDefaultForm = new FactoryDefaultForm(parentForm,this);
-                parentForm.LoadFormIntoPanel(factoryDefaultForm);
+                LoadFormIntoPanel(new FactoryDefaultForm(parentForm, this));
             }
         }
 
-
-
-
         private async void ShowRebootConfirmation()
         {
-            // Check if the device is connected
-            bool isConnected = await parentForm.IsConnected();
-
-            if (!isConnected)
-            {
-                MessageBox.Show("No device is currently connected. Please connect a device before attempting to reboot.", "Device Not Connected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            if (!await ConfirmDeviceConnection("No device is currently connected. Please connect a device before attempting to reboot."))
                 return;
-            }
 
             var result = MessageBox.Show("Are you sure you want to reboot the device? This may take up to 20 seconds.", "Confirm Reboot", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
 
             if (result == DialogResult.Yes)
             {
-                // Show loading form
-                LoadingForm loadingForm = new LoadingForm("Rebooting device... Please wait.");
-                loadingForm.Show();
-
-                try
+                using (LoadingForm loadingForm = new LoadingForm("Rebooting device... Please wait."))
                 {
-                    // Execute reboot command
-                    await Task.Delay(500); // Small delay to ensure the loading form is visible
-                    await parentForm.ExecuteAdbCommand("adb reboot");
+                    loadingForm.Show();
 
-                    // Wait for up to 20 seconds to allow the device to reboot
-                    await Task.Delay(20000);
+                    try
+                    {
+                        await Task.Delay(500); // Small delay to ensure the loading form is visible
+                        await parentForm.ExecuteAdbCommand("adb reboot");
 
-                    MessageBox.Show("Device rebooted successfully.", "Reboot Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error during reboot: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-                finally
-                {
-                    loadingForm.Close(); // Close the loading form when done
+                        // Wait for up to 20 seconds to allow the device to reboot
+                        await Task.Delay(20000);
+
+                        MessageBox.Show("Device rebooted successfully.", "Reboot Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Error during reboot: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
                 }
             }
         }
 
         private async void ShowResetConfirmation()
         {
-            // Check if the device is connected
-            bool isConnected = await parentForm.IsConnected();
-
-            if (!isConnected)
-            {
-                MessageBox.Show("No device is currently connected. Please connect a device before attempting to reset.", "Device Not Connected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            if (!await ConfirmDeviceConnection("No device is currently connected. Please connect a device before attempting to reset."))
                 return;
-            }
 
             var result = MessageBox.Show("Are you sure you want to reset the device to factory settings? This action cannot be undone.", "Confirm Reset", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
 
             if (result == DialogResult.Yes)
             {
-                // Show loading form
-                LoadingForm loadingForm = new LoadingForm("Resetting device... Please wait.");
-                loadingForm.Show();
-
-                try
+                using (LoadingForm loadingForm = new LoadingForm("Resetting device... Please wait."))
                 {
-                    // Execute reset command
-                    await Task.Delay(500); // Small delay to ensure the loading form is visible
-                    await parentForm.ExecuteAdbCommand("adb shell am broadcast -a android.intent.action.MASTER_CLEAR"); // Example command for factory reset
+                    loadingForm.Show();
 
-                    // Wait for up to 20 seconds to allow the device to reset
-                    await Task.Delay(20000);
+                    try
+                    {
+                        await Task.Delay(500); // Small delay to ensure the loading form is visible
+                        await parentForm.ExecuteAdbCommand("adb shell am broadcast -a android.intent.action.MASTER_CLEAR");
 
-                    MessageBox.Show("Device reset successfully.", "Reset Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error during reset: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-                finally
-                {
-                    loadingForm.Close(); // Close the loading form when done
+                        // Wait for up to 20 seconds to allow the device to reset
+                        await Task.Delay(20000);
+
+                        MessageBox.Show("Device reset successfully.", "Reset Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Error during reset: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
                 }
             }
         }
 
+        private async Task<bool> ConfirmDeviceConnection(string warningMessage)
+        {
+            bool isConnected = await parentForm.IsConnected();
+            if (!isConnected)
+            {
+                MessageBox.Show(warningMessage, "Device Not Connected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
+            return true;
+        }
+
+        private void LoadFormIntoPanel(Form form)
+        {
+            parentForm.LoadFormIntoPanel(form);
+        }
+
         public void LoadConnectDisconnectForm()
         {
-            ConnectDisconnectForm connectDisconnectForm = new ConnectDisconnectForm(parentForm, Connected);
+            var connectDisconnectForm = new ConnectDisconnectForm(parentForm, Connected, this);
+
+            connectDisconnectForm.ConnectionStatusChanged += (isConnected) =>
+            {
+                Connected = isConnected;
+                UpdateConnectDisconnectButton();
+            };
+
             parentForm.LoadFormIntoPanel(connectDisconnectForm);
         }
 
         private void btnBack_Click(object sender, EventArgs e)
         {
             parentForm.LoadMainOptionsIntoSidebar();
+        }
+
+        private void settingsPanel_Paint(object sender, PaintEventArgs e)
+        {
+
         }
     }
 }

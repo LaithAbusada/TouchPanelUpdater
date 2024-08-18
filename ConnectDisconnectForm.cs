@@ -6,14 +6,16 @@ namespace Innovo_TP4_Updater
     public partial class ConnectDisconnectForm : Form
     {
         private Form1 parentForm;
+        private SettingsForm settingsForm;
         private bool isConnected;
         public event Action<bool> ConnectionStatusChanged;
 
-        public ConnectDisconnectForm(Form1 parentForm, bool isConnected)
+        public ConnectDisconnectForm(Form1 parentForm, bool isConnected, SettingsForm settingsForm)
         {
             InitializeComponent();
             this.parentForm = parentForm;
             this.isConnected = isConnected;
+            this.settingsForm = settingsForm;
         }
 
         private void ConnectDisconnectForm_Load(object sender, EventArgs e)
@@ -51,9 +53,12 @@ namespace Innovo_TP4_Updater
                 await parentForm.ExecuteAdbCommand("adb disconnect");
                 MessageBox.Show("Disconnected successfully.");
                 isConnected = false;
+
+                // Update label in SettingsForm
+                settingsForm.UpdateConnectionStatusLabel("No Connected Device");
+
                 ConnectionStatusChanged?.Invoke(isConnected);
                 UpdateFormState();
-                EnableControls();
             }
             else
             {
@@ -69,42 +74,43 @@ namespace Innovo_TP4_Updater
                 }
 
                 // Show the loading form
-                LoadingForm loadingForm = new LoadingForm("Connecting, please wait...");
-                loadingForm.Show();
-                loadingForm.BringToFront();
-
-                try
+                using (LoadingForm loadingForm = new LoadingForm("Connecting, please wait..."))
                 {
-                    // Attempt to connect
-                    string command = $"adb connect {ipAddress}:{port}";
-                    string result = await parentForm.ExecuteAdbCommand(command);
+                    loadingForm.Show();
+                    loadingForm.BringToFront();
 
-                    // Check if the connection was successful
-                    if (result.Contains("connected to") && !result.Contains("cannot connect to"))
+                    try
                     {
-                        isConnected = true;
-                        ConnectionStatusChanged?.Invoke(isConnected);
-                        MessageBox.Show("Connected successfully.");
-                    }
-                    else
-                    {
-                        MessageBox.Show("Failed to connect. Please check the IP address and port and try again.");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error during connection: {ex.Message}", "Connection Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-                finally
-                {
-                    // Close the loading form
-                    loadingForm.Close();
+                        // Attempt to connect
+                        string command = $"adb connect {ipAddress}:{port}";
+                        string result = await parentForm.ExecuteAdbCommand(command);
 
-                    // Update the form state and re-enable controls
-                    UpdateFormState();
-                    EnableControls();
+                        // Check if the connection was successful
+                        if (result.Contains("connected to") && !result.Contains("cannot connect to"))
+                        {
+                            isConnected = true;
+
+                            // Update label in SettingsForm
+                            settingsForm.UpdateConnectionStatusLabel($"Connected to {ipAddress}:{port}");
+
+                            ConnectionStatusChanged?.Invoke(isConnected);
+                            MessageBox.Show("Connected successfully.");
+                        }
+                        else
+                        {
+                            MessageBox.Show("Failed to connect. Please check the IP address and port and try again.");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Error during connection: {ex.Message}", "Connection Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
                 }
             }
+
+            // Update the form state and re-enable controls
+            UpdateFormState();
+            EnableControls();
         }
 
         private void DisableControls()

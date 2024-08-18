@@ -1,6 +1,4 @@
-﻿using System.Windows.Forms;
-
-namespace Innovo_TP4_Updater
+﻿namespace Innovo_TP4_Updater
 {
     partial class UpdateAppForm
     {
@@ -11,7 +9,12 @@ namespace Innovo_TP4_Updater
         private System.Windows.Forms.Button buttonUpdateControl4;
         private MaterialSkin.Controls.MaterialMultiLineTextBox materialMultiLineTextBox3;
         private System.Windows.Forms.Label labelStatus;
-        private System.Windows.Forms.Label label5; // This will be used to display IP and Port at the top right
+
+        // New labels to display status
+        private System.Windows.Forms.Label labelNiceStatus;
+        private System.Windows.Forms.Label labelRakoStatus;
+        private System.Windows.Forms.Label labelLutronStatus;
+        private System.Windows.Forms.Label labelControl4Status;
 
         /// <summary>
         /// Clean up any resources being used.
@@ -36,7 +39,10 @@ namespace Innovo_TP4_Updater
             this.buttonUpdateControl4 = new System.Windows.Forms.Button();
             this.materialMultiLineTextBox3 = new MaterialSkin.Controls.MaterialMultiLineTextBox();
             this.labelStatus = new System.Windows.Forms.Label();
-            this.label5 = new System.Windows.Forms.Label();
+            this.labelNiceStatus = new System.Windows.Forms.Label();
+            this.labelRakoStatus = new System.Windows.Forms.Label();
+            this.labelLutronStatus = new System.Windows.Forms.Label();
+            this.labelControl4Status = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // buttonUpdateNice
@@ -101,7 +107,7 @@ namespace Innovo_TP4_Updater
             this.buttonUpdateControl4.Name = "buttonUpdateControl4";
             this.buttonUpdateControl4.Size = new System.Drawing.Size(206, 115);
             this.buttonUpdateControl4.TabIndex = 7;
-            this.buttonUpdateControl4.Text = "Update          Control4";
+            this.buttonUpdateControl4.Text = "Update Control4";
             this.buttonUpdateControl4.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
             this.buttonUpdateControl4.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
             this.buttonUpdateControl4.UseVisualStyleBackColor = false;
@@ -133,16 +139,45 @@ namespace Innovo_TP4_Updater
             this.labelStatus.TabIndex = 9;
             this.labelStatus.Text = "Status";
             // 
-            // label5
+            // labelNiceStatus
             // 
-            this.label5.AutoSize = true;
-            this.label5.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.label5.ForeColor = System.Drawing.SystemColors.Highlight;
-            this.label5.Location = new System.Drawing.Point(593, 20);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(122, 15);
-            this.label5.TabIndex = 10;
-            this.label5.Text = "No Connected Device";
+            this.labelNiceStatus.AutoSize = true;
+            this.labelNiceStatus.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.labelNiceStatus.ForeColor = System.Drawing.SystemColors.Highlight;
+            this.labelNiceStatus.Location = new System.Drawing.Point(29, 140);
+            this.labelNiceStatus.Name = "labelNiceStatus";
+            this.labelNiceStatus.Size = new System.Drawing.Size(0, 15);
+            this.labelNiceStatus.TabIndex = 11;
+            // 
+            // labelRakoStatus
+            // 
+            this.labelRakoStatus.AutoSize = true;
+            this.labelRakoStatus.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.labelRakoStatus.ForeColor = System.Drawing.SystemColors.Highlight;
+            this.labelRakoStatus.Location = new System.Drawing.Point(254, 140);
+            this.labelRakoStatus.Name = "labelRakoStatus";
+            this.labelRakoStatus.Size = new System.Drawing.Size(0, 15);
+            this.labelRakoStatus.TabIndex = 12;
+            // 
+            // labelLutronStatus
+            // 
+            this.labelLutronStatus.AutoSize = true;
+            this.labelLutronStatus.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.labelLutronStatus.ForeColor = System.Drawing.SystemColors.Highlight;
+            this.labelLutronStatus.Location = new System.Drawing.Point(29, 284);
+            this.labelLutronStatus.Name = "labelLutronStatus";
+            this.labelLutronStatus.Size = new System.Drawing.Size(0, 15);
+            this.labelLutronStatus.TabIndex = 13;
+            // 
+            // labelControl4Status
+            // 
+            this.labelControl4Status.AutoSize = true;
+            this.labelControl4Status.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.labelControl4Status.ForeColor = System.Drawing.SystemColors.Highlight;
+            this.labelControl4Status.Location = new System.Drawing.Point(254, 284);
+            this.labelControl4Status.Name = "labelControl4Status";
+            this.labelControl4Status.Size = new System.Drawing.Size(0, 15);
+            this.labelControl4Status.TabIndex = 14;
             // 
             // UpdateAppForm
             // 
@@ -150,7 +185,10 @@ namespace Innovo_TP4_Updater
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.AliceBlue;
             this.ClientSize = new System.Drawing.Size(900, 520);
-            this.Controls.Add(this.label5);
+            this.Controls.Add(this.labelControl4Status);
+            this.Controls.Add(this.labelLutronStatus);
+            this.Controls.Add(this.labelRakoStatus);
+            this.Controls.Add(this.labelNiceStatus);
             this.Controls.Add(this.labelStatus);
             this.Controls.Add(this.materialMultiLineTextBox3);
             this.Controls.Add(this.buttonUpdateControl4);
@@ -164,7 +202,6 @@ namespace Innovo_TP4_Updater
             this.PerformLayout();
 
         }
-
 
         #endregion
     }

@@ -32,20 +32,58 @@ namespace Innovo_TP4_Updater
 
         private async void Form1_Load(object sender, EventArgs e)
         {
-            InstallAdb();
-            LoadText();
+            // Always disconnect all devices when the form loads
+            await Disconnect();
 
             // Load the SettingsForm on startup
             var settingsForm = new SettingsForm(this);
             LoadFormIntoSidebarPanel(settingsForm);
 
             // Check if the device is connected
-            bool isConnected = await IsConnected();
-            if (!isConnected)
-            {
+            
+           
                 settingsForm.LoadConnectDisconnectForm();
+            
+        }
+        // In your Form1 class, add this method:
+        public async Task<string> GetDeviceIpAndPort()
+        {
+            try
+            {
+                // Get the list of connected devices
+                string output = await ExecuteAdbCommand("adb devices -l");
+
+                // Check if the output contains any connected devices
+                if (string.IsNullOrWhiteSpace(output) || !output.Contains("\tdevice"))
+                {
+                    return "No Connected Device";
+                }
+                MessageBox.Show("yo");
+
+                // Define a regular expression to match the IP and port
+                var regex = new System.Text.RegularExpressions.Regex(@"(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,5})");
+
+                // Parse the output to find the device's IP address and port
+                var matches = regex.Matches(output);
+
+                foreach (System.Text.RegularExpressions.Match match in matches)
+                {
+                    if (match.Success)
+                    {
+                        return match.Value; // Return the matched IP and Port
+                    }
+                }
+
+                return "No IP/Port found";
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error retrieving IP and port: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return "Unknown IP/Port";
             }
         }
+
+
         public async Task<string> ExecuteAdbCommand(string command)
         {
             string commandOutput = "";
@@ -216,6 +254,7 @@ namespace Innovo_TP4_Updater
             button6.Location = new Point(11, 253);
             button7.Location = new Point(12, 331);
         }
+
 
         public void clearMainPanel()
         {

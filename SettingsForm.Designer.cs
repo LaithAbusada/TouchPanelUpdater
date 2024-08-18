@@ -14,7 +14,9 @@ namespace Innovo_TP4_Updater
         private Guna.UI2.WinForms.Guna2Button btnSound;
         private Guna.UI2.WinForms.Guna2Button btnTimeZone;
         private Guna.UI2.WinForms.Guna2Button btnReset;
-        private Guna.UI2.WinForms.Guna2Button btnReboot; // Added Reboot button
+        private Guna.UI2.WinForms.Guna2Button btnReboot;
+        private Guna.UI2.WinForms.Guna2Button btnFactory;
+        private Guna.UI2.WinForms.Guna2HtmlLabel lblConnectionStatus; // Label for connection status
 
         protected override void Dispose(bool disposing)
         {
@@ -28,6 +30,8 @@ namespace Innovo_TP4_Updater
         private async void InitializeComponent()
         {
             this.settingsPanel = new System.Windows.Forms.Panel();
+            this.lblConnectionStatus = new Guna.UI2.WinForms.Guna2HtmlLabel();
+            this.btnFactory = new Guna.UI2.WinForms.Guna2Button();
             this.btnBack = new Guna.UI2.WinForms.Guna2Button();
             this.btnUpdate = new Guna.UI2.WinForms.Guna2Button();
             this.btnDisplay = new Guna.UI2.WinForms.Guna2Button();
@@ -36,7 +40,6 @@ namespace Innovo_TP4_Updater
             this.btnTimeZone = new Guna.UI2.WinForms.Guna2Button();
             this.btnReset = new Guna.UI2.WinForms.Guna2Button();
             this.btnReboot = new Guna.UI2.WinForms.Guna2Button();
-            this.btnFactory = new Guna.UI2.WinForms.Guna2Button();
             this.settingsPanel.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -44,6 +47,7 @@ namespace Innovo_TP4_Updater
             // 
             this.settingsPanel.AutoScroll = true;
             this.settingsPanel.BackColor = System.Drawing.SystemColors.Highlight;
+            this.settingsPanel.Controls.Add(this.lblConnectionStatus);
             this.settingsPanel.Controls.Add(this.btnFactory);
             this.settingsPanel.Controls.Add(this.btnBack);
             this.settingsPanel.Controls.Add(this.btnUpdate);
@@ -58,6 +62,34 @@ namespace Innovo_TP4_Updater
             this.settingsPanel.Name = "settingsPanel";
             this.settingsPanel.Size = new System.Drawing.Size(898, 780);
             this.settingsPanel.TabIndex = 0;
+            this.settingsPanel.Paint += new System.Windows.Forms.PaintEventHandler(this.settingsPanel_Paint);
+            // 
+            // lblConnectionStatus
+            // 
+            this.lblConnectionStatus.BackColor = System.Drawing.Color.Transparent;
+            this.lblConnectionStatus.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            this.lblConnectionStatus.ForeColor = System.Drawing.Color.White;
+            this.lblConnectionStatus.Location = new System.Drawing.Point(12, 10);
+            this.lblConnectionStatus.Name = "lblConnectionStatus";
+            this.lblConnectionStatus.Size = new System.Drawing.Size(143, 19);
+            this.lblConnectionStatus.TabIndex = 0;
+            this.lblConnectionStatus.Text = "Checking connection...";
+            // 
+            // btnFactory
+            // 
+            this.btnFactory.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.btnFactory.ForeColor = System.Drawing.Color.White;
+            this.btnFactory.Image = global::Innovo_TP4_Updater.Properties.Resources.reset;
+            this.btnFactory.ImageAlign = System.Windows.Forms.HorizontalAlignment.Left;
+            this.btnFactory.ImageSize = new System.Drawing.Size(40, 40);
+            this.btnFactory.Location = new System.Drawing.Point(12, 555);
+            this.btnFactory.Name = "btnFactory";
+            this.btnFactory.Size = new System.Drawing.Size(250, 60);
+            this.btnFactory.TabIndex = 10;
+            this.btnFactory.Text = "RESET\nReset to Factory Default";
+            this.btnFactory.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.btnFactory.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SystemDefault;
+            this.btnFactory.Click += new System.EventHandler(this.SettingsButton_Click);
             // 
             // btnBack
             // 
@@ -65,7 +97,7 @@ namespace Innovo_TP4_Updater
             this.btnBack.ForeColor = System.Drawing.Color.White;
             this.btnBack.ImageAlign = System.Windows.Forms.HorizontalAlignment.Left;
             this.btnBack.ImageSize = new System.Drawing.Size(25, 25);
-            this.btnBack.Location = new System.Drawing.Point(28, 15);
+            this.btnBack.Location = new System.Drawing.Point(27, 12);
             this.btnBack.Name = "btnBack";
             this.btnBack.Size = new System.Drawing.Size(100, 40);
             this.btnBack.TabIndex = 8;
@@ -176,33 +208,16 @@ namespace Innovo_TP4_Updater
             this.btnReboot.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.btnReboot.Click += new System.EventHandler(this.SettingsButton_Click);
             // 
-            // btnFactory
-            // 
-            this.btnFactory.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.btnFactory.ForeColor = System.Drawing.Color.White;
-            this.btnFactory.Image = global::Innovo_TP4_Updater.Properties.Resources.reset;
-            this.btnFactory.ImageAlign = System.Windows.Forms.HorizontalAlignment.Left;
-            this.btnFactory.ImageSize = new System.Drawing.Size(40, 40);
-            this.btnFactory.Location = new System.Drawing.Point(12, 555);
-            this.btnFactory.Name = "btnFactory";
-            this.btnFactory.Size = new System.Drawing.Size(250, 60);
-            this.btnFactory.TabIndex = 10;
-            this.btnFactory.Text = "RESET\nReset to Factory Default";
-            this.btnFactory.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.btnFactory.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SystemDefault;
-            this.btnFactory.Click += new System.EventHandler(this.SettingsButton_Click);
-
-            // 
             // SettingsForm
             // 
             this.ClientSize = new System.Drawing.Size(898, 780);
             this.Controls.Add(this.settingsPanel);
             this.Name = "SettingsForm";
             this.settingsPanel.ResumeLayout(false);
+            this.settingsPanel.PerformLayout();
             this.ResumeLayout(false);
+            this.Load += new System.EventHandler(this.SettingsForm_Load);
 
         }
-
-        private Guna.UI2.WinForms.Guna2Button btnFactory;
     }
 }
