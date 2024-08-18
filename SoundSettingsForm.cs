@@ -28,8 +28,12 @@ namespace Innovo_TP4_Updater
                 return;
             }
 
+            LoadingForm loadingForm = new LoadingForm("Please wait getting sound settings");
+
             try
             {
+
+                loadingForm.Show();
                 // Set the range for Main Volume and Notifications Volume
                 mainTrackBar.Minimum = 0;
                 mainTrackBar.Maximum = 15;
@@ -55,6 +59,10 @@ namespace Innovo_TP4_Updater
             {
                 MessageBox.Show($"Error retrieving volume levels: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 parentForm.clearMainPanel(); ;
+            }
+            finally
+            {
+                loadingForm.Close();
             }
         }
 

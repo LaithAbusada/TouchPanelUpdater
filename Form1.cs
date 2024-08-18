@@ -13,6 +13,7 @@ namespace Innovo_TP4_Updater
     public partial class Form1 : Form
     {
         private readonly string formname = "Touch Panel Updater";
+
         public Form1()
         {
             InitializeComponent();
@@ -40,12 +41,16 @@ namespace Innovo_TP4_Updater
             LoadFormIntoSidebarPanel(settingsForm);
 
             // Check if the device is connected
-            
-           
-                settingsForm.LoadConnectDisconnectForm();
-            
+            settingsForm.LoadConnectDisconnectForm();
         }
-        // In your Form1 class, add this method:
+
+        protected override async void OnFormClosing(FormClosingEventArgs e)
+        {
+            // Disconnect all devices before closing the form
+            await Disconnect();
+            base.OnFormClosing(e);
+        }
+
         public async Task<string> GetDeviceIpAndPort()
         {
             try
@@ -82,7 +87,6 @@ namespace Innovo_TP4_Updater
                 return "Unknown IP/Port";
             }
         }
-
 
         public async Task<string> ExecuteAdbCommand(string command)
         {
@@ -233,6 +237,7 @@ namespace Innovo_TP4_Updater
             // Show the form
             form.Show();
         }
+
         public async Task<bool> IsConnected()
         {
             string output = await ExecuteAdbCommand("adb devices");
@@ -255,11 +260,11 @@ namespace Innovo_TP4_Updater
             button7.Location = new Point(12, 331);
         }
 
-
         public void clearMainPanel()
         {
             this.mainPanel.Controls.Clear();
         }
+
         private void mainPanel_Paint(object sender, PaintEventArgs e)
         {
 

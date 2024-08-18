@@ -7,18 +7,15 @@ namespace Innovo_TP4_Updater
         private System.ComponentModel.IContainer components = null;
         private Guna.UI2.WinForms.Guna2TrackBar brightnessTrackBar;
         private Guna.UI2.WinForms.Guna2ToggleSwitch adaptiveBrightnessSwitch;
-        private Guna.UI2.WinForms.Guna2ToggleSwitch screenSaverSwitch;
-        private Guna.UI2.WinForms.Guna2ToggleSwitch sleepModeSwitch;
         private Label lblBrightness;
         private Label lblAdaptiveBrightness;
-        private Label lblScreenSaver;
         private Label lblSleepMode;
         private Panel adaptiveBrightnessPanel;
-        private Panel screenSaverPanel;
-        private Panel sleepModePanel;
-        private Guna.UI2.WinForms.Guna2Button btnBalanced;
-        private Guna.UI2.WinForms.Guna2Button btnAlwaysReady;
-        private Guna.UI2.WinForms.Guna2Button btnRestMode;
+        private Guna.UI2.WinForms.Guna2Button btnAlwaysOn;
+        private Guna.UI2.WinForms.Guna2Button btn1Min;
+        private Guna.UI2.WinForms.Guna2Button btn5Min;
+        private Guna.UI2.WinForms.Guna2Button btn10Min;
+        private Guna.UI2.WinForms.Guna2Button btn30Min;
 
         protected override void Dispose(bool disposing)
         {
@@ -33,21 +30,16 @@ namespace Innovo_TP4_Updater
         {
             this.brightnessTrackBar = new Guna.UI2.WinForms.Guna2TrackBar();
             this.adaptiveBrightnessSwitch = new Guna.UI2.WinForms.Guna2ToggleSwitch();
-            this.screenSaverSwitch = new Guna.UI2.WinForms.Guna2ToggleSwitch();
-            this.sleepModeSwitch = new Guna.UI2.WinForms.Guna2ToggleSwitch();
             this.lblBrightness = new System.Windows.Forms.Label();
             this.lblAdaptiveBrightness = new System.Windows.Forms.Label();
-            this.lblScreenSaver = new System.Windows.Forms.Label();
             this.lblSleepMode = new System.Windows.Forms.Label();
             this.adaptiveBrightnessPanel = new System.Windows.Forms.Panel();
-            this.screenSaverPanel = new System.Windows.Forms.Panel();
-            this.sleepModePanel = new System.Windows.Forms.Panel();
-            this.btnBalanced = new Guna.UI2.WinForms.Guna2Button();
-            this.btnAlwaysReady = new Guna.UI2.WinForms.Guna2Button();
-            this.btnRestMode = new Guna.UI2.WinForms.Guna2Button();
+            this.btnAlwaysOn = new Guna.UI2.WinForms.Guna2Button();
+            this.btn1Min = new Guna.UI2.WinForms.Guna2Button();
+            this.btn5Min = new Guna.UI2.WinForms.Guna2Button();
+            this.btn10Min = new Guna.UI2.WinForms.Guna2Button();
+            this.btn30Min = new Guna.UI2.WinForms.Guna2Button();
             this.adaptiveBrightnessPanel.SuspendLayout();
-            this.screenSaverPanel.SuspendLayout();
-            this.sleepModePanel.SuspendLayout();
             this.SuspendLayout();
             // 
             // brightnessTrackBar
@@ -68,22 +60,6 @@ namespace Innovo_TP4_Updater
             this.adaptiveBrightnessSwitch.Size = new System.Drawing.Size(60, 30);
             this.adaptiveBrightnessSwitch.TabIndex = 1;
             this.adaptiveBrightnessSwitch.CheckedChanged += new System.EventHandler(this.adaptiveBrightnessSwitch_CheckedChanged);
-            // 
-            // screenSaverSwitch
-            // 
-            this.screenSaverSwitch.Location = new System.Drawing.Point(237, 10);
-            this.screenSaverSwitch.Name = "screenSaverSwitch";
-            this.screenSaverSwitch.Size = new System.Drawing.Size(60, 30);
-            this.screenSaverSwitch.TabIndex = 2;
-            this.screenSaverSwitch.CheckedChanged += new System.EventHandler(this.screenSaverSwitch_CheckedChanged);
-            // 
-            // sleepModeSwitch
-            // 
-            this.sleepModeSwitch.Location = new System.Drawing.Point(237, 10);
-            this.sleepModeSwitch.Name = "sleepModeSwitch";
-            this.sleepModeSwitch.Size = new System.Drawing.Size(60, 30);
-            this.sleepModeSwitch.TabIndex = 3;
-            this.sleepModeSwitch.CheckedChanged += new System.EventHandler(this.sleepModeSwitch_CheckedChanged);
             // 
             // lblBrightness
             // 
@@ -107,24 +83,15 @@ namespace Innovo_TP4_Updater
             this.lblAdaptiveBrightness.TabIndex = 5;
             this.lblAdaptiveBrightness.Text = "Adaptive Brightness";
             // 
-            // lblScreenSaver
-            // 
-            this.lblScreenSaver.AutoSize = true;
-            this.lblScreenSaver.ForeColor = System.Drawing.SystemColors.Highlight;
-            this.lblScreenSaver.Location = new System.Drawing.Point(10, 15);
-            this.lblScreenSaver.Name = "lblScreenSaver";
-            this.lblScreenSaver.Size = new System.Drawing.Size(72, 13);
-            this.lblScreenSaver.TabIndex = 6;
-            this.lblScreenSaver.Text = "Screen Saver";
-            // 
             // lblSleepMode
             // 
             this.lblSleepMode.AutoSize = true;
+            this.lblSleepMode.Font = new System.Drawing.Font("Microsoft Sans Serif", 13F);
             this.lblSleepMode.ForeColor = System.Drawing.SystemColors.Highlight;
-            this.lblSleepMode.Location = new System.Drawing.Point(10, 15);
+            this.lblSleepMode.Location = new System.Drawing.Point(295, 261);
             this.lblSleepMode.Name = "lblSleepMode";
-            this.lblSleepMode.Size = new System.Drawing.Size(64, 13);
-            this.lblSleepMode.TabIndex = 7;
+            this.lblSleepMode.Size = new System.Drawing.Size(105, 22);
+            this.lblSleepMode.TabIndex = 16;
             this.lblSleepMode.Text = "Sleep Mode";
             // 
             // adaptiveBrightnessPanel
@@ -138,72 +105,71 @@ namespace Innovo_TP4_Updater
             this.adaptiveBrightnessPanel.Size = new System.Drawing.Size(360, 48);
             this.adaptiveBrightnessPanel.TabIndex = 8;
             // 
-            // screenSaverPanel
+            // btnAlwaysOn
             // 
-            this.screenSaverPanel.BackColor = System.Drawing.Color.White;
-            this.screenSaverPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.screenSaverPanel.Controls.Add(this.screenSaverSwitch);
-            this.screenSaverPanel.Controls.Add(this.lblScreenSaver);
-            this.screenSaverPanel.Enabled = false;
-            this.screenSaverPanel.Location = new System.Drawing.Point(300, 300);
-            this.screenSaverPanel.Name = "screenSaverPanel";
-            this.screenSaverPanel.Size = new System.Drawing.Size(360, 50);
-            this.screenSaverPanel.TabIndex = 9;
+            this.btnAlwaysOn.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.btnAlwaysOn.ForeColor = System.Drawing.Color.White;
+            this.btnAlwaysOn.Location = new System.Drawing.Point(300, 300);
+            this.btnAlwaysOn.Name = "btnAlwaysOn";
+            this.btnAlwaysOn.Size = new System.Drawing.Size(100, 30);
+            this.btnAlwaysOn.TabIndex = 11;
+            this.btnAlwaysOn.Text = "Always On";
+            this.btnAlwaysOn.Click += new System.EventHandler(this.btnAlwaysOn_Click);
             // 
-            // sleepModePanel
+            // btn1Min
             // 
-            this.sleepModePanel.BackColor = System.Drawing.Color.White;
-            this.sleepModePanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.sleepModePanel.Controls.Add(this.sleepModeSwitch);
-            this.sleepModePanel.Controls.Add(this.lblSleepMode);
-            this.sleepModePanel.Enabled = false;
-            this.sleepModePanel.Location = new System.Drawing.Point(300, 411);
-            this.sleepModePanel.Name = "sleepModePanel";
-            this.sleepModePanel.Size = new System.Drawing.Size(360, 50);
-            this.sleepModePanel.TabIndex = 10;
+            this.btn1Min.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.btn1Min.ForeColor = System.Drawing.Color.White;
+            this.btn1Min.Location = new System.Drawing.Point(420, 300);
+            this.btn1Min.Name = "btn1Min";
+            this.btn1Min.Size = new System.Drawing.Size(100, 30);
+            this.btn1Min.TabIndex = 12;
+            this.btn1Min.Text = "1 Minute";
+            this.btn1Min.Click += new System.EventHandler(this.btn1Min_Click);
             // 
-            // btnBalanced
+            // btn5Min
             // 
-            this.btnBalanced.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.btnBalanced.ForeColor = System.Drawing.Color.White;
-            this.btnBalanced.Location = new System.Drawing.Point(300, 500);
-            this.btnBalanced.Name = "btnBalanced";
-            this.btnBalanced.Size = new System.Drawing.Size(100, 30);
-            this.btnBalanced.TabIndex = 11;
-            this.btnBalanced.Text = "Balanced";
-            this.btnBalanced.Click += new System.EventHandler(this.btnBalanced_Click);
+            this.btn5Min.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.btn5Min.ForeColor = System.Drawing.Color.White;
+            this.btn5Min.Location = new System.Drawing.Point(540, 300);
+            this.btn5Min.Name = "btn5Min";
+            this.btn5Min.Size = new System.Drawing.Size(100, 30);
+            this.btn5Min.TabIndex = 13;
+            this.btn5Min.Text = "5 Minutes";
+            this.btn5Min.Click += new System.EventHandler(this.btn5Min_Click);
             // 
-            // btnAlwaysReady
+            // btn10Min
             // 
-            this.btnAlwaysReady.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.btnAlwaysReady.ForeColor = System.Drawing.Color.White;
-            this.btnAlwaysReady.Location = new System.Drawing.Point(420, 500);
-            this.btnAlwaysReady.Name = "btnAlwaysReady";
-            this.btnAlwaysReady.Size = new System.Drawing.Size(120, 30);
-            this.btnAlwaysReady.TabIndex = 12;
-            this.btnAlwaysReady.Text = "Always Ready";
-            this.btnAlwaysReady.Click += new System.EventHandler(this.btnAlwaysReady_Click);
+            this.btn10Min.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.btn10Min.ForeColor = System.Drawing.Color.White;
+            this.btn10Min.Location = new System.Drawing.Point(300, 350);
+            this.btn10Min.Name = "btn10Min";
+            this.btn10Min.Size = new System.Drawing.Size(100, 30);
+            this.btn10Min.TabIndex = 14;
+            this.btn10Min.Text = "10 Minutes";
+            this.btn10Min.Click += new System.EventHandler(this.btn10Min_Click);
             // 
-            // btnRestMode
+            // btn30Min
             // 
-            this.btnRestMode.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.btnRestMode.ForeColor = System.Drawing.Color.White;
-            this.btnRestMode.Location = new System.Drawing.Point(560, 500);
-            this.btnRestMode.Name = "btnRestMode";
-            this.btnRestMode.Size = new System.Drawing.Size(100, 30);
-            this.btnRestMode.TabIndex = 13;
-            this.btnRestMode.Text = "Rest Mode";
-            this.btnRestMode.Click += new System.EventHandler(this.btnRestMode_Click);
+            this.btn30Min.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.btn30Min.ForeColor = System.Drawing.Color.White;
+            this.btn30Min.Location = new System.Drawing.Point(420, 350);
+            this.btn30Min.Name = "btn30Min";
+            this.btn30Min.Size = new System.Drawing.Size(100, 30);
+            this.btn30Min.TabIndex = 15;
+            this.btn30Min.Text = "30 Minutes";
+            this.btn30Min.Click += new System.EventHandler(this.btn30Min_Click);
             // 
             // DisplaySettingsForm
             // 
             this.BackColor = System.Drawing.Color.AliceBlue;
             this.ClientSize = new System.Drawing.Size(976, 605);
-            this.Controls.Add(this.btnRestMode);
-            this.Controls.Add(this.btnAlwaysReady);
-            this.Controls.Add(this.btnBalanced);
-            this.Controls.Add(this.sleepModePanel);
-            this.Controls.Add(this.screenSaverPanel);
+            this.Controls.Add(this.btn30Min);
+            this.Controls.Add(this.btn10Min);
+            this.Controls.Add(this.btn5Min);
+            this.Controls.Add(this.btn1Min);
+            this.Controls.Add(this.btnAlwaysOn);
+            this.Controls.Add(this.lblSleepMode);
             this.Controls.Add(this.adaptiveBrightnessPanel);
             this.Controls.Add(this.lblBrightness);
             this.Controls.Add(this.brightnessTrackBar);
@@ -216,10 +182,6 @@ namespace Innovo_TP4_Updater
             this.Load += new System.EventHandler(this.DisplaySettingsForm_Load);
             this.adaptiveBrightnessPanel.ResumeLayout(false);
             this.adaptiveBrightnessPanel.PerformLayout();
-            this.screenSaverPanel.ResumeLayout(false);
-            this.screenSaverPanel.PerformLayout();
-            this.sleepModePanel.ResumeLayout(false);
-            this.sleepModePanel.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 

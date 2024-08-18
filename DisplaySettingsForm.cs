@@ -40,6 +40,10 @@ namespace Innovo_TP4_Updater
 
                 await LoadDisplaySettings();
             }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"An error occurred while loading settings: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
             finally
             {
                 isCheckingConnection = false;
@@ -48,35 +52,56 @@ namespace Innovo_TP4_Updater
 
         private async Task LoadDisplaySettings()
         {
-            // Fetch current brightness and adaptive brightness state
-            string brightnessOutput = await parentForm.ExecuteAdbCommand("adb shell settings get system screen_brightness");
-            string adaptiveBrightnessOutput = await parentForm.ExecuteAdbCommand("adb shell settings get system screen_brightness_mode");
-            string screenSaverOutput = await parentForm.ExecuteAdbCommand("adb shell settings get secure screensaver_enabled");
-            string screenOffTimeoutOutput = await parentForm.ExecuteAdbCommand("adb shell settings get system screen_off_timeout");
-
-            if (int.TryParse(brightnessOutput.Trim(), out int brightness))
+            try
             {
-                brightnessTrackBar.Value = brightness;
-                lblBrightness.Text = $"Brightness: {brightness}";
-            }
-            else
-            {
-                brightnessTrackBar.Value = 0;
-                lblBrightness.Text = "Brightness: N/A";
-            }
+                // Fetch current brightness
+                string brightnessOutput = await parentForm.ExecuteAdbCommand("adb shell settings get system screen_brightness");
 
-            adaptiveBrightnessSwitch.Checked = adaptiveBrightnessOutput.Trim() == "1";
-            screenSaverSwitch.Checked = screenSaverOutput.Trim() == "1"; // Assuming 1 means enabled
-            sleepModeSwitch.Checked = int.Parse(screenOffTimeoutOutput.Trim()) > 0; // Assuming 5 minutes as on for sleep mode
+                if (int.TryParse(brightnessOutput.Trim(), out int brightness))
+                {
+                    brightnessTrackBar.Value = brightness;
+                    lblBrightness.Text = $"Brightness: {brightness}";
+                }
+                else
+                {
+                    brightnessTrackBar.Value = 0;
+                    lblBrightness.Text = "Brightness: N/A";
+                }
+
+                // Fetch adaptive brightness setting
+                string adaptiveBrightnessOutput = await parentForm.ExecuteAdbCommand("adb shell settings get system screen_brightness_mode");
+
+                if (int.TryParse(adaptiveBrightnessOutput.Trim(), out int adaptiveBrightnessMode))
+                {
+                    adaptiveBrightnessSwitch.Checked = adaptiveBrightnessMode == 1;
+                }
+                else
+                {
+                    adaptiveBrightnessSwitch.Checked = false;
+                }
+
+                // Fetch current sleep mode value
+                await UpdateSleepModeLabel();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"An error occurred while loading display settings: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
-      
         private async void adaptiveBrightnessSwitch_CheckedChanged(object sender, EventArgs e)
         {
             await CheckAndExecuteCommand(async () =>
             {
-                string newMode = adaptiveBrightnessSwitch.Checked ? "1" : "0";
-                await parentForm.ExecuteAdbCommand($"adb shell settings put system screen_brightness_mode {newMode}");
+                try
+                {
+                    string newMode = adaptiveBrightnessSwitch.Checked ? "1" : "0";
+                    await parentForm.ExecuteAdbCommand($"adb shell settings put system screen_brightness_mode {newMode}");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"An error occurred while updating adaptive brightness: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             });
         }
 
@@ -84,35 +109,116 @@ namespace Innovo_TP4_Updater
         {
             await CheckAndExecuteCommand(async () =>
             {
-                int brightness = brightnessTrackBar.Value;
+                try
+                {
+                    int brightness = brightnessTrackBar.Value;
 
-                lblBrightness.Text = $"Brightness: {brightness}";
+                    lblBrightness.Text = $"Brightness: {brightness}";
 
-                await parentForm.ExecuteAdbCommand("adb shell settings put system screen_brightness_mode 0");
-                adaptiveBrightnessSwitch.Checked = false;
+                    await parentForm.ExecuteAdbCommand("adb shell settings put system screen_brightness_mode 0");
+                    adaptiveBrightnessSwitch.Checked = false;
 
-                await parentForm.ExecuteAdbCommand($"adb shell settings put system screen_brightness {brightness}");
+                    await parentForm.ExecuteAdbCommand($"adb shell settings put system screen_brightness {brightness}");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"An error occurred while updating brightness: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             });
         }
 
-        private async void screenSaverSwitch_CheckedChanged(object sender, EventArgs e)
+        private async void btnAlwaysOn_Click(object sender, EventArgs e)
+        {
+            await SetSleepMode("0", "Always On"); // Disable sleep mode
+        }
+
+        private async void btn1Min_Click(object sender, EventArgs e)
+        {
+            await SetSleepMode("60000", "1 Minute"); // Set sleep mode to 1 minute
+        }
+
+        private async void btn5Min_Click(object sender, EventArgs e)
+        {
+            await SetSleepMode("300000", "5 Minutes"); // Set sleep mode to 5 minutes
+        }
+
+        private async void btn10Min_Click(object sender, EventArgs e)
+        {
+            await SetSleepMode("600000", "10 Minutes"); // Set sleep mode to 10 minutes
+        }
+
+        private async void btn30Min_Click(object sender, EventArgs e)
+        {
+            await SetSleepMode("1800000", "30 Minutes"); // Set sleep mode to 30 minutes
+        }
+
+        private async Task SetSleepMode(string timeoutValue, string modeName)
         {
             await CheckAndExecuteCommand(async () =>
             {
-                string newSetting = screenSaverSwitch.Checked ? "1" : "0"; // Toggle between enabled and disabled
-                await parentForm.ExecuteAdbCommand($"adb shell settings put secure screensaver_enabled {newSetting}");
+                try
+                {
+                    // Set screen_off_timeout
+                    await parentForm.ExecuteAdbCommand($"adb shell settings put system screen_off_timeout {timeoutValue}");
+
+                    // Set sleep_timeout based on whether it's "Always On" or not
+                    string sleepTimeoutValue = timeoutValue == "0" ? "-1" : "1";
+                    await parentForm.ExecuteAdbCommand($"adb shell settings put secure sleep_timeout {sleepTimeoutValue}");
+
+                    // Update the label with the new sleep mode
+                    lblSleepMode.Text = $"Sleep Mode: {modeName}";
+
+                    // Show a message indicating the mode is now on
+                    MessageBox.Show($"Updated sleep mode to {modeName}.", "Mode Change", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"An error occurred while setting sleep mode: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             });
         }
 
-        private async void sleepModeSwitch_CheckedChanged(object sender, EventArgs e)
+        private async Task UpdateSleepModeLabel()
         {
-            await CheckAndExecuteCommand(async () =>
+            try
             {
-                string newSetting = sleepModeSwitch.Checked ? "300000" : "0"; // Toggle between 5 minutes and off
-                await parentForm.ExecuteAdbCommand($"adb shell settings put system screen_off_timeout {newSetting}");
-            });
+                string screenOffTimeoutOutput = await parentForm.ExecuteAdbCommand("adb shell settings get system screen_off_timeout");
+                if (int.TryParse(screenOffTimeoutOutput.Trim(), out int timeoutValue))
+                {
+                    string modeName;
+                    switch (timeoutValue)
+                    {
+                        case 0:
+                            modeName = "Always On";
+                            break;
+                        case 60000:
+                            modeName = "1 Minute";
+                            break;
+                        case 300000:
+                            modeName = "5 Minutes";
+                            break;
+                        case 600000:
+                            modeName = "10 Minutes";
+                            break;
+                        case 1800000:
+                            modeName = "30 Minutes";
+                            break;
+                        default:
+                            modeName = $"{timeoutValue / 60000} Minutes";
+                            break;
+                    }
+                    lblSleepMode.Text = $"Sleep Mode: {modeName}";
+                }
+                else
+                {
+                    lblSleepMode.Text = "Sleep Mode: N/A";
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"An error occurred while retrieving sleep mode: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
-
         private async Task CheckAndExecuteCommand(Func<Task> command)
         {
             if (isCheckingConnection) return;
@@ -125,57 +231,20 @@ namespace Innovo_TP4_Updater
                 {
                     MessageBox.Show("Device should be connected.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     parentForm.clearMainPanel();
-                       
+
                     return;
                 }
 
                 await command();
             }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"An error occurred during execution: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
             finally
             {
                 isCheckingConnection = false;
             }
-        }
-
-        private async void btnBalanced_Click(object sender, EventArgs e)
-        {
-            await SetDisplayMode(true, true, "Balanced"); // Screen saver on, sleep mode on
-        }
-
-        private async void btnAlwaysReady_Click(object sender, EventArgs e)
-        {
-            await SetDisplayMode(false, false, "Always Ready"); // Screen saver off, sleep mode off
-        }
-
-        private async void btnRestMode_Click(object sender, EventArgs e)
-        {
-            await SetDisplayMode(false, true, "Rest"); // Screen saver off, sleep mode on
-        }
-        private async Task SetDisplayMode(bool screenSaver, bool sleepMode, string modeName)
-        {
-            await CheckAndExecuteCommand(async () =>
-            {
-                // Enable switches temporarily
-                screenSaverSwitch.Enabled = true;
-                sleepModeSwitch.Enabled = true;
-
-                // Set screen saver
-                string screenSaverSetting = screenSaver ? "1" : "0";
-                await parentForm.ExecuteAdbCommand($"adb shell settings put secure screensaver_enabled {screenSaverSetting}");
-                screenSaverSwitch.Checked = screenSaver;
-
-                // Set sleep mode
-                string sleepModeSetting = sleepMode ? "300000" : "0"; // 5 minutes for sleep mode
-                await parentForm.ExecuteAdbCommand($"adb shell settings put system screen_off_timeout {sleepModeSetting}");
-                sleepModeSwitch.Checked = sleepMode;
-
-                // Disable switches again after updating
-                screenSaverSwitch.Enabled = false;
-                sleepModeSwitch.Enabled = false;
-
-                // Show a message indicating the mode is now on
-                MessageBox.Show($"{modeName} mode is now on.", "Mode Change", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            });
         }
     }
 }
