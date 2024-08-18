@@ -98,6 +98,7 @@
     <Reference Include="System.Drawing.Common, Version=4.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>packages\System.Drawing.Common.4.5.0\lib\net461\System.Drawing.Common.dll</HintPath>
     </Reference>
+    <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Management" />
     <Reference Include="System.Memory, Version=4.0.1.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>packages\System.Memory.4.5.5\lib\net461\System.Memory.dll</HintPath>
@@ -131,6 +132,9 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="TimeZoneConverter, Version=6.1.0.0, Culture=neutral, PublicKeyToken=e20ab7d0d9479841, processorArchitecture=MSIL">
+      <HintPath>packages\TimeZoneConverter.6.1.0\lib\net462\TimeZoneConverter.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConnectDisconnectForm.cs">
@@ -144,6 +148,12 @@
     </Compile>
     <Compile Include="DisplaySettingsForm.Designer.cs">
       <DependentUpon>DisplaySettingsForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FactoryDefaultForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FactoryDefaultForm.Designer.cs">
+      <DependentUpon>FactoryDefaultForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
@@ -183,6 +193,12 @@
     <Compile Include="SoundSettingsForm.Designer.cs">
       <DependentUpon>SoundSettingsForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="TimeZoneForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="TimeZoneForm.Designer.cs">
+      <DependentUpon>TimeZoneForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="UpdateAppForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -197,6 +213,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LoadingForm.resx">
+      <DependentUpon>LoadingForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="PasswordForm.resx">
       <DependentUpon>PasswordForm.cs</DependentUpon>
@@ -219,6 +238,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="SoundSettingsForm.resx">
       <DependentUpon>SoundSettingsForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TimeZoneForm.resx">
+      <DependentUpon>TimeZoneForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="UpdateAppForm.resx">
       <DependentUpon>UpdateAppForm.cs</DependentUpon>

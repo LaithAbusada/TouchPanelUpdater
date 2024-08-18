@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Windows.Forms;
 using TimeZoneConverter; // Add this namespace
 
@@ -20,17 +21,44 @@ namespace Innovo_TP4_Updater
             // Check if the device is connected
             if (!await parentForm.IsConnected())
             {
-                // If no device is connected, clear the main panel and show a warning message
                 parentForm.clearMainPanel();
                 MessageBox.Show("No device is currently connected. Please connect a device before proceeding.",
                                 "Device Not Connected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            // If the device is connected, proceed to populate the timezone ComboBox
+            // Populate the timezone ComboBox
             PopulateTimeZoneComboBox();
-        }
 
+            try
+            {
+                // Retrieve the current timezone from the connected device
+                string deviceTimeZone = (await parentForm.ExecuteAdbCommand("adb shell getprop persist.sys.timezone")).Trim();
+
+                if (!string.IsNullOrEmpty(deviceTimeZone))
+                {
+                    if (timeZoneComboBox.Items.Cast<string>().Contains(deviceTimeZone))
+                    {
+                        timeZoneComboBox.SelectedItem = deviceTimeZone;
+                    }
+                    else
+                    {
+                        MessageBox.Show("The device's timezone could not be found in the list. Please select manually.",
+                                        "Timezone Not Found", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Could not retrieve the device's timezone. Please select manually.",
+                                    "Timezone Retrieval Failed", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error retrieving the device's timezone: {ex.Message}",
+                                "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
         private void PopulateTimeZoneComboBox()
         {
             // Populate ComboBox with IANA timezones
