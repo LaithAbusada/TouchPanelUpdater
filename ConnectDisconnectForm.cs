@@ -84,7 +84,6 @@ namespace Innovo_TP4_Updater
                         // Attempt to connect
                         string command = $"adb connect {ipAddress}:{port}";
                         string result = await parentForm.ExecuteAdbCommand(command);
-
                         // Check if the connection was successful
                         if (result.Contains("connected to") && !result.Contains("cannot connect to"))
                         {
@@ -98,6 +97,7 @@ namespace Innovo_TP4_Updater
                         }
                         else
                         {
+                           
                             MessageBox.Show("Failed to connect. Please check the IP address and port and try again.");
                         }
                     }

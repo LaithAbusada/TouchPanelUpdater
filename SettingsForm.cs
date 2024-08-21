@@ -41,6 +41,10 @@ namespace Innovo_TP4_Updater
             Connected = await parentForm.IsConnected();
             btnConnectDisconnect.Text = Connected ? "Disconnect Device" : "Connect Device";
         }
+        public void UpdateConnectDisconnectButton(string buttonText)
+        {
+            btnConnectDisconnect.Text = buttonText;
+        }
 
         public void UpdateConnectionStatusLabel(string status)
         {
@@ -75,11 +79,11 @@ namespace Innovo_TP4_Updater
 
             if (button == btnSound)
             {
-                LoadFormIntoPanel(new SoundSettingsForm(parentForm));
+                LoadFormIntoPanel(new SoundSettingsForm(parentForm , this));
             }
             else if (button == btnDisplay)
             {
-                LoadFormIntoPanel(new DisplaySettingsForm(parentForm));
+                LoadFormIntoPanel(new DisplaySettingsForm(parentForm, this));
             }
             else if (button == btnUpdate)
             {
@@ -99,7 +103,7 @@ namespace Innovo_TP4_Updater
             }
             else if (button == btnTimeZone)
             {
-                LoadFormIntoPanel(new TimeZoneForm(parentForm));
+                LoadFormIntoPanel(new TimeZoneForm(parentForm,this));
             }
             else if (button == btnFactory)
             {
@@ -197,6 +201,23 @@ namespace Innovo_TP4_Updater
 
             parentForm.LoadFormIntoPanel(connectDisconnectForm);
         }
+        public async Task TriggerConnectionStatusUpdate(bool isConnected)
+        {
+            Connected = isConnected;
+
+            if (isConnected)
+            {
+                string connectionDetails = await parentForm.GetDeviceIpAndPort();
+                UpdateConnectionStatusLabel($"Connected to {connectionDetails}");
+            }
+            else
+            {
+                UpdateConnectionStatusLabel("No Connected Device");
+            }
+
+            UpdateConnectDisconnectButton(isConnected ? "Disconnect Device" : "Connect Device");
+        }
+
 
         private void btnBack_Click(object sender, EventArgs e)
         {

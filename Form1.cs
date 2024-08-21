@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using SharpAdbClient;
@@ -33,12 +34,13 @@ namespace Innovo_TP4_Updater
 
         private async void Form1_Load(object sender, EventArgs e)
         {
+            var settingsForm = new SettingsForm(this);
+            LoadFormIntoSidebarPanel(settingsForm);
             // Always disconnect all devices when the form loads
             await Disconnect();
 
             // Load the SettingsForm on startup
-            var settingsForm = new SettingsForm(this);
-            LoadFormIntoSidebarPanel(settingsForm);
+           
 
             // Check if the device is connected
             settingsForm.LoadConnectDisconnectForm();
@@ -46,8 +48,15 @@ namespace Innovo_TP4_Updater
 
         protected override async void OnFormClosing(FormClosingEventArgs e)
         {
-            // Disconnect all devices before closing the form
+            // Disconnect all devices and stop ADB server before closing the form
             await Disconnect();
+
+            string adbExePath = Path.Combine(GetPlatformToolsPath(), "adb.exe");
+            if (File.Exists(adbExePath))
+            {
+                await ExecuteAdbCommand("adb kill-server");
+            }
+
             base.OnFormClosing(e);
         }
 
@@ -56,57 +65,62 @@ namespace Innovo_TP4_Updater
             try
             {
                 // Get the list of connected devices
-                string output = await ExecuteAdbCommand("adb devices -l");
+                string output = await ExecuteAdbCommand("adb devices");
 
-                // Check if the output contains any connected devices
-                if (string.IsNullOrWhiteSpace(output) || !output.Contains("\tdevice"))
+
+                // Regular expression to match IP:Port
+                Regex regex = new Regex(@"(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}):(\d+)\s+device");
+                Match match = regex.Match(output);
+
+                if (match.Success)
+                {
+                    string ip = match.Groups[1].Value;
+                    string port = match.Groups[2].Value;
+                    return ip + ":" + port;
+                }
+                else
                 {
                     return "No Connected Device";
                 }
-                MessageBox.Show("yo");
-
-                // Define a regular expression to match the IP and port
-                var regex = new System.Text.RegularExpressions.Regex(@"(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,5})");
-
-                // Parse the output to find the device's IP address and port
-                var matches = regex.Matches(output);
-
-                foreach (System.Text.RegularExpressions.Match match in matches)
-                {
-                    if (match.Success)
-                    {
-                        return match.Value; // Return the matched IP and Port
-                    }
-                }
-
-                return "No IP/Port found";
             }
-            catch (Exception ex)
+            catch
             {
-                MessageBox.Show($"Error retrieving IP and port: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return "Unknown IP/Port";
+                return "No Connected Device";
+
             }
         }
+
 
         public async Task<string> ExecuteAdbCommand(string command)
         {
             string commandOutput = "";
+
             ProcessStartInfo pStartInfo = new ProcessStartInfo
             {
                 FileName = "cmd.exe",
                 Arguments = "/C " + command,
-                WorkingDirectory = AppDomain.CurrentDomain.BaseDirectory,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
                 CreateNoWindow = true,
+                WorkingDirectory = GetPlatformToolsPath(),  // Updated to use platform-tools path
+                Verb = "runas"  // This will prompt to run as administrator
             };
+
+            pStartInfo.EnvironmentVariables["PATH"] = $"{GetPlatformToolsPath()};{Environment.GetEnvironmentVariable("PATH")}";
 
             using (Process cmdProcess = new Process { StartInfo = pStartInfo })
             {
                 cmdProcess.Start();
                 commandOutput = await cmdProcess.StandardOutput.ReadToEndAsync();
+                string error = await cmdProcess.StandardError.ReadToEndAsync();
+
                 await WaitForExitAsync(cmdProcess);
+
+                if (!string.IsNullOrWhiteSpace(error))
+                {
+                    commandOutput += "\nError: " + error;
+                }
             }
 
             return commandOutput;
@@ -169,25 +183,6 @@ namespace Innovo_TP4_Updater
             return 0;
         }
 
-        private void InstallAdb()
-        {
-            string solutionDirectory = Directory.GetParent(AppDomain.CurrentDomain.BaseDirectory).Parent.Parent.FullName;
-            string adbPath = Path.Combine(solutionDirectory, "adb.exe");
-
-            if (File.Exists(adbPath))
-            {
-                AdbServer server = new AdbServer();
-                var result = server.StartServer(adbPath, restartServerIfNewer: false);
-                Console.WriteLine("Adb file exists, and success");
-            }
-            else
-            {
-                Console.WriteLine("ADB executable not found. Please make sure it is located in the 'Downloads' folder within your solution directory.");
-            }
-        }
-
-        private void LoadText() { }
-
         public async Task Disconnect()
         {
             string disconnect = "adb disconnect";
@@ -241,6 +236,7 @@ namespace Innovo_TP4_Updater
         public async Task<bool> IsConnected()
         {
             string output = await ExecuteAdbCommand("adb devices");
+
             return output.Contains("\tdevice");
         }
 
@@ -268,6 +264,12 @@ namespace Innovo_TP4_Updater
         private void mainPanel_Paint(object sender, PaintEventArgs e)
         {
 
+        }
+
+        // Helper method to get the platform-tools path
+        private string GetPlatformToolsPath()
+        {
+            return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "platform-tools");
         }
     }
 }

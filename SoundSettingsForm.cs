@@ -9,18 +9,21 @@ namespace Innovo_TP4_Updater
     public partial class SoundSettingsForm : Form
     {
         private Form1 parentForm;
-
-        public SoundSettingsForm(Form1 parent)
+        private SettingsForm settingsForm;
+        public SoundSettingsForm(Form1 parent, SettingsForm settingsForm)
         {
             InitializeComponent();
             parentForm = parent;
+            this.settingsForm = settingsForm;
         }
 
         private async void SoundSettingsForm_Load_1(object sender, EventArgs e)
         {
             CenterControls();
+            bool isConnected = await parentForm.IsConnected();
+            await settingsForm.TriggerConnectionStatusUpdate(isConnected);
 
-            if (!await parentForm.IsConnected())
+            if (!isConnected)
             {
                 parentForm.clearMainPanel();
                 MessageBox.Show("No device is currently connected. Please connect a device before proceeding.",

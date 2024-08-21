@@ -9,17 +9,21 @@ namespace Innovo_TP4_Updater
     public partial class TimeZoneForm : Form
     {
         private Form1 parentForm;
-
-        public TimeZoneForm(Form1 parent)
+        private SettingsForm settingsForm;
+        public TimeZoneForm(Form1 parent, SettingsForm settingsForm)
         {
             InitializeComponent();
             parentForm = parent;
+            this.settingsForm = settingsForm;
         }
 
         private async void TimeZoneForm_Load(object sender, EventArgs e)
         {
+            bool isConnected = await parentForm.IsConnected();
+            await settingsForm.TriggerConnectionStatusUpdate(isConnected);
+
             // Check if the device is connected
-            if (!await parentForm.IsConnected())
+            if (!isConnected)
             {
                 parentForm.clearMainPanel();
                 MessageBox.Show("No device is currently connected. Please connect a device before proceeding.",

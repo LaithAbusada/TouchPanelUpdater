@@ -21,8 +21,10 @@ namespace Innovo_TP4_Updater
 
         private async void ResetForm_Load(object sender, EventArgs e)
         {
+           
             // Check if the device is connected
             bool isConnected = await parentForm.IsConnected();
+            await settingsForm.TriggerConnectionStatusUpdate(isConnected);
 
             if (!isConnected)
             {

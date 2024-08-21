@@ -8,12 +8,13 @@ namespace Innovo_TP4_Updater
     {
         private Form1 parentForm;
         private bool isCheckingConnection;
-
-        public DisplaySettingsForm(Form1 parent)
+        private SettingsForm settingsForm;
+        public DisplaySettingsForm(Form1 parent, SettingsForm settingsForm)
         {
             InitializeComponent();
             parentForm = parent;
             isCheckingConnection = false;
+            this.settingsForm = settingsForm;
         }
 
         private async void DisplaySettingsForm_Load(object sender, EventArgs e)
@@ -29,7 +30,9 @@ namespace Innovo_TP4_Updater
 
             try
             {
-                if (!await parentForm.IsConnected())
+                bool isConnected = await parentForm.IsConnected();
+                await settingsForm.TriggerConnectionStatusUpdate(isConnected);
+                if (!isConnected)
                 {
                     parentForm.clearMainPanel();
                     MessageBox.Show("No device is currently connected. Please connect a device before proceeding.",
@@ -158,25 +161,89 @@ namespace Innovo_TP4_Updater
             {
                 try
                 {
-                    // Set screen_off_timeout
-                    await parentForm.ExecuteAdbCommand($"adb shell settings put system screen_off_timeout {timeoutValue}");
+                    // Disable all buttons in both forms
+                    settingsForm.DisableAllButtons();
+                    DisableAllButtons();
 
-                    // Set sleep_timeout based on whether it's "Always On" or not
-                    string sleepTimeoutValue = timeoutValue == "0" ? "-1" : "1";
-                    await parentForm.ExecuteAdbCommand($"adb shell settings put secure sleep_timeout {sleepTimeoutValue}");
+                    // Apply the appropriate settings based on the timeoutValue
+                    if (timeoutValue == "0") // "Always On" mode
+                    {
+                        await parentForm.ExecuteAdbCommand("adb shell settings put secure sleep_timeout -1");
+                        await parentForm.ExecuteAdbCommand("adb shell settings put system screen_off_timeout 2147483647");
 
-                    // Update the label with the new sleep mode
-                    lblSleepMode.Text = $"Sleep Mode: {modeName}";
+                        // Update the label with the new sleep mode
+                        lblSleepMode.Text = $"Sleep Mode: {modeName}";
 
-                    // Show a message indicating the mode is now on
-                    MessageBox.Show($"Updated sleep mode to {modeName}.", "Mode Change", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        // Show a message indicating the mode is now on
+                        MessageBox.Show($"Updated sleep mode to {modeName}. The device will now reboot.", "Mode Change", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                        // Show the loading form during the reboot process
+                        using (var loadingForm = new LoadingForm("Rebooting, please wait..."))
+                        {
+                            loadingForm.Show();
+
+                            // Reboot the device
+                            await parentForm.ExecuteAdbCommand("adb reboot");
+
+                            // Wait 30 seconds to ensure the reboot process completes
+                            await Task.Delay(30000);
+
+                            // Close the loading form after the wait
+                            loadingForm.Close();
+                        }
+                    }
+                    else
+                    {
+                        await parentForm.ExecuteAdbCommand($"adb shell settings put system screen_off_timeout {timeoutValue}");
+                        string sleepTimeoutValue = "1";
+                        await parentForm.ExecuteAdbCommand($"adb shell settings put secure sleep_timeout {sleepTimeoutValue}");
+
+                        // Update the label with the new sleep mode
+                        lblSleepMode.Text = $"Sleep Mode: {modeName}";
+
+                        // Show a message indicating the mode is now on
+                        MessageBox.Show($"Updated sleep mode to {modeName}.", "Mode Change", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                        // Wait a brief moment to ensure settings are applied (optional)
+                        await Task.Delay(1000);
+                    }
+
+                    // Re-enable all buttons after the settings are applied
+                    settingsForm.EnableAllButtons();
+                    EnableAllButtons();
                 }
                 catch (Exception ex)
                 {
                     MessageBox.Show($"An error occurred while setting sleep mode: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
+                finally
+                {
+                    isCheckingConnection = false;
+                }
             });
         }
+        private void DisableAllButtons()
+        {
+            btnAlwaysOn.Enabled = false;
+            btn1Min.Enabled = false;
+            btn5Min.Enabled = false;
+            btn10Min.Enabled = false;
+            btn30Min.Enabled = false;
+            brightnessTrackBar.Enabled = false;
+            adaptiveBrightnessSwitch.Enabled = false;
+        }
+
+        private void EnableAllButtons()
+        {
+            btnAlwaysOn.Enabled = true;
+            btn1Min.Enabled = true;
+            btn5Min.Enabled = true;
+            btn10Min.Enabled = true;
+            btn30Min.Enabled = true;
+            brightnessTrackBar.Enabled = true;
+            adaptiveBrightnessSwitch.Enabled = true;
+        }
+
 
         private async Task UpdateSleepModeLabel()
         {
@@ -188,7 +255,7 @@ namespace Innovo_TP4_Updater
                     string modeName;
                     switch (timeoutValue)
                     {
-                        case 0:
+                        case 2147483647:
                             modeName = "Always On";
                             break;
                         case 60000:
