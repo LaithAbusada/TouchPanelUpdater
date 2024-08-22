@@ -165,8 +165,8 @@ namespace Innovo_TP4_Updater
                 // Execute the adb command to reboot the device
                 await parentForm.ExecuteAdbCommand("adb reboot");
 
-                // Delay for 15 seconds to allow the device to turn back on
-                await Task.Delay(15000);
+                // Delay for 45 seconds to allow the device to turn back on
+                await Task.Delay(45000);
 
                 MessageBox.Show("The device has rebooted and should be back online now.", "Reboot Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }

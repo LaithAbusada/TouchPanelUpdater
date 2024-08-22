@@ -102,14 +102,10 @@ namespace Innovo_TP4_Updater
 
             while (attempt < maxAttempts && !success)
             {
-
                 settingsForm.DisableAllButtons();
                 attempt++;
                 try
                 {
-                    string setSizeCommand = "adb shell wm size 479x480";
-                    await parentForm.ExecuteAdbCommand(setSizeCommand);
-                    materialMultiLineTextBox3.AppendText("Screen size set to 479x480\n");
                     loadingForm.UpdateMessage("Checking for connected devices...");
                     string connectedDevices = await parentForm.ExecuteAdbCommand("adb devices -l");
                     if (!connectedDevices.Contains("device"))
@@ -120,10 +116,18 @@ namespace Innovo_TP4_Updater
 
                     loadingForm.UpdateMessage("Retrieving device model...");
                     string deviceModel = await GetDeviceModel();
-                    if (deviceModel != "P4")
+                    if (deviceModel != "P4" && !deviceModel.Contains("P5"))
                     {
-                        materialMultiLineTextBox3.AppendText($"Connected device is {deviceModel}, but only P4 devices are supported for updates.\n");
+                        materialMultiLineTextBox3.AppendText($"Connected device is {deviceModel}, but only P4 or P5 devices are supported for updates.\n");
                         return;
+                    }
+
+                    loadingForm.UpdateMessage("Retrieving screen size...");
+                    string screenSize = await GetScreenSize();
+                    if (screenSize == "480x480")
+                    {
+                        materialMultiLineTextBox3.AppendText("Adjusting screen resolution from 480x480 to 479x479...\n");
+                        await AdjustScreenResolution("479x479");
                     }
 
                     DisableOtherButtons(clickedButton);
@@ -234,6 +238,20 @@ namespace Innovo_TP4_Updater
                 MessageBox.Show($"Failed to install {appName} after {maxAttempts} attempts. Please contact support.", "Installation Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+        private async Task<string> GetScreenSize()
+        {
+            string screenSizeCommand = "adb shell wm size";
+            string screenSizeOutput = await parentForm.ExecuteAdbCommand(screenSizeCommand);
+            return screenSizeOutput.Split(':')[1].Trim();
+        }
+
+        private async Task AdjustScreenResolution(string resolution)
+        {
+            string adjustResolutionCommand = $"adb shell wm size {resolution}";
+            await parentForm.ExecuteAdbCommand(adjustResolutionCommand);
+        }
+
 
 
         private async Task UnzipAndInstall(string zipFilePath)

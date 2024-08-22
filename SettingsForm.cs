@@ -18,12 +18,13 @@ namespace Innovo_TP4_Updater
 
         private async void SettingsForm_Load(object sender, EventArgs e)
         {
+            await Task.Delay(1000);
             await UpdateConnectDisconnectButton();
 
             if (Connected)
             {
                 // Add a small delay to ensure the device connection is fully established
-                await Task.Delay(500);
+              
 
                 // Try to retrieve the IP and port information after the delay
                 string connectionDetails = await parentForm.GetDeviceIpAndPort();

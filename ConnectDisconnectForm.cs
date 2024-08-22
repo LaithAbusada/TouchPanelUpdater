@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Innovo_TP4_Updater
@@ -84,20 +85,40 @@ namespace Innovo_TP4_Updater
                         // Attempt to connect
                         string command = $"adb connect {ipAddress}:{port}";
                         string result = await parentForm.ExecuteAdbCommand(command);
+
                         // Check if the connection was successful
                         if (result.Contains("connected to") && !result.Contains("cannot connect to"))
                         {
-                            isConnected = true;
+                            // Check the device model
+                            string deviceModel = await GetDeviceModel();
 
-                            // Update label in SettingsForm
-                            settingsForm.UpdateConnectionStatusLabel($"Connected to {ipAddress}:{port}");
+                            if (deviceModel != "P4" && !deviceModel.Contains("P5"))
+                            {
+                                MessageBox.Show($"Connected device is {deviceModel}, but only P4 or P5 devices are supported. Disconnecting...");
 
-                            ConnectionStatusChanged?.Invoke(isConnected);
-                            MessageBox.Show("Connected successfully.");
+                                // Disconnect immediately
+                                await parentForm.ExecuteAdbCommand("adb disconnect");
+                                MessageBox.Show("Disconnected successfully.");
+                                isConnected = false;
+
+                                // Update label in SettingsForm
+                                settingsForm.UpdateConnectionStatusLabel("No Connected Device");
+
+                                ConnectionStatusChanged?.Invoke(isConnected);
+                            }
+                            else
+                            {
+                                isConnected = true;
+
+                                // Update label in SettingsForm
+                                settingsForm.UpdateConnectionStatusLabel($"Connected to {ipAddress}:{port}");
+
+                                ConnectionStatusChanged?.Invoke(isConnected);
+                                MessageBox.Show("Connected successfully.");
+                            }
                         }
                         else
                         {
-                           
                             MessageBox.Show("Failed to connect. Please check the IP address and port and try again.");
                         }
                     }
@@ -112,6 +133,14 @@ namespace Innovo_TP4_Updater
             UpdateFormState();
             EnableControls();
         }
+
+        private async Task<string> GetDeviceModel()
+        {
+            string modelCommand = "adb shell getprop ro.product.model";
+            string modelOutput = await parentForm.ExecuteAdbCommand(modelCommand);
+            return modelOutput.Trim();
+        }
+
 
         private void DisableControls()
         {

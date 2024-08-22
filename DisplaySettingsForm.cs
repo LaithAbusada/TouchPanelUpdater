@@ -186,7 +186,7 @@ namespace Innovo_TP4_Updater
                             await parentForm.ExecuteAdbCommand("adb reboot");
 
                             // Wait 30 seconds to ensure the reboot process completes
-                            await Task.Delay(30000);
+                            await Task.Delay(45000);
 
                             // Close the loading form after the wait
                             loadingForm.Close();
