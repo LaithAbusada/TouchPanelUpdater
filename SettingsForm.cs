@@ -74,13 +74,13 @@ namespace Innovo_TP4_Updater
             btnFactory.Enabled = state;
         }
 
-        private void SettingsButton_Click(object sender, EventArgs e)
+        private async void SettingsButton_Click(object sender, EventArgs e)
         {
             var button = sender as Guna.UI2.WinForms.Guna2Button;
 
             if (button == btnSound)
             {
-                LoadFormIntoPanel(new SoundSettingsForm(parentForm , this));
+                LoadFormIntoPanel(new SoundSettingsForm(parentForm, this));
             }
             else if (button == btnDisplay)
             {
@@ -92,7 +92,15 @@ namespace Innovo_TP4_Updater
             }
             else if (button == btnConnectDisconnect)
             {
-                LoadConnectDisconnectForm();
+                if (Connected)
+                {
+                    // Directly disconnect the device without loading a new form
+                    await DisconnectDevice();
+                }
+                else
+                {
+                    LoadConnectDisconnectForm();
+                }
             }
             else if (button == btnReboot)
             {
@@ -104,13 +112,27 @@ namespace Innovo_TP4_Updater
             }
             else if (button == btnTimeZone)
             {
-                LoadFormIntoPanel(new TimeZoneForm(parentForm,this));
+                LoadFormIntoPanel(new TimeZoneForm(parentForm, this));
             }
             else if (button == btnFactory)
             {
                 LoadFormIntoPanel(new FactoryDefaultForm(parentForm, this));
             }
         }
+
+        private async Task DisconnectDevice()
+        {
+            // Logic to disconnect the device
+            await parentForm.ExecuteAdbCommand("adb disconnect");
+            MessageBox.Show("Disconnected successfully.", "Disconnected", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+            // Update UI to reflect the disconnected state
+            Connected = false;
+            UpdateConnectDisconnectButton("Connect Device");
+            UpdateConnectionStatusLabel("No Connected Device");
+            parentForm.clearMainPanel();
+        }
+
 
         private async void ShowRebootConfirmation()
         {

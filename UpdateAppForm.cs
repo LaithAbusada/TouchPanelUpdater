@@ -116,7 +116,7 @@ namespace Innovo_TP4_Updater
 
                     loadingForm.UpdateMessage("Retrieving device model...");
                     string deviceModel = await GetDeviceModel();
-                    if (deviceModel != "P4" && !deviceModel.Contains("P5"))
+                    if (!deviceModel.ToLower().Contains("p4") &&  !deviceModel.ToLower().Contains("p5"))
                     {
                         materialMultiLineTextBox3.AppendText($"Connected device is {deviceModel}, but only P4 or P5 devices are supported for updates.\n");
                         return;

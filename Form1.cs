@@ -14,6 +14,7 @@ namespace Innovo_TP4_Updater
     public partial class Form1 : Form
     {
         private readonly string formname = "Touch Panel Updater";
+        private bool isClosing = false;
 
         public Form1()
         {
@@ -40,25 +41,12 @@ namespace Innovo_TP4_Updater
             await Disconnect();
 
             // Load the SettingsForm on startup
-           
+
 
             // Check if the device is connected
             settingsForm.LoadConnectDisconnectForm();
         }
 
-        protected override async void OnFormClosing(FormClosingEventArgs e)
-        {
-            // Disconnect all devices and stop ADB server before closing the form
-            await Disconnect();
-
-            string adbExePath = Path.Combine(GetPlatformToolsPath(), "adb.exe");
-            if (File.Exists(adbExePath))
-            {
-                await ExecuteAdbCommand("adb kill-server");
-            }
-
-            base.OnFormClosing(e);
-        }
 
         public async Task<string> GetDeviceIpAndPort()
         {
@@ -271,5 +259,48 @@ namespace Innovo_TP4_Updater
         {
             return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "platform-tools");
         }
+        private async void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            // If the form is already in the process of closing, do not cancel
+            if (isClosing)
+            {
+                e.Cancel = false; // Allow the form to close
+                return;
+            }
+
+            // Indicate that the closing process has started
+            isClosing = false;
+
+            // Set e.Cancel to true to prevent the form from closing immediately
+            e.Cancel = true;
+
+            try
+            {
+                // Ensure all adb-related tasks are completed before proceeding
+                await Disconnect();
+
+                string adbExePath = Path.Combine(GetPlatformToolsPath(), "adb.exe");
+                if (File.Exists(adbExePath))
+                {
+                    // Wait for the kill-server command to fully execute
+                    await ExecuteAdbCommand("adb kill-server");
+                    Console.WriteLine("Killed");
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the exception or handle it accordingly
+                Console.WriteLine($"Error during form closing: {ex.Message}");
+            }
+            finally
+            {
+                // Ensure isClosing is reset regardless of success or failure
+                isClosing = true; // Reset isClosing in case of failure
+
+                // Allow the form to close
+                e.Cancel = false;
+                this.Close();
+            }
+        }
     }
-}
+    }

@@ -103,7 +103,6 @@ namespace Innovo_TP4_Updater
                     // Execute the adb command to reset the cache and storage
                     await parentForm.ExecuteAdbCommand($"adb shell pm clear {packageName}");
 
-                    MessageBox.Show($"{appName} cache and storage reset successfully.", "Reset Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                     // Close the first loading form
                     loadingForm.Close();
@@ -173,7 +172,7 @@ namespace Innovo_TP4_Updater
             try
             {
                 // Show a new loading form for rebooting
-                loadingForm = new LoadingForm("Rebooting the device... Please wait.");
+                loadingForm = new LoadingForm("Reset Successful,Rebooting device... Please wait.");
                 loadingForm.Show();
 
                 // Execute the adb command to reboot the device

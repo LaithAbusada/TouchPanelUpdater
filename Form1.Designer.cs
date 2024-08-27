@@ -294,6 +294,7 @@
             this.Name = "Form1";
             this.Text = "Main Form";
             this.TransparencyKey = System.Drawing.Color.Red;
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
             this.sidebarPanel.ResumeLayout(false);
             this.ResumeLayout(false);

@@ -26,6 +26,7 @@
             this.linkLabelHelp = new System.Windows.Forms.LinkLabel();
             this.panelHeader = new System.Windows.Forms.Panel();
             this.lblHeader = new System.Windows.Forms.Label();
+            this.chkRememberMe = new System.Windows.Forms.CheckBox();
             this.panelHeader.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -35,8 +36,8 @@
             this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button1.Font = new System.Drawing.Font("Microsoft Sans Serif", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.button1.ForeColor = System.Drawing.Color.White;
-            this.button1.Location = new System.Drawing.Point(255, 260);
-            this.button1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.button1.Location = new System.Drawing.Point(255, 290);
+            this.button1.Margin = new System.Windows.Forms.Padding(2);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(222, 49);
             this.button1.TabIndex = 0;
@@ -48,7 +49,7 @@
             // 
             this.txtUsername.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtUsername.Location = new System.Drawing.Point(180, 154);
-            this.txtUsername.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.txtUsername.Margin = new System.Windows.Forms.Padding(2);
             this.txtUsername.Name = "txtUsername";
             this.txtUsername.Size = new System.Drawing.Size(454, 29);
             this.txtUsername.TabIndex = 1;
@@ -57,7 +58,7 @@
             // 
             this.txtPassword.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtPassword.Location = new System.Drawing.Point(180, 203);
-            this.txtPassword.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.txtPassword.Margin = new System.Windows.Forms.Padding(2);
             this.txtPassword.Name = "txtPassword";
             this.txtPassword.PasswordChar = '*';
             this.txtPassword.Size = new System.Drawing.Size(454, 29);
@@ -92,7 +93,7 @@
             this.linkLabelHelp.AutoSize = true;
             this.linkLabelHelp.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.linkLabelHelp.LinkColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(123)))), ((int)(((byte)(255)))));
-            this.linkLabelHelp.Location = new System.Drawing.Point(180, 236);
+            this.linkLabelHelp.Location = new System.Drawing.Point(177, 263);
             this.linkLabelHelp.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.linkLabelHelp.Name = "linkLabelHelp";
             this.linkLabelHelp.Size = new System.Drawing.Size(150, 17);
@@ -107,7 +108,7 @@
             this.panelHeader.Controls.Add(this.lblHeader);
             this.panelHeader.Dock = System.Windows.Forms.DockStyle.Top;
             this.panelHeader.Location = new System.Drawing.Point(0, 0);
-            this.panelHeader.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.panelHeader.Margin = new System.Windows.Forms.Padding(2);
             this.panelHeader.Name = "panelHeader";
             this.panelHeader.Size = new System.Drawing.Size(675, 65);
             this.panelHeader.TabIndex = 6;
@@ -124,12 +125,26 @@
             this.lblHeader.TabIndex = 0;
             this.lblHeader.Text = "Innovo Panel";
             // 
+            // chkRememberMe
+            // 
+            this.chkRememberMe.AutoSize = true;
+            this.chkRememberMe.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.chkRememberMe.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(123)))), ((int)(((byte)(255)))));
+            this.chkRememberMe.Location = new System.Drawing.Point(180, 240);
+            this.chkRememberMe.Margin = new System.Windows.Forms.Padding(2);
+            this.chkRememberMe.Name = "chkRememberMe";
+            this.chkRememberMe.Size = new System.Drawing.Size(119, 21);
+            this.chkRememberMe.TabIndex = 7;
+            this.chkRememberMe.Text = "Remember Me";
+            this.chkRememberMe.UseVisualStyleBackColor = true;
+            // 
             // PasswordForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.WhiteSmoke;
             this.ClientSize = new System.Drawing.Size(675, 366);
+            this.Controls.Add(this.chkRememberMe);
             this.Controls.Add(this.panelHeader);
             this.Controls.Add(this.linkLabelHelp);
             this.Controls.Add(this.lblPassword);
@@ -138,7 +153,7 @@
             this.Controls.Add(this.txtUsername);
             this.Controls.Add(this.button1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "PasswordForm";
             this.Text = "Login";
             this.Load += new System.EventHandler(this.PasswordForm_Load);
@@ -159,5 +174,6 @@
         private System.Windows.Forms.LinkLabel linkLabelHelp;
         private System.Windows.Forms.Panel panelHeader;
         private System.Windows.Forms.Label lblHeader;
+        private System.Windows.Forms.CheckBox chkRememberMe; // Define Remember Me checkbox
     }
 }

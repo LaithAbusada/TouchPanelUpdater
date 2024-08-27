@@ -128,7 +128,6 @@ namespace Innovo_TP4_Updater
                     // Update the app using the logic from UpdateAppForm
                     await UpdateApp(appName);
 
-                    MessageBox.Show($"{clickedButton.Text} factory reset and update completed successfully.", "Reset Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                     // Close the first loading form
                     loadingForm.Close();
@@ -159,7 +158,7 @@ namespace Innovo_TP4_Updater
             try
             {
                 // Show a new loading form for rebooting
-                loadingForm = new LoadingForm("Rebooting the device... Please wait.");
+                loadingForm = new LoadingForm("Factory Reset Successful,Rebooting device... Please wait.");
                 loadingForm.Show();
 
                 // Execute the adb command to reboot the device
@@ -259,7 +258,6 @@ namespace Innovo_TP4_Updater
                     await UnzipAndInstall(downloadDirectory);
                 }
 
-                MessageBox.Show($"Successfully updated {appName} to version {latestVersion}.", "Update Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {

@@ -7,7 +7,7 @@
     <ProjectGuid>{B3122EFC-24E8-42A5-BBDA-A37CD4558280}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <RootNamespace>Innovo_TP4_Updater</RootNamespace>
-    <AssemblyName>Innovo TP4 Updater</AssemblyName>
+    <AssemblyName>Innovo Touch Panel Updater</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -24,7 +24,7 @@
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
     <AutorunEnabled>true</AutorunEnabled>
-    <ApplicationRevision>82</ApplicationRevision>
+    <ApplicationRevision>85</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>

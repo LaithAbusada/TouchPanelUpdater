@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 using RestSharp; // Ensure you have installed RestSharp via NuGet
+using Newtonsoft.Json;
 
 namespace Innovo_TP4_Updater
 {
@@ -13,7 +14,13 @@ namespace Innovo_TP4_Updater
 
         private void PasswordForm_Load(object sender, EventArgs e)
         {
-            // Any initialization if needed
+            // Load saved credentials if "Remember Me" was previously checked
+            if (Properties.Settings.Default.RememberMe)
+            {
+                txtUsername.Text = Properties.Settings.Default.Username;
+                txtPassword.Text = Properties.Settings.Default.Password;
+                chkRememberMe.Checked = true;
+            }
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -23,8 +30,8 @@ namespace Innovo_TP4_Updater
 
             if (AuthenticateUser(username, password))
             {
+                SaveCredentials(username, password); // Save credentials if login is successful
                 this.Hide();
-                // Password is correct, close the PasswordForm and open the main form of your application
                 Form1 mainForm = new Form1();
                 mainForm.ShowDialog();
                 this.Close();
@@ -41,7 +48,7 @@ namespace Innovo_TP4_Updater
         {
             var client = new RestClient("https://innovo.net/wp-json/api/v1/token");
 
-            var request = new RestRequest("" , Method.Post);
+            var request = new RestRequest("", Method.Post);
             request.AlwaysMultipartFormData = true;
             request.AddParameter("username", username);
             request.AddParameter("password", password);
@@ -50,8 +57,8 @@ namespace Innovo_TP4_Updater
 
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
-                // Here you should handle the response, e.g., extracting the token if needed
-                dynamic jsonResponse = Newtonsoft.Json.JsonConvert.DeserializeObject(response.Content);
+                // Handle the response, e.g., extracting the token if needed
+                dynamic jsonResponse = JsonConvert.DeserializeObject(response.Content);
                 string token = jsonResponse.jwt_token;
 
                 // Store the token if needed for further API calls
@@ -64,6 +71,23 @@ namespace Innovo_TP4_Updater
                 // Handle error response
                 return false;
             }
+        }
+
+        private void SaveCredentials(string username, string password)
+        {
+            if (chkRememberMe.Checked)
+            {
+                Properties.Settings.Default.Username = username;
+                Properties.Settings.Default.Password = password;
+                Properties.Settings.Default.RememberMe = true;
+            }
+            else
+            {
+                Properties.Settings.Default.Username = string.Empty;
+                Properties.Settings.Default.Password = string.Empty;
+                Properties.Settings.Default.RememberMe = false;
+            }
+            Properties.Settings.Default.Save();
         }
 
         private void linkLabelHelp_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
