@@ -165,6 +165,9 @@ namespace Innovo_TP4_Updater
                     settingsForm.DisableAllButtons();
                     DisableAllButtons();
 
+                    // Fetch the device model to check if it contains "Innovo"
+                    string deviceModel = await parentForm.ExecuteAdbCommand("adb shell getprop ro.product.model");
+
                     // Apply the appropriate settings based on the timeoutValue
                     if (timeoutValue == "0") // "Always On" mode
                     {
@@ -194,9 +197,21 @@ namespace Innovo_TP4_Updater
                     }
                     else
                     {
+                        // Set the screen off timeout
                         await parentForm.ExecuteAdbCommand($"adb shell settings put system screen_off_timeout {timeoutValue}");
-                        string sleepTimeoutValue = "1";
-                        await parentForm.ExecuteAdbCommand($"adb shell settings put secure sleep_timeout {sleepTimeoutValue}");
+
+                        // Check if the device model contains "Innovo"
+                        if (deviceModel.Contains("Innovo"))
+                        {
+                            // Set both screen saver and sleep mode to the same value
+                            await parentForm.ExecuteAdbCommand($"adb shell settings put secure sleep_timeout {timeoutValue}");
+                        }
+                        else
+                        {
+                            // Only set the sleep mode
+                            string sleepTimeoutValue = "1";
+                            await parentForm.ExecuteAdbCommand($"adb shell settings put secure sleep_timeout {sleepTimeoutValue}");
+                        }
 
                         // Update the label with the new sleep mode
                         lblSleepMode.Text = $"Sleep Mode: {modeName}";
@@ -222,6 +237,7 @@ namespace Innovo_TP4_Updater
                 }
             });
         }
+
         private void DisableAllButtons()
         {
             btnAlwaysOn.Enabled = false;

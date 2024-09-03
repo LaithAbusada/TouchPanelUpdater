@@ -48,6 +48,7 @@ namespace Innovo_TP4_Updater
         }
 
 
+
         public async Task<string> GetDeviceIpAndPort()
         {
             try

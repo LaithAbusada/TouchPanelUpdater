@@ -2,18 +2,40 @@
 using System.Windows.Forms;
 using RestSharp; // Ensure you have installed RestSharp via NuGet
 using Newtonsoft.Json;
+using System.Configuration;
 
 namespace Innovo_TP4_Updater
 {
     public partial class PasswordForm : Form
     {
+        private readonly DateTime expiryDate;
+
         public PasswordForm()
         {
             InitializeComponent();
-        }
 
+            // Load the expiry date from app.config
+            string expiryDateString = ConfigurationManager.AppSettings["ExpiryDate"];
+            if (DateTime.TryParse(expiryDateString, out DateTime parsedExpiryDate))
+            {
+                expiryDate = parsedExpiryDate;
+            }
+            else
+            {
+                // If parsing fails, set a default expiry date or handle the error as needed
+                expiryDate = DateTime.MaxValue; // Default to a far future date
+            }
+        }
         private void PasswordForm_Load(object sender, EventArgs e)
         {
+            // Check for expiry
+            if (IsExpired())
+            {
+                MessageBox.Show("This application has expired. Please contact support.", "Expired", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                Application.Exit();
+                return;
+            }
+
             // Load saved credentials if "Remember Me" was previously checked
             if (Properties.Settings.Default.RememberMe)
             {
@@ -93,6 +115,50 @@ namespace Innovo_TP4_Updater
         private void linkLabelHelp_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             System.Diagnostics.Process.Start("https://innovo.net/my-account");
+        }
+
+        private bool IsExpired()
+        {
+            // Get the current time from the system
+            DateTime currentDate = DateTime.Now;
+            MessageBox.Show("curr" + currentDate.ToString() + "expirty" + expiryDate.ToString());
+
+            // Optional: Fetch server time to avoid time tampering
+            DateTime? serverDate = GetServerTime();
+            if (serverDate.HasValue)
+            {
+                currentDate = serverDate.Value;
+            }
+            MessageBox.Show("curr" + currentDate.ToString() + "expirty" + expiryDate.ToString());
+
+            return currentDate > expiryDate;
+        }
+
+        private DateTime? GetServerTime()
+        {
+            try
+            {
+                string serverTimeApiUrl = ConfigurationManager.AppSettings["ServerTimeApiUrl"];
+
+                var client = new RestClient(serverTimeApiUrl); // Use the URL from app.config
+                var request = new RestRequest("", Method.Get);
+                RestResponse response = client.Execute(request);
+
+                if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    dynamic jsonResponse = JsonConvert.DeserializeObject(response.Content);
+                    string utcDateTimeString = jsonResponse.datetime;
+                    DateTime utcDateTime = DateTime.Parse(utcDateTimeString).ToUniversalTime();
+                    MessageBox.Show(utcDateTime.ToString());
+                    return utcDateTime;
+                }
+            }
+            catch
+            {
+                // Handle exceptions or fallback to local time if needed
+            }
+
+            return null; // Return null if unable to get server time
         }
     }
 }
