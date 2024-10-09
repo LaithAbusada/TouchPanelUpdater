@@ -8,12 +8,14 @@ namespace Innovo_TP4_Updater
     {
         private Form1 parentForm;
         private bool Connected;
+        private int dealerID;
 
-        public SettingsForm(Form1 parent)
+        public SettingsForm(Form1 parent, int dealerID)
         {
             InitializeComponent();
             parentForm = parent;
             this.btnBack.Visible = false;
+            this.dealerID = dealerID;
         }
 
         private async void SettingsForm_Load(object sender, EventArgs e)
@@ -96,6 +98,7 @@ namespace Innovo_TP4_Updater
                 {
                     // Directly disconnect the device without loading a new form
                     await DisconnectDevice();
+                    LoadConnectDisconnectForm();
                 }
                 else
                 {
@@ -214,7 +217,7 @@ namespace Innovo_TP4_Updater
 
         public void LoadConnectDisconnectForm()
         {
-            var connectDisconnectForm = new ConnectDisconnectForm(parentForm, Connected, this);
+            var connectDisconnectForm = new ConnectDisconnectForm(parentForm, Connected, this,dealerID);
 
             connectDisconnectForm.ConnectionStatusChanged += (isConnected) =>
             {

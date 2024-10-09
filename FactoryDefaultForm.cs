@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using MaterialSkin.Controls;
 using Newtonsoft.Json.Linq;
 
 namespace Innovo_TP4_Updater
@@ -103,6 +104,8 @@ namespace Innovo_TP4_Updater
                     loadingForm = new LoadingForm("Performing factory reset... Please wait.");
                     loadingForm.Show();
 
+                    string deviceModel = await parentForm.ExecuteAdbCommand("adb shell getprop ro.product.model");
+
                     // Set display to always active
                     await parentForm.ExecuteAdbCommand("adb shell settings put system screen_off_timeout 2147483647");
 
@@ -112,11 +115,14 @@ namespace Innovo_TP4_Updater
                     // Set display to adaptive (enable adaptive brightness)
                     await parentForm.ExecuteAdbCommand("adb shell settings put system screen_brightness_mode 1");
 
-                    // Set resolution to 479x480
-                    await parentForm.ExecuteAdbCommand("adb shell wm size 479x480");
+                    if (deviceModel.ToLower().Contains("p5"))
+                    {
+                        await parentForm.ExecuteAdbCommand("adb shell settings put system screen_backlight 2147483647");
+                    }
 
-                    // Set sound to maximum (7 for system, 15 for media)
-                    await parentForm.ExecuteAdbCommand("adb shell media volume --stream 3 --set 15");
+
+                        // Set sound to maximum (7 for system, 15 for media)
+                        await parentForm.ExecuteAdbCommand("adb shell media volume --stream 3 --set 15");
                     await parentForm.ExecuteAdbCommand("adb shell media volume --stream 1 --set 7");
 
                     // Clear cache and data
@@ -206,20 +212,32 @@ namespace Innovo_TP4_Updater
 
             // Step 2: Retrieve the device model name
             string deviceModel = await GetDeviceModel();
+            string lowerCaseModel = deviceModel.ToLower();
 
-            if (deviceModel != "P4")
+            if (!deviceModel.ToLower().Contains("p4") && !deviceModel.ToLower().Contains("p5"))
             {
-                MessageBox.Show($"Connected device is {deviceModel}, but only P4 devices are supported for updates.", "Unsupported Device", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show($"Connected device is {deviceModel}, but only P4 or P5 devices are supported for updates.\n");
                 return;
             }
+
 
             string downloadDirectory = string.Empty;
 
             try
             {
-                // Step 3: Set resolution for update
-                await parentForm.ExecuteAdbCommand("adb shell wm size 479x480");
+                string screenSize = await GetScreenSize();
 
+                // Step 3: Set resolution for update
+                if (appName == "Control4" && lowerCaseModel.Contains("p4"))
+                {
+                    await parentForm.ExecuteAdbCommand("adb shell wm size 720x720");
+                }
+                else if (lowerCaseModel.Contains("p5")){ }
+                else if (screenSize == "480x480")
+                {
+                    await parentForm.ExecuteAdbCommand("adb shell wm size 479x480");
+                }
+               
                 // Check for updates and download
                 string jsonUrl = "https://innovo.net/repo/TP4/files.json";
                 string jsonString;
@@ -278,6 +296,13 @@ namespace Innovo_TP4_Updater
                     }
                 }
             }
+        }
+
+        private async Task<string> GetScreenSize()
+        {
+            string screenSizeCommand = "adb shell wm size";
+            string screenSizeOutput = await parentForm.ExecuteAdbCommand(screenSizeCommand);
+            return screenSizeOutput.Split(':')[1].Trim();
         }
 
         // Helper method to get the device model

@@ -9,6 +9,7 @@ namespace Innovo_TP4_Updater
     public partial class PasswordForm : Form
     {
         private readonly DateTime expiryDate;
+        private int dealerId; // Store the dealer ID
 
         public PasswordForm()
         {
@@ -53,10 +54,20 @@ namespace Innovo_TP4_Updater
             if (AuthenticateUser(username, password))
             {
                 SaveCredentials(username, password); // Save credentials if login is successful
-                this.Hide();
-                Form1 mainForm = new Form1();
-                mainForm.ShowDialog();
-                this.Close();
+
+                // Fetch dealer ID
+                if (FetchDealerId(username))
+                {
+                    // Pass dealerId to Form1
+                    this.Hide();
+                    Form1 mainForm = new Form1(dealerId); // Pass the dealerId to Form1
+                    mainForm.ShowDialog();
+                    this.Close();
+                }
+                else
+                {
+                    MessageBox.Show("Unable to retrieve dealer ID. Please try again.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
             else
             {
@@ -95,6 +106,28 @@ namespace Innovo_TP4_Updater
             }
         }
 
+        private bool FetchDealerId(string dealerUsername)
+        {
+            var client = new RestClient("https://showroom.innovo.net/LoginDealer.php");
+
+            var request = new RestRequest("", Method.Get);
+            request.AddParameter("dealer_username", dealerUsername);
+
+            RestResponse response = client.Execute(request);
+
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                dynamic jsonResponse = JsonConvert.DeserializeObject(response.Content);
+                if (jsonResponse.status == "success")
+                {
+                    dealerId = jsonResponse.dealer_id;
+                    return true;
+                }
+            }
+
+            return false; // Return false if unable to get dealer ID
+        }
+
         private void SaveCredentials(string username, string password)
         {
             if (chkRememberMe.Checked)
@@ -121,7 +154,6 @@ namespace Innovo_TP4_Updater
         {
             // Get the current time from the system
             DateTime currentDate = DateTime.Now;
-            MessageBox.Show("curr" + currentDate.ToString() + "expirty" + expiryDate.ToString());
 
             // Optional: Fetch server time to avoid time tampering
             DateTime? serverDate = GetServerTime();
@@ -129,7 +161,6 @@ namespace Innovo_TP4_Updater
             {
                 currentDate = serverDate.Value;
             }
-            MessageBox.Show("curr" + currentDate.ToString() + "expirty" + expiryDate.ToString());
 
             return currentDate > expiryDate;
         }
@@ -149,7 +180,6 @@ namespace Innovo_TP4_Updater
                     dynamic jsonResponse = JsonConvert.DeserializeObject(response.Content);
                     string utcDateTimeString = jsonResponse.datetime;
                     DateTime utcDateTime = DateTime.Parse(utcDateTimeString).ToUniversalTime();
-                    MessageBox.Show(utcDateTime.ToString());
                     return utcDateTime;
                 }
             }

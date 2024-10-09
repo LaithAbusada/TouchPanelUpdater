@@ -154,30 +154,43 @@ namespace Innovo_TP4_Updater
         {
             await SetSleepMode("1800000", "30 Minutes"); // Set sleep mode to 30 minutes
         }
-
         private async Task SetSleepMode(string timeoutValue, string modeName)
         {
             await CheckAndExecuteCommand(async () =>
             {
                 try
                 {
+                    string deviceModel = await parentForm.ExecuteAdbCommand("adb shell getprop ro.product.model");
+
+                    if (deviceModel.ToLower().Contains("p5"))
+                    {
+                        var result = MessageBox.Show("The device will reboot after changes. Do you want to proceed?", "Reboot Confirmation", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
+                        if (result == DialogResult.No)
+                        {
+                            return; // Cancel the operation if the user doesn't confirm
+                        }
+                    }
+
                     // Disable all buttons in both forms
                     settingsForm.DisableAllButtons();
                     DisableAllButtons();
 
-                    // Fetch the device model to check if it contains "Innovo"
-                    string deviceModel = await parentForm.ExecuteAdbCommand("adb shell getprop ro.product.model");
-
-                    // Apply the appropriate settings based on the timeoutValue
-                    if (timeoutValue == "0") // "Always On" mode
+                    if (deviceModel.ToLower().Contains("p5"))
                     {
-                        await parentForm.ExecuteAdbCommand("adb shell settings put secure sleep_timeout -1");
-                        await parentForm.ExecuteAdbCommand("adb shell settings put system screen_off_timeout 2147483647");
+                        // If the device model contains "p5", use the screen_backlight command instead
+                        if (timeoutValue == "0") // "Always On" mode
+                        {
+                            await parentForm.ExecuteAdbCommand("adb shell settings put system screen_backlight 2147483647");
+                        }
+                        else
+                        {
+                            await parentForm.ExecuteAdbCommand($"adb shell settings put system screen_backlight {timeoutValue}");
+                        }
 
                         // Update the label with the new sleep mode
                         lblSleepMode.Text = $"Sleep Mode: {modeName}";
 
-                        // Show a message indicating the mode is now on
                         MessageBox.Show($"Updated sleep mode to {modeName}. The device will now reboot.", "Mode Change", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                         // Show the loading form during the reboot process
@@ -188,7 +201,7 @@ namespace Innovo_TP4_Updater
                             // Reboot the device
                             await parentForm.ExecuteAdbCommand("adb reboot");
 
-                            // Wait 30 seconds to ensure the reboot process completes
+                            // Wait 30-45 seconds to ensure the reboot process completes
                             await Task.Delay(45000);
 
                             // Close the loading form after the wait
@@ -197,30 +210,51 @@ namespace Innovo_TP4_Updater
                     }
                     else
                     {
-                        // Set the screen off timeout
-                        await parentForm.ExecuteAdbCommand($"adb shell settings put system screen_off_timeout {timeoutValue}");
-
-                        // Check if the device model contains "Innovo"
-                        if (deviceModel.Contains("Innovo"))
+                        // For non-p5 devices, use the existing logic for screen_off_timeout and sleep_timeout
+                        if (timeoutValue == "0") // "Always On" mode
                         {
-                            // Set both screen saver and sleep mode to the same value
-                            await parentForm.ExecuteAdbCommand($"adb shell settings put secure sleep_timeout {timeoutValue}");
+                            await parentForm.ExecuteAdbCommand("adb shell settings put secure sleep_timeout -1");
+                            await parentForm.ExecuteAdbCommand("adb shell settings put system screen_off_timeout 2147483647");
                         }
                         else
                         {
-                            // Only set the sleep mode
-                            string sleepTimeoutValue = "1";
-                            await parentForm.ExecuteAdbCommand($"adb shell settings put secure sleep_timeout {sleepTimeoutValue}");
+                            await parentForm.ExecuteAdbCommand($"adb shell settings put system screen_off_timeout {timeoutValue}");
+
+                            // Check if the device model contains "Innovo"
+                            if (deviceModel.Contains("Innovo"))
+                            {
+                                // Set both screen saver and sleep mode to the same value
+                                await parentForm.ExecuteAdbCommand($"adb shell settings put secure sleep_timeout {timeoutValue}");
+                            }
+                            else
+                            {
+                                // Only set the sleep mode
+                                string sleepTimeoutValue = "1";
+                                await parentForm.ExecuteAdbCommand($"adb shell settings put secure sleep_timeout {sleepTimeoutValue}");
+                            }
                         }
 
                         // Update the label with the new sleep mode
                         lblSleepMode.Text = $"Sleep Mode: {modeName}";
 
-                        // Show a message indicating the mode is now on
                         MessageBox.Show($"Updated sleep mode to {modeName}.", "Mode Change", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                        // Wait a brief moment to ensure settings are applied (optional)
+                        // Wait briefly to ensure settings are applied
                         await Task.Delay(1000);
+                    }
+
+                    // Reboot for p5 devices
+                    if (deviceModel.ToLower().Contains("p5"))
+                    {
+                        using (var loadingForm = new LoadingForm("Rebooting, please wait..."))
+                        {
+                            loadingForm.Show();
+
+                            await parentForm.ExecuteAdbCommand("adb reboot");
+                            await Task.Delay(45000);
+
+                            loadingForm.Close();
+                        }
                     }
 
                     // Re-enable all buttons after the settings are applied
@@ -237,6 +271,7 @@ namespace Innovo_TP4_Updater
                 }
             });
         }
+
 
         private void DisableAllButtons()
         {

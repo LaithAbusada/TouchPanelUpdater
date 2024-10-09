@@ -129,7 +129,12 @@ namespace Innovo_TP4_Updater
                         materialMultiLineTextBox3.AppendText("Adjusting screen resolution from 480x480 to 479x479...\n");
                         await AdjustScreenResolution("479x479");
                     }
-
+                    if (appName == "Control4" && deviceModel.ToLower().Contains("p4"))
+                    {
+                        await parentForm.ExecuteAdbCommand("adb shell wm size 720x720");
+                    }
+                    else if (deviceModel.ToLower().Contains("p5")) { }
+             
                     DisableOtherButtons(clickedButton);
 
                     loadingForm.UpdateMessage("Checking for available updates...");

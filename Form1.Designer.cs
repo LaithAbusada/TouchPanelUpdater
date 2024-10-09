@@ -200,7 +200,7 @@
             this.sidebarPanel.Location = new System.Drawing.Point(0, 0);
             this.sidebarPanel.Margin = new System.Windows.Forms.Padding(4);
             this.sidebarPanel.Name = "sidebarPanel";
-            this.sidebarPanel.Size = new System.Drawing.Size(300, 588);
+            this.sidebarPanel.Size = new System.Drawing.Size(300, 651);
             this.sidebarPanel.TabIndex = 0;
             // 
             // button5
@@ -264,7 +264,7 @@
             this.mainPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.mainPanel.Location = new System.Drawing.Point(300, 0);
             this.mainPanel.Name = "mainPanel";
-            this.mainPanel.Size = new System.Drawing.Size(900, 588);
+            this.mainPanel.Size = new System.Drawing.Size(900, 651);
             this.mainPanel.TabIndex = 0;
             this.mainPanel.Paint += new System.Windows.Forms.PaintEventHandler(this.mainPanel_Paint);
             // 
@@ -282,7 +282,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ButtonFace;
             this.CausesValidation = false;
-            this.ClientSize = new System.Drawing.Size(1200, 588);
+            this.ClientSize = new System.Drawing.Size(1200, 651);
             this.ControlBox = false;
             this.Controls.Add(this.mainPanel);
             this.Controls.Add(this.sidebarPanel);
