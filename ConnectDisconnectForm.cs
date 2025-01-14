@@ -130,6 +130,8 @@ namespace Innovo_TP4_Updater
             var request = new RestRequest("", Method.Get);
             request.AddParameter("dealer_id", dealerID);
 
+
+
             RestResponse response = await client.ExecuteAsync(request);
 
             comboProjectName.Items.Clear(); // Clear any existing items
@@ -393,7 +395,11 @@ namespace Innovo_TP4_Updater
             // Add parameters using AddParameter method
             request.Resource = $"?dealer_id={dealerID}&name={newProjectName}";
 
-
+            if (dealerID == -1)
+            {
+                MessageBox.Show("You can't use this feature. Please contact support.", "Feature Unavailable", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
             try
             {
                 RestResponse response = await client.ExecuteAsync(request);
@@ -634,12 +640,18 @@ namespace Innovo_TP4_Updater
             {
                 // Retrieve the selected panel object
                 var selectedPanel = comboPanelLocation.SelectedItem as ProjectPanel;
-
                 if (selectedPanel != null)
                 {
                     // Load the panel details into the corresponding text boxes
                     txtIpAddress.Text = selectedPanel.IPAddress + ":" + selectedPanel.Port;
+                    txtIpAddress.ReadOnly = true;
+
                 }
+            }
+            else
+            {
+                txtIpAddress.ReadOnly = false;
+
             }
         }
 

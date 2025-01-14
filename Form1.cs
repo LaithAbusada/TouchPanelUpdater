@@ -37,6 +37,10 @@ namespace Innovo_TP4_Updater
 
         private async void Form1_Load(object sender, EventArgs e)
         {
+
+
+
+
             var settingsForm = new SettingsForm(this,dealerID);
             LoadFormIntoSidebarPanel(settingsForm);
             // Always disconnect all devices when the form loads

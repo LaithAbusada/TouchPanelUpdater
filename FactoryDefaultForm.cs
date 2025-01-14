@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -106,8 +107,15 @@ namespace Innovo_TP4_Updater
 
                     string deviceModel = await parentForm.ExecuteAdbCommand("adb shell getprop ro.product.model");
 
+                    string androidversion = await parentForm.ExecuteAdbCommand("adb shell getprop ro.build.version.release");
+
+                    Version androidVersionOutput = new Version(NormalizeVersion(androidversion));
+
                     // Set display to always active
                     await parentForm.ExecuteAdbCommand("adb shell settings put system screen_off_timeout 2147483647");
+
+
+                    await parentForm.ExecuteAdbCommand("adb shell settings put secure sleep_timeout -1");
 
                     // Disable screensaver (Daydream)
                     await parentForm.ExecuteAdbCommand("adb shell settings put secure screensaver_enabled 0");
@@ -121,8 +129,20 @@ namespace Innovo_TP4_Updater
                     }
 
 
-                        // Set sound to maximum (7 for system, 15 for media)
-                        await parentForm.ExecuteAdbCommand("adb shell media volume --stream 3 --set 15");
+                    Version version13 = new Version(NormalizeVersion("13"));
+
+                    if (androidVersionOutput >= version13)
+                    {
+                        // Disable auto-rotate and set user rotation to the selected mode
+                        await parentForm.ExecuteAdbCommand("adb shell settings put system accelerometer_rotation 0");
+
+                        // Set HDMI orientation and user rotation based on mode
+                        await parentForm.ExecuteAdbCommand($"adb shell settings put system hdmi_orientation 0");
+                        await parentForm.ExecuteAdbCommand($"adb shell settings put system user_rotation 0");
+                    }
+
+                    // Set sound to maximum (7 for system, 15 for media)
+                    await parentForm.ExecuteAdbCommand("adb shell media volume --stream 3 --set 15");
                     await parentForm.ExecuteAdbCommand("adb shell media volume --stream 1 --set 7");
 
                     // Clear cache and data
@@ -132,7 +152,11 @@ namespace Innovo_TP4_Updater
                     await parentForm.ExecuteAdbCommand($"adb shell pm uninstall {packageName}");
 
                     // Update the app using the logic from UpdateAppForm
-                    await UpdateApp(appName);
+
+                    string screenSize = await GetScreenSize();
+
+                 
+                    await UpdateApp(appName,loadingForm,screenSize);
 
 
                     // Close the first loading form
@@ -156,7 +180,30 @@ namespace Innovo_TP4_Updater
                     ShowAndEnableButtons();
                 }
             }
+
         }
+
+        private async Task<string> GetCurrentVersion(string appName)
+        {
+            string packageName = GetPackageName(appName);
+            if (string.IsNullOrEmpty(packageName))
+            {
+                return null;
+            }
+
+            string command = $"adb shell dumpsys package {packageName} | findstr versionName";
+            string output = await parentForm.ExecuteAdbCommand(command);
+
+            if (!string.IsNullOrEmpty(output))
+            {
+                string versionLine = output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)[0];
+                string versionName = versionLine.Split('=')[1].Trim();
+                return versionName;
+            }
+
+            return null;
+        }
+
         private async Task RebootDevice()
         {
             LoadingForm loadingForm = null;
@@ -199,46 +246,48 @@ namespace Innovo_TP4_Updater
             }
         }
 
-        private async Task UpdateApp(string appName)
+        private static string NormalizeVersion(string version)
         {
-            // Step 1: Check for connected devices
-            string connectedDevices = await parentForm.ExecuteAdbCommand("adb devices -l");
+            // Split the version into parts
+            var parts = version.Split('.');
 
-            if (!connectedDevices.Contains("device"))
+            // Add ".0" for missing parts up to 4 components (as `Version` class can handle versions with up to 4 parts)
+            while (parts.Length < 4)
             {
-                MessageBox.Show("No connected device detected. Please connect a device and try again.", "No Connected Device", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
+                version += ".0";
+                parts = version.Split('.');
             }
 
-            // Step 2: Retrieve the device model name
-            string deviceModel = await GetDeviceModel();
-            string lowerCaseModel = deviceModel.ToLower();
+            return version;
+        }
 
-            if (!deviceModel.ToLower().Contains("p4") && !deviceModel.ToLower().Contains("p5"))
-            {
-                MessageBox.Show($"Connected device is {deviceModel}, but only P4 or P5 devices are supported for updates.\n");
-                return;
-            }
-
-
+        private async Task UpdateApp(string appName , LoadingForm loadingForm,string screenSize)
+        {
             string downloadDirectory = string.Empty;
-
             try
             {
-                string screenSize = await GetScreenSize();
+                // Check for connected devices
+                string connectedDevices = await parentForm.ExecuteAdbCommand("adb devices -l");
 
-                // Step 3: Set resolution for update
-                if (appName == "Control4" && lowerCaseModel.Contains("p4"))
+                if (!connectedDevices.Contains("device"))
                 {
-                    await parentForm.ExecuteAdbCommand("adb shell wm size 720x720");
+                    MessageBox.Show("No connected device detected. Please connect a device and try again.", "No Connected Device", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
                 }
-                else if (lowerCaseModel.Contains("p5")){ }
-                else if (screenSize == "480x480")
+
+
+                // Retrieve the device model
+                string deviceModel = await GetDeviceModel();
+                string lowerCaseModel = deviceModel.ToLower();
+
+                if (!lowerCaseModel.Contains("p4") && !lowerCaseModel.Contains("p5"))
                 {
-                    await parentForm.ExecuteAdbCommand("adb shell wm size 479x480");
+                    MessageBox.Show($"Connected device is {deviceModel}, but only P4 or P5 devices are supported for updates.\n");
+                    return;
                 }
-               
-                // Check for updates and download
+
+
+
                 string jsonUrl = "https://innovo.net/repo/TP4/files.json";
                 string jsonString;
 
@@ -248,34 +297,80 @@ namespace Innovo_TP4_Updater
                 }
 
                 JObject jsonData = JObject.Parse(jsonString);
-                if (jsonData[appName] == null)
+                string currentVersion = await GetCurrentVersion(appName);
+                string latestVersion = jsonData[appName]["version"].ToString();
+
+                // Parse versions to enable comparison
+                Version localVersion = new Version(currentVersion);
+                Version jsonVersion = new Version(latestVersion);
+
+                if (localVersion >= jsonVersion)
                 {
-                    MessageBox.Show($"No update data found for {appName}.", "Update Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
 
-                string latestVersion = jsonData[appName]["version"].ToString();
-                string fileType = jsonData[appName]["type"].ToString();
-                string fileName = jsonData[appName]["filename"].ToString();
+                // Step 3: Set resolution for update
+                if (appName == "Control4" && lowerCaseModel.Contains("p4"))
+                {
+                    await parentForm.ExecuteAdbCommand("adb shell wm size 720x720");
+                }
+                else if (lowerCaseModel.Contains("p5")) { }
+                else if (screenSize == "480x480")
+                {
+                    await parentForm.ExecuteAdbCommand("adb shell wm size 479x480");
+                }
 
-                string downloadUrl = $"https://innovo.net/repo/TP4/{fileName}";
-                downloadDirectory = Path.Combine(Path.GetTempPath(), fileName);
+                string baseDirectory = Path.Combine(Application.StartupPath, "Downloads");  // Using relative path
+                downloadDirectory = Path.Combine(baseDirectory, jsonData[appName]["filename"].ToString());
+
+                string downloadFolder = Path.GetDirectoryName(downloadDirectory);
+                if (!Directory.Exists(downloadFolder))
+                {
+                    Directory.CreateDirectory(downloadFolder);
+                }
+
+                if (File.Exists(downloadDirectory))
+                {
+                    File.Delete(downloadDirectory);
+                }
+
+                string extractPath = Path.Combine(Path.GetDirectoryName(downloadDirectory), Path.GetFileNameWithoutExtension(downloadDirectory));
+                if (Directory.Exists(extractPath))
+                {
+                    Directory.Delete(extractPath, true);
+                }
+
+                loadingForm.UpdateMessage("Installing Update for " + appName + " this can take up to 2 minutes" + Environment.NewLine);
+
+                loadingForm.UpdateMessage("Downloading the update...");
+                string downloadUrl = $"https://innovo.net/repo/TP4/{jsonData[appName]["filename"]}";
 
                 using (WebClient client = new WebClient())
                 {
                     await client.DownloadFileTaskAsync(new Uri(downloadUrl), downloadDirectory);
                 }
 
-                // Use ADB to install/update the app based on file type
+                // Check if the downloaded file exists before proceeding
+                if (!File.Exists(downloadDirectory))
+                {
+                    return;
+                }
+
+                loadingForm.UpdateMessage("Installing the update...");
+                string fileType = jsonData[appName]["type"].ToString();
                 if (fileType == "file")
                 {
                     await InstallApk(downloadDirectory);
+
+                    if (File.Exists(downloadDirectory))
+                    {
+                        File.Delete(downloadDirectory);
+                    }
                 }
                 else if (fileType == "zip")
                 {
                     await UnzipAndInstall(downloadDirectory);
                 }
-
             }
             catch (Exception ex)
             {
@@ -283,6 +378,7 @@ namespace Innovo_TP4_Updater
             }
             finally
             {
+
                 // Clean up downloaded files
                 if (!string.IsNullOrEmpty(downloadDirectory) && File.Exists(downloadDirectory))
                 {
@@ -312,33 +408,21 @@ namespace Innovo_TP4_Updater
             string modelOutput = await parentForm.ExecuteAdbCommand(modelCommand);
             return modelOutput.Trim();
         }
-
         private async Task InstallApk(string filePath)
         {
-            try
-            {
-                string installCommand = $"adb install -r {filePath}";
-                await parentForm.ExecuteAdbCommand(installCommand);
 
-                // Attempt to delete the file after installation
-                if (File.Exists(filePath))
-                {
-                    File.Delete(filePath);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error installing APK: {ex.Message}", "Installation Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            string installCommand = $"adb install -r \"{filePath}\"";
+            await parentForm.ExecuteAdbCommand(installCommand);
         }
+
 
         private async Task UnzipAndInstall(string zipFilePath)
         {
             string extractPath = Path.Combine(Path.GetDirectoryName(zipFilePath), Path.GetFileNameWithoutExtension(zipFilePath));
+            string tempDirectory = Path.Combine(Application.StartupPath, "APKFiles");  // Using relative path
 
             try
             {
-                // Delete the directory if it already exists
                 if (Directory.Exists(extractPath))
                 {
                     Directory.Delete(extractPath, true);
@@ -346,50 +430,67 @@ namespace Innovo_TP4_Updater
 
                 System.IO.Compression.ZipFile.ExtractToDirectory(zipFilePath, extractPath);
 
-                string[] extractedFiles = Directory.GetFiles(extractPath, "*.apk", SearchOption.AllDirectories);
-                if (extractedFiles.Length > 0)
+                string[] apkFiles = Directory.GetFiles(extractPath, "*.apk", SearchOption.AllDirectories);
+
+                if (apkFiles.Length > 0)
                 {
-                    // Prepare the adb install-multiple command
-                    string installCommand = "adb install-multiple -r --user 0 ";
-                    foreach (string apkFile in extractedFiles)
+                    // Ensure temp directory exists
+                    if (!Directory.Exists(tempDirectory))
                     {
-                        installCommand += $"\"{apkFile}\" ";
+                        Directory.CreateDirectory(tempDirectory);
                     }
 
-                    await parentForm.ExecuteAdbCommand(installCommand.TrimEnd());
+                    // Properly quote each file path
+                    var quotedFilePaths = apkFiles.Select(f => $"\"{f}\"");
+                    string installCommand = "adb install-multiple -r -d --user 0 " + string.Join(" ", quotedFilePaths);
+
+                    string result = await parentForm.ExecuteAdbCommand(installCommand);
+                    
+
+                    if (!string.IsNullOrWhiteSpace(result))
+                    {
+                        // Show the result in a message box
+
+                        // Check if the installation was successful
+
+                    }
+                    else
+                    {
+                       MessageBox.Show("No result from the adb command.\n");
+                    }
                 }
                 else
                 {
-                    MessageBox.Show("No APK files found in the extracted ZIP.", "Installation Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                   MessageBox.Show("No APK files found after unzipping.\n");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error during ZIP extraction and installation: {ex.Message}", "Installation Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+               MessageBox.Show($"Error during unzip and install: {ex.Message}\n");
             }
             finally
             {
-                // Clean up downloaded and extracted files
+                CleanUp(extractPath);
+                CleanUp(tempDirectory);
+            }
+        }
+
+        private void CleanUp(string path)
+        {
+            if (!string.IsNullOrEmpty(path) && File.Exists(path))
+            {
                 try
                 {
-                    if (File.Exists(zipFilePath))
-                    {
-                        File.Delete(zipFilePath);
-                    }
-
-                    if (Directory.Exists(extractPath))
-                    {
-                        Directory.Delete(extractPath, true);
-                    }
+                    File.Delete(path);
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Error cleaning up files: {ex.Message}", "Cleanup Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show($"Error deleting file: {ex.Message}\n");
                 }
             }
         }
 
-        private void DisableAndHideButtons(Guna.UI2.WinForms.Guna2Button clickedButton)
+            private void DisableAndHideButtons(Guna.UI2.WinForms.Guna2Button clickedButton)
         {
             // Disable and keep the clicked button visible
             clickedButton.Enabled = false;

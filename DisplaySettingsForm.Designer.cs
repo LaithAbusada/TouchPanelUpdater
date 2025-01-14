@@ -16,6 +16,8 @@ namespace Innovo_TP4_Updater
         private Guna.UI2.WinForms.Guna2Button btn5Min;
         private Guna.UI2.WinForms.Guna2Button btn10Min;
         private Guna.UI2.WinForms.Guna2Button btn30Min;
+        private Guna.UI2.WinForms.Guna2Button btnPortrait;
+        private Guna.UI2.WinForms.Guna2Button btnLandscape;
 
         protected override void Dispose(bool disposing)
         {
@@ -39,6 +41,10 @@ namespace Innovo_TP4_Updater
             this.btn5Min = new Guna.UI2.WinForms.Guna2Button();
             this.btn10Min = new Guna.UI2.WinForms.Guna2Button();
             this.btn30Min = new Guna.UI2.WinForms.Guna2Button();
+            this.btnPortrait = new Guna.UI2.WinForms.Guna2Button();
+            this.btnLandscape = new Guna.UI2.WinForms.Guna2Button();
+            this.displayLabel = new System.Windows.Forms.Label();
+            this.btnLandscapeRight = new Guna.UI2.WinForms.Guna2Button();
             this.adaptiveBrightnessPanel.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -160,10 +166,58 @@ namespace Innovo_TP4_Updater
             this.btn30Min.Text = "30 Minutes";
             this.btn30Min.Click += new System.EventHandler(this.btn30Min_Click);
             // 
+            // btnPortrait
+            // 
+            this.btnPortrait.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.btnPortrait.ForeColor = System.Drawing.Color.White;
+            this.btnPortrait.Location = new System.Drawing.Point(301, 433);
+            this.btnPortrait.Name = "btnPortrait";
+            this.btnPortrait.Size = new System.Drawing.Size(100, 39);
+            this.btnPortrait.TabIndex = 17;
+            this.btnPortrait.Text = "Portrait  Mode";
+            this.btnPortrait.Click += new System.EventHandler(this.btnPortrait_Click);
+            // 
+            // btnLandscape
+            // 
+            this.btnLandscape.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.btnLandscape.ForeColor = System.Drawing.Color.White;
+            this.btnLandscape.Location = new System.Drawing.Point(436, 433);
+            this.btnLandscape.Name = "btnLandscape";
+            this.btnLandscape.Size = new System.Drawing.Size(100, 39);
+            this.btnLandscape.TabIndex = 18;
+            this.btnLandscape.Text = " Defaut Landscape";
+            this.btnLandscape.Click += new System.EventHandler(this.btnLandscape_Click);
+            // 
+            // displayLabel
+            // 
+            this.displayLabel.AutoSize = true;
+            this.displayLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 13F);
+            this.displayLabel.ForeColor = System.Drawing.SystemColors.Highlight;
+            this.displayLabel.Location = new System.Drawing.Point(297, 399);
+            this.displayLabel.Name = "displayLabel";
+            this.displayLabel.Size = new System.Drawing.Size(115, 22);
+            this.displayLabel.TabIndex = 19;
+            this.displayLabel.Text = "Display Type";
+            // 
+            // btnLandscapeRight
+            // 
+            this.btnLandscapeRight.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.btnLandscapeRight.ForeColor = System.Drawing.Color.White;
+            this.btnLandscapeRight.Location = new System.Drawing.Point(560, 433);
+            this.btnLandscapeRight.Name = "btnLandscapeRight";
+            this.btnLandscapeRight.Size = new System.Drawing.Size(100, 39);
+            this.btnLandscapeRight.TabIndex = 20;
+            this.btnLandscapeRight.Text = "Landscape Right";
+            this.btnLandscapeRight.Click += new System.EventHandler(this.btnLandscapeRight_Click);
+            // 
             // DisplaySettingsForm
             // 
             this.BackColor = System.Drawing.Color.AliceBlue;
             this.ClientSize = new System.Drawing.Size(976, 605);
+            this.Controls.Add(this.btnLandscapeRight);
+            this.Controls.Add(this.displayLabel);
+            this.Controls.Add(this.btnPortrait);
+            this.Controls.Add(this.btnLandscape);
             this.Controls.Add(this.btn30Min);
             this.Controls.Add(this.btn10Min);
             this.Controls.Add(this.btn5Min);
@@ -186,5 +240,8 @@ namespace Innovo_TP4_Updater
             this.PerformLayout();
 
         }
+
+        private Label displayLabel;
+        private Guna.UI2.WinForms.Guna2Button btnLandscapeRight;
     }
 }

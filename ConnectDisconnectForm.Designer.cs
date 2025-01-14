@@ -73,7 +73,6 @@ namespace Innovo_TP4_Updater
             this.txtIpAddress.ForeColor = System.Drawing.Color.Black;
             this.txtIpAddress.Location = new System.Drawing.Point(200, 150);
             this.txtIpAddress.Name = "txtIpAddress";
-            this.txtIpAddress.ReadOnly = true;
             this.txtIpAddress.Size = new System.Drawing.Size(300, 25);
             this.txtIpAddress.TabIndex = 2;
             // 
@@ -95,9 +94,9 @@ namespace Innovo_TP4_Updater
             this.lblPanelLocation.ForeColor = System.Drawing.SystemColors.Highlight;
             this.lblPanelLocation.Location = new System.Drawing.Point(50, 100);
             this.lblPanelLocation.Name = "lblPanelLocation";
-            this.lblPanelLocation.Size = new System.Drawing.Size(98, 19);
+            this.lblPanelLocation.Size = new System.Drawing.Size(82, 19);
             this.lblPanelLocation.TabIndex = 4;
-            this.lblPanelLocation.Text = "Panel Location";
+            this.lblPanelLocation.Text = "Panel Name";
             // 
             // lblIpAddress
             // 

@@ -9,6 +9,7 @@ namespace Innovo_TP4_Updater
         private Form1 parentForm;
         private bool isCheckingConnection;
         private SettingsForm settingsForm;
+
         public DisplaySettingsForm(Form1 parent, SettingsForm settingsForm)
         {
             InitializeComponent();
@@ -53,45 +54,106 @@ namespace Innovo_TP4_Updater
             }
         }
 
+        string DisplayType;
+
+        private static string NormalizeVersion(string version)
+        {
+            // Split the version into parts
+            var parts = version.Split('.');
+
+            // Add ".0" for missing parts up to 4 components (as `Version` class can handle versions with up to 4 parts)
+            while (parts.Length < 4)
+            {
+                version += ".0";
+                parts = version.Split('.');
+            }
+
+            return version;
+        }
+
         private async Task LoadDisplaySettings()
         {
             try
             {
+                // Fetch the Android version
+                string androidVersionOutput = await parentForm.ExecuteAdbCommand("adb shell getprop ro.build.version.release");
+
+
+                Version deviceVersion = new Version(NormalizeVersion(androidVersionOutput));
+                // Check if Android version is 13 or higher
+
                 // Fetch current brightness
                 string brightnessOutput = await parentForm.ExecuteAdbCommand("adb shell settings get system screen_brightness");
 
-                if (int.TryParse(brightnessOutput.Trim(), out int brightness))
-                {
-                    brightnessTrackBar.Value = brightness;
-                    lblBrightness.Text = $"Brightness: {brightness}";
-                }
-                else
-                {
-                    brightnessTrackBar.Value = 0;
-                    lblBrightness.Text = "Brightness: N/A";
-                }
-
+                    if (int.TryParse(brightnessOutput.Trim(), out int brightness))
+                    {
+                        brightnessTrackBar.Value = brightness;
+                        lblBrightness.Text = $"Brightness: {brightness}";
+                    }
+                    else
+                    {
+                        brightnessTrackBar.Value = 0;
+                        lblBrightness.Text = "Brightness: N/A";
+                    }
                 // Fetch adaptive brightness setting
-                string adaptiveBrightnessOutput = await parentForm.ExecuteAdbCommand("adb shell settings get system screen_brightness_mode");
+                    string adaptiveBrightnessOutput = await parentForm.ExecuteAdbCommand("adb shell settings get system screen_brightness_mode");
 
-                if (int.TryParse(adaptiveBrightnessOutput.Trim(), out int adaptiveBrightnessMode))
+                    if (int.TryParse(adaptiveBrightnessOutput.Trim(), out int adaptiveBrightnessMode))
+                    {
+                        adaptiveBrightnessSwitch.Checked = adaptiveBrightnessMode == 1;
+                    }
+                    else
+                    {
+                        adaptiveBrightnessSwitch.Checked = false;
+                    }
+
+
+
+
+
+                Version version13 = new Version(NormalizeVersion("13"));
+       
+                if (deviceVersion >= version13)
                 {
-                    adaptiveBrightnessSwitch.Checked = adaptiveBrightnessMode == 1;
+                    // Fetch display type (user rotation) only for Android 13 or higher
+                    DisplayType = await parentForm.ExecuteAdbCommand("adb shell settings get system user_rotation");
+
+                    showDisplayType();
+
+                    // Update the displayLabel based on the user rotation setting
+                    UpdateDisplayLabel(DisplayType);
                 }
                 else
                 {
-                    adaptiveBrightnessSwitch.Checked = false;
+                    HideDisplayType();
                 }
 
-                // Fetch current sleep mode value
+                // Fetch current sleep mode valueUODATE
                 await UpdateSleepModeLabel();
-            }
+                }
+              
+            
             catch (Exception ex)
             {
                 MessageBox.Show($"An error occurred while loading display settings: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
+        private void showDisplayType()
+        {
+            displayLabel.Visible = true;
+            btnPortrait.Visible = true;
+            btnLandscape.Visible = true;
+            btnLandscapeRight.Visible = true;
+        }
+    
+        private void HideDisplayType()
+        {
+            displayLabel.Visible = false;
+            btnPortrait.Visible = false;
+            btnLandscape.Visible = false;
+            btnLandscapeRight.Visible = false;
+        }
         private async void adaptiveBrightnessSwitch_CheckedChanged(object sender, EventArgs e)
         {
             await CheckAndExecuteCommand(async () =>
@@ -154,6 +216,7 @@ namespace Innovo_TP4_Updater
         {
             await SetSleepMode("1800000", "30 Minutes"); // Set sleep mode to 30 minutes
         }
+
         private async Task SetSleepMode(string timeoutValue, string modeName)
         {
             await CheckAndExecuteCommand(async () =>
@@ -178,6 +241,8 @@ namespace Innovo_TP4_Updater
 
                     if (deviceModel.ToLower().Contains("p5"))
                     {
+                        await parentForm.ExecuteAdbCommand("adb shell settings put secure sleep_timeout -1");
+                        await parentForm.ExecuteAdbCommand("adb shell settings put system screen_off_timeout 2147483647");
                         // If the device model contains "p5", use the screen_backlight command instead
                         if (timeoutValue == "0") // "Always On" mode
                         {
@@ -243,19 +308,7 @@ namespace Innovo_TP4_Updater
                         await Task.Delay(1000);
                     }
 
-                    // Reboot for p5 devices
-                    if (deviceModel.ToLower().Contains("p5"))
-                    {
-                        using (var loadingForm = new LoadingForm("Rebooting, please wait..."))
-                        {
-                            loadingForm.Show();
-
-                            await parentForm.ExecuteAdbCommand("adb reboot");
-                            await Task.Delay(45000);
-
-                            loadingForm.Close();
-                        }
-                    }
+                
 
                     // Re-enable all buttons after the settings are applied
                     settingsForm.EnableAllButtons();
@@ -272,7 +325,6 @@ namespace Innovo_TP4_Updater
             });
         }
 
-
         private void DisableAllButtons()
         {
             btnAlwaysOn.Enabled = false;
@@ -282,6 +334,9 @@ namespace Innovo_TP4_Updater
             btn30Min.Enabled = false;
             brightnessTrackBar.Enabled = false;
             adaptiveBrightnessSwitch.Enabled = false;
+            btnPortrait.Enabled = false; // Added this line for new buttons
+            btnLandscape.Enabled = false; // Added this line for new buttons
+            btnLandscapeRight.Enabled = false; // Added this line for new buttons
         }
 
         private void EnableAllButtons()
@@ -293,13 +348,81 @@ namespace Innovo_TP4_Updater
             btn30Min.Enabled = true;
             brightnessTrackBar.Enabled = true;
             adaptiveBrightnessSwitch.Enabled = true;
+            btnPortrait.Enabled = true; // Added this line for new buttons
+            btnLandscape.Enabled = true; // Added this line for new buttons
+            btnLandscapeRight.Enabled = true; // Added this line for new buttons
         }
 
+        private async void btnPortrait_Click(object sender, EventArgs e)
+        {
+            await SetDisplayMode("Portrait", 0, 0);
+        }
+
+        private async void btnLandscape_Click(object sender, EventArgs e)
+        {
+            await SetDisplayMode("Default Landscape", 1, 90);
+        }
+        private async Task SetDisplayMode(string mode, int userRotation, int hdmiOrientation)
+        {
+            await CheckAndExecuteCommand(async () =>
+            {
+                try
+                {
+                    // Ask the user if they want to reboot before applying the changes
+                    var result = MessageBox.Show($"The device will reboot after applying the changes. Do you want to reboot and set the display to {mode} Mode?",
+                                                 "Reboot Confirmation", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
+                    if (result == DialogResult.Yes)
+                    {
+                        // Disable all buttons before proceeding
+                        DisableAllButtons();
+                        settingsForm.DisableAllButtons();
+
+
+                        // Disable auto-rotate and set user rotation to the selected mode
+                        await parentForm.ExecuteAdbCommand("adb shell settings put system accelerometer_rotation 0");
+
+                        // Set HDMI orientation and user rotation based on mode
+                        await parentForm.ExecuteAdbCommand($"adb shell settings put system hdmi_orientation {hdmiOrientation}");
+                        await parentForm.ExecuteAdbCommand($"adb shell settings put system user_rotation {userRotation}");
+
+                        // Update the displayLabel
+                        displayLabel.Text = $"Display: {mode}";
+
+                        MessageBox.Show($"Display set to {mode} Mode", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                        // Show the loading form during the reboot process
+                        using (var loadingForm = new LoadingForm("Rebooting, please wait...(This can take up to 45 seconds)"))
+                        {
+                            loadingForm.Show();
+
+                            // Reboot the device
+                            await parentForm.ExecuteAdbCommand("adb reboot");
+
+                            // Wait 30-45 seconds to ensure the reboot process completes
+                            await Task.Delay(45000);
+
+                            // Close the loading form after the wait
+                            loadingForm.Close();
+                        }
+
+                        // Re-enable all buttons after reboot
+                        settingsForm.EnableAllButtons();
+                        EnableAllButtons();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"An error occurred while changing to {mode} Mode: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            });
+        }
 
         private async Task UpdateSleepModeLabel()
         {
             try
             {
+
                 string screenOffTimeoutOutput = await parentForm.ExecuteAdbCommand("adb shell settings get system screen_off_timeout");
                 if (int.TryParse(screenOffTimeoutOutput.Trim(), out int timeoutValue))
                 {
@@ -337,6 +460,29 @@ namespace Innovo_TP4_Updater
                 MessageBox.Show($"An error occurred while retrieving sleep mode: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+        private void UpdateDisplayLabel(string rotation)
+        {
+            switch (rotation.Trim())
+            {
+                case "0":
+                    displayLabel.Text = "Display: Portrait";
+                    break;
+                case "1":
+                    displayLabel.Text = "Display:Default Landscape";
+                    break;
+                case "2":
+                    displayLabel.Text = "Display: Reverse Portrait";
+                    break;
+                case "3":
+                    displayLabel.Text = "Display: Landscape Right";
+                    break;
+                default:
+                    displayLabel.Text = "Display: Unknown";
+                    break;
+            }
+        }
+
+
         private async Task CheckAndExecuteCommand(Func<Task> command)
         {
             if (isCheckingConnection) return;
@@ -363,6 +509,18 @@ namespace Innovo_TP4_Updater
             {
                 isCheckingConnection = false;
             }
+        }
+
+        private async Task guna2Button1_ClickAsync(object sender, EventArgs e)
+        {
+
+        }
+
+        private async void btnLandscapeRight_Click(object sender, EventArgs e)
+        {
+            await SetDisplayMode("Landscape Right", 3, 270);
+
+
         }
     }
 }

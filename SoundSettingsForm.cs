@@ -24,7 +24,7 @@ namespace Innovo_TP4_Updater
             CenterControls();
             bool isConnected = await parentForm.IsConnected();
             await settingsForm.TriggerConnectionStatusUpdate(isConnected);
-
+            
             if (!isConnected)
             {
                 parentForm.clearMainPanel();
@@ -39,6 +39,7 @@ namespace Innovo_TP4_Updater
             {
                 loadingForm.Show();
                 string androidVersionOutput = await parentForm.ExecuteAdbCommand("adb shell getprop ro.build.version.release");
+
                  isAndroid11 = androidVersionOutput.Trim().StartsWith("11");
                 // Check if device model contains "p5"
                 string deviceModel = await parentForm.ExecuteAdbCommand("adb shell getprop ro.product.model");
@@ -66,15 +67,17 @@ namespace Innovo_TP4_Updater
                 if (isAndroid11)
                 {
                     // For Android 11, use 'settings get system' commands
-                    mainVolumeOutput = await parentForm.ExecuteAdbCommand("adb shell settings get system volume_music_remote_submix");
-                    notificationsVolumeOutput = await parentForm.ExecuteAdbCommand("adb shell settings get system volume_ring_speaker");
+                    mainVolumeOutput = await parentForm.ExecuteAdbCommand("adb shell settings get system volume_ring");
+                    notificationsVolumeOutput = await parentForm.ExecuteAdbCommand("adb shell settings get system volume_notification");
+
                 }
 
-               else if (isP5Device)
+                else if (isP5Device)
                 {
                     // For P5 devices, use stream 4 instead of stream 3
                     mainVolumeOutput = await parentForm.ExecuteAdbCommand("adb shell cmd media_session volume --get --stream 3");
-                    notificationsVolumeOutput = await parentForm.ExecuteAdbCommand("adb shell cmd media_session volume --get --stream 5");
+                    
+                      notificationsVolumeOutput = await parentForm.ExecuteAdbCommand("adb shell cmd media_session volume --get --stream 5");
                 }
                 else
                 {
@@ -84,12 +87,11 @@ namespace Innovo_TP4_Updater
                 }
                 // Parsing the output, extracting the volume
                 int mainVolume = ParseVolume(mainVolumeOutput, 15); // Main volume range 0-15
-                int notificationsVolume = ParseVolume(notificationsVolumeOutput, 7); // Notifications volume range 0-7
+                int notificationsVolume = ParseVolume(notificationsVolumeOutput, 15); // Notifications volume range 0-7
 
                 // Set trackbar values
                 if (isAndroid11)
                 {
-                    MessageBox.Show(mainVolumeOutput, notificationsVolumeOutput);
                     mainTrackBar.Value = int.Parse(mainVolumeOutput);
                     notificationsTrackBar.Value = int.Parse(notificationsVolumeOutput);
 
@@ -153,7 +155,9 @@ namespace Innovo_TP4_Updater
                 }
                 else if (isAndroid11)
                 {
-                    await parentForm.ExecuteAdbCommand($"adb shell cmd  media_session volume --show --stream 3 --set {mainTrackBar.Value}");
+                    await parentForm.ExecuteAdbCommand($"adb shell settings put system volume_music {mainTrackBar.Value}");
+                    await parentForm.ExecuteAdbCommand($"adb shell settings put system volume_ring {mainTrackBar.Value}");
+
                 }
                 else
                 {
@@ -179,10 +183,15 @@ namespace Innovo_TP4_Updater
             {
                 lblNotificationsVolume.Text = $"Notifications Volume: {notificationsTrackBar.Value}";
 
-                if (isP5Device || isAndroid11)
+                if (isP5Device)
                 {
                     // For P5 devices, set volume for stream 5
                     await parentForm.ExecuteAdbCommand($"adb shell cmd media_session volume --show --stream 5 --set {notificationsTrackBar.Value}");
+                }
+                else if (isAndroid11)
+                {
+                    await parentForm.ExecuteAdbCommand($"adb shell settings put system volume_notification {notificationsTrackBar.Value}");
+
                 }
                 else
                 {

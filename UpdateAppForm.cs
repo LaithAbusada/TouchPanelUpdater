@@ -59,7 +59,6 @@ namespace Innovo_TP4_Updater
                 materialMultiLineTextBox3.AppendText($"Error: Unable to connect to the device. Details: {ex.Message}\n");
             }
         }
-
         private async Task CheckAndDisplayVersionStatus(string appName, JObject jsonData, Button updateButton, Label statusLabel)
         {
             try
@@ -67,7 +66,12 @@ namespace Innovo_TP4_Updater
                 string currentVersion = await GetCurrentVersion(appName);
                 string latestVersion = jsonData[appName]["version"].ToString();
 
-                if (currentVersion == latestVersion)
+                // Parse versions to enable comparison
+                Version localVersion = new Version(currentVersion);
+                Version jsonVersion = new Version(latestVersion);
+
+                // Compare versions: update needed if localVersion is less than jsonVersion
+                if (localVersion >= jsonVersion)
                 {
                     statusLabel.Text = $"Up to date (v{currentVersion})";
                     updateButton.Enabled = false;
@@ -80,8 +84,7 @@ namespace Innovo_TP4_Updater
             }
             catch (Exception ex)
             {
-                statusLabel.Text = "Error checking version";
-                materialMultiLineTextBox3.AppendText($"Error checking version for {appName}: {ex.Message}\n");
+                statusLabel.Text = "App not Installed";
             }
         }
 
@@ -150,7 +153,11 @@ namespace Innovo_TP4_Updater
                     string currentVersion = await GetCurrentVersion(appName);
                     string latestVersion = jsonData[appName]["version"].ToString();
 
-                    if (currentVersion == latestVersion)
+                    // Parse versions to enable comparison
+                    Version localVersion = new Version(currentVersion);
+                    Version jsonVersion = new Version(latestVersion);
+
+                    if (localVersion >= jsonVersion)
                     {
                         materialMultiLineTextBox3.AppendText($"{appName} is already up to date. Version: {latestVersion}\n");
                         return;
@@ -289,6 +296,9 @@ namespace Innovo_TP4_Updater
 
                     string result = await parentForm.ExecuteAdbCommand(installCommand);
 
+                    Console.WriteLine(result);
+                    Console.WriteLine("laith");
+                    Console.WriteLine(installCommand);
                     if (!string.IsNullOrWhiteSpace(result))
                     {
                         // Show the result in a message box

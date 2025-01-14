@@ -27,6 +27,7 @@
             this.panelHeader = new System.Windows.Forms.Panel();
             this.lblHeader = new System.Windows.Forms.Label();
             this.chkRememberMe = new System.Windows.Forms.CheckBox();
+            this.updateAppLabel = new System.Windows.Forms.LinkLabel();
             this.panelHeader.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -138,12 +139,23 @@
             this.chkRememberMe.Text = "Remember Me";
             this.chkRememberMe.UseVisualStyleBackColor = true;
             // 
+            // updateAppLabel
+            // 
+            this.updateAppLabel.AutoSize = true;
+            this.updateAppLabel.Location = new System.Drawing.Point(25, 97);
+            this.updateAppLabel.Name = "updateAppLabel";
+            this.updateAppLabel.Size = new System.Drawing.Size(55, 13);
+            this.updateAppLabel.TabIndex = 8;
+            this.updateAppLabel.TabStop = true;
+            this.updateAppLabel.Text = "linkLabel1";
+            // 
             // PasswordForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.WhiteSmoke;
             this.ClientSize = new System.Drawing.Size(675, 366);
+            this.Controls.Add(this.updateAppLabel);
             this.Controls.Add(this.chkRememberMe);
             this.Controls.Add(this.panelHeader);
             this.Controls.Add(this.linkLabelHelp);
@@ -175,5 +187,6 @@
         private System.Windows.Forms.Panel panelHeader;
         private System.Windows.Forms.Label lblHeader;
         private System.Windows.Forms.CheckBox chkRememberMe; // Define Remember Me checkbox
+        private System.Windows.Forms.LinkLabel updateAppLabel;
     }
 }
