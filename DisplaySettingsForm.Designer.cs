@@ -45,6 +45,9 @@ namespace Innovo_TP4_Updater
             this.btnLandscape = new Guna.UI2.WinForms.Guna2Button();
             this.displayLabel = new System.Windows.Forms.Label();
             this.btnLandscapeRight = new Guna.UI2.WinForms.Guna2Button();
+            this.label1 = new System.Windows.Forms.Label();
+            this.guna2Button1 = new Guna.UI2.WinForms.Guna2Button();
+            this.guna2Button2 = new Guna.UI2.WinForms.Guna2Button();
             this.adaptiveBrightnessPanel.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -210,10 +213,46 @@ namespace Innovo_TP4_Updater
             this.btnLandscapeRight.Text = "Landscape Right";
             this.btnLandscapeRight.Click += new System.EventHandler(this.btnLandscapeRight_Click);
             // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 13F);
+            this.label1.ForeColor = System.Drawing.SystemColors.Highlight;
+            this.label1.Location = new System.Drawing.Point(295, 486);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(82, 22);
+            this.label1.TabIndex = 21;
+            this.label1.Text = "Icon Size";
+            this.label1.Click += new System.EventHandler(this.label1_Click);
+            // 
+            // guna2Button1
+            // 
+            this.guna2Button1.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.guna2Button1.ForeColor = System.Drawing.Color.White;
+            this.guna2Button1.Location = new System.Drawing.Point(299, 533);
+            this.guna2Button1.Name = "guna2Button1";
+            this.guna2Button1.Size = new System.Drawing.Size(100, 39);
+            this.guna2Button1.TabIndex = 22;
+            this.guna2Button1.Text = "Small Icons";
+            this.guna2Button1.Click += new System.EventHandler(this.guna2Button1_Click);
+            // 
+            // guna2Button2
+            // 
+            this.guna2Button2.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.guna2Button2.ForeColor = System.Drawing.Color.White;
+            this.guna2Button2.Location = new System.Drawing.Point(436, 533);
+            this.guna2Button2.Name = "guna2Button2";
+            this.guna2Button2.Size = new System.Drawing.Size(100, 39);
+            this.guna2Button2.TabIndex = 23;
+            this.guna2Button2.Text = "Large Icons";
+            // 
             // DisplaySettingsForm
             // 
             this.BackColor = System.Drawing.Color.AliceBlue;
             this.ClientSize = new System.Drawing.Size(976, 605);
+            this.Controls.Add(this.guna2Button2);
+            this.Controls.Add(this.guna2Button1);
+            this.Controls.Add(this.label1);
             this.Controls.Add(this.btnLandscapeRight);
             this.Controls.Add(this.displayLabel);
             this.Controls.Add(this.btnPortrait);
@@ -243,5 +282,8 @@ namespace Innovo_TP4_Updater
 
         private Label displayLabel;
         private Guna.UI2.WinForms.Guna2Button btnLandscapeRight;
+        private Label label1;
+        private Guna.UI2.WinForms.Guna2Button guna2Button1;
+        private Guna.UI2.WinForms.Guna2Button guna2Button2;
     }
 }

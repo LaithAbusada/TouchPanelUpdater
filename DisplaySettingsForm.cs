@@ -511,8 +511,26 @@ namespace Innovo_TP4_Updater
             }
         }
 
-        private async Task guna2Button1_ClickAsync(object sender, EventArgs e)
+            private async Task setScreenSize(string size)
         {
+            try
+            {
+                string deviceModel = await parentForm.ExecuteAdbCommand("adb shell getprop ro.product.model");
+
+                if (deviceModel.ToLower().Contains("p4"))
+                {
+                    await parentForm.ExecuteAdbCommand($"adb shell wm size {size}");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"An error occurred while setting screen size: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+            }
+            }
+
+            private async Task guna2Button1_ClickAsync(object sender, EventArgs e)
+            {
 
         }
 
@@ -521,6 +539,18 @@ namespace Innovo_TP4_Updater
             await SetDisplayMode("Landscape Right", 3, 270);
 
 
+        }
+
+        private async void label1_Click(object sender, EventArgs e)
+        {
+
+            await setScreenSize("479x480");
+
+        }
+
+        private async void guna2Button1_Click(object sender, EventArgs e)
+        {
+            await setScreenSize("719x720");
         }
     }
 }
