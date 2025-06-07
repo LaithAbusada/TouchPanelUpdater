@@ -10,12 +10,20 @@ namespace Innovo_TP4_Updater
         private bool isCheckingConnection;
         private SettingsForm settingsForm;
 
+
+        private int originalLabel1Top, originalGuna2Button1Top, originalGuna2Button2Top;
+
         public DisplaySettingsForm(Form1 parent, SettingsForm settingsForm)
         {
             InitializeComponent();
             parentForm = parent;
             isCheckingConnection = false;
             this.settingsForm = settingsForm;
+
+            // Optionally store the original positions from the designer.
+            originalLabel1Top = label1.Top;
+            originalGuna2Button1Top = guna2Button1.Top;
+            originalGuna2Button2Top = guna2Button2.Top;
         }
 
         private async void DisplaySettingsForm_Load(object sender, EventArgs e)
@@ -130,7 +138,9 @@ namespace Innovo_TP4_Updater
 
                 // Fetch current sleep mode valueUODATE
                 await UpdateSleepModeLabel();
-                }
+
+                await UpdateDeviceSpecificUIVisibility();
+            }
               
             
             catch (Exception ex)
@@ -153,6 +163,48 @@ namespace Innovo_TP4_Updater
             btnPortrait.Visible = false;
             btnLandscape.Visible = false;
             btnLandscapeRight.Visible = false;
+        }
+
+        // New method to update the visibility of guna2Button1, guna2Button2, and label1 based on device model
+        private async Task UpdateDeviceSpecificUIVisibility()
+        {
+            try
+            {
+                string deviceModel = await parentForm.ExecuteAdbCommand("adb shell getprop ro.product.model");
+
+                if (deviceModel.ToLower().Contains("p4"))
+                {
+                    guna2Button1.Visible = true;
+                    guna2Button2.Visible = true;
+                    label1.Visible = true;
+
+                    // If the display type is hidden, reposition the controls under the btn10Min button.
+                    if (!displayLabel.Visible)
+                    {
+                        int newTop = btn10Min.Bottom + 20; // 10-pixel margin.
+                        label1.Top = newTop;
+                        guna2Button1.Top = newTop + 30;
+                        guna2Button2.Top = newTop + 30;
+                    }
+                    else
+                    {
+                        // Optionally restore original positions if display type is visible.
+                        label1.Top = originalLabel1Top;
+                        guna2Button1.Top = originalGuna2Button1Top;
+                        guna2Button2.Top = originalGuna2Button2Top;
+                    }
+                }
+                else
+                {
+                    guna2Button1.Visible = false;
+                    guna2Button2.Visible = false;
+                    label1.Visible = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"An error occurred while updating device-specific UI: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
         private async void adaptiveBrightnessSwitch_CheckedChanged(object sender, EventArgs e)
         {
@@ -544,11 +596,16 @@ namespace Innovo_TP4_Updater
         private async void label1_Click(object sender, EventArgs e)
         {
 
-            await setScreenSize("479x480");
+            
 
         }
 
         private async void guna2Button1_Click(object sender, EventArgs e)
+        {
+            await setScreenSize("479x480");
+        }
+
+        private async void guna2Button2_Click(object sender, EventArgs e)
         {
             await setScreenSize("719x720");
         }

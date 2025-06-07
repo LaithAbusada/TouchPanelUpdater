@@ -78,7 +78,7 @@ namespace Innovo_TP4_Updater
             this.lblBrightness.ForeColor = System.Drawing.SystemColors.Highlight;
             this.lblBrightness.Location = new System.Drawing.Point(394, 34);
             this.lblBrightness.Name = "lblBrightness";
-            this.lblBrightness.Size = new System.Drawing.Size(115, 22);
+            this.lblBrightness.Size = new System.Drawing.Size(139, 26);
             this.lblBrightness.TabIndex = 4;
             this.lblBrightness.Text = "Brightness: 0";
             // 
@@ -88,7 +88,7 @@ namespace Innovo_TP4_Updater
             this.lblAdaptiveBrightness.ForeColor = System.Drawing.SystemColors.Highlight;
             this.lblAdaptiveBrightness.Location = new System.Drawing.Point(10, 15);
             this.lblAdaptiveBrightness.Name = "lblAdaptiveBrightness";
-            this.lblAdaptiveBrightness.Size = new System.Drawing.Size(101, 13);
+            this.lblAdaptiveBrightness.Size = new System.Drawing.Size(127, 16);
             this.lblAdaptiveBrightness.TabIndex = 5;
             this.lblAdaptiveBrightness.Text = "Adaptive Brightness";
             // 
@@ -99,7 +99,7 @@ namespace Innovo_TP4_Updater
             this.lblSleepMode.ForeColor = System.Drawing.SystemColors.Highlight;
             this.lblSleepMode.Location = new System.Drawing.Point(295, 261);
             this.lblSleepMode.Name = "lblSleepMode";
-            this.lblSleepMode.Size = new System.Drawing.Size(105, 22);
+            this.lblSleepMode.Size = new System.Drawing.Size(128, 26);
             this.lblSleepMode.TabIndex = 16;
             this.lblSleepMode.Text = "Sleep Mode";
             // 
@@ -198,7 +198,7 @@ namespace Innovo_TP4_Updater
             this.displayLabel.ForeColor = System.Drawing.SystemColors.Highlight;
             this.displayLabel.Location = new System.Drawing.Point(297, 399);
             this.displayLabel.Name = "displayLabel";
-            this.displayLabel.Size = new System.Drawing.Size(115, 22);
+            this.displayLabel.Size = new System.Drawing.Size(137, 26);
             this.displayLabel.TabIndex = 19;
             this.displayLabel.Text = "Display Type";
             // 
@@ -218,9 +218,9 @@ namespace Innovo_TP4_Updater
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 13F);
             this.label1.ForeColor = System.Drawing.SystemColors.Highlight;
-            this.label1.Location = new System.Drawing.Point(295, 486);
+            this.label1.Location = new System.Drawing.Point(297, 475);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(82, 22);
+            this.label1.Size = new System.Drawing.Size(102, 26);
             this.label1.TabIndex = 21;
             this.label1.Text = "Icon Size";
             this.label1.Click += new System.EventHandler(this.label1_Click);
@@ -229,22 +229,23 @@ namespace Innovo_TP4_Updater
             // 
             this.guna2Button1.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.guna2Button1.ForeColor = System.Drawing.Color.White;
-            this.guna2Button1.Location = new System.Drawing.Point(299, 533);
+            this.guna2Button1.Location = new System.Drawing.Point(299, 516);
             this.guna2Button1.Name = "guna2Button1";
             this.guna2Button1.Size = new System.Drawing.Size(100, 39);
             this.guna2Button1.TabIndex = 22;
-            this.guna2Button1.Text = "Small Icons";
+            this.guna2Button1.Text = "Large Icons";
             this.guna2Button1.Click += new System.EventHandler(this.guna2Button1_Click);
             // 
             // guna2Button2
             // 
             this.guna2Button2.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.guna2Button2.ForeColor = System.Drawing.Color.White;
-            this.guna2Button2.Location = new System.Drawing.Point(436, 533);
+            this.guna2Button2.Location = new System.Drawing.Point(436, 516);
             this.guna2Button2.Name = "guna2Button2";
             this.guna2Button2.Size = new System.Drawing.Size(100, 39);
             this.guna2Button2.TabIndex = 23;
-            this.guna2Button2.Text = "Large Icons";
+            this.guna2Button2.Text = "Small Icons";
+            this.guna2Button2.Click += new System.EventHandler(this.guna2Button2_Click);
             // 
             // DisplaySettingsForm
             // 

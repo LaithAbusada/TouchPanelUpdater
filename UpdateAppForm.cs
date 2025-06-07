@@ -8,6 +8,9 @@ using Newtonsoft.Json.Linq;
 using System.Linq;
 using System.Net;
 using System.Diagnostics;
+using System.Drawing;
+using Innovo_TP4_Updater.Properties;
+using System.Collections.Generic;
 
 namespace Innovo_TP4_Updater
 {
@@ -15,7 +18,8 @@ namespace Innovo_TP4_Updater
     {
         private readonly Form1 parentForm;
         private readonly SettingsForm settingsForm;
-
+        private readonly Dictionary<string, Button> _updateButtons = new Dictionary<string, Button>();
+        private readonly Dictionary<string, Label> _statusLabels = new Dictionary<string, Label>();
         public UpdateAppForm(Form1 parent, SettingsForm sets)
         {
             InitializeComponent();
@@ -38,7 +42,7 @@ namespace Innovo_TP4_Updater
                     return;
                 }
 
-                string jsonUrl = "https://innovo.net/repo/TP4/files.json";
+                string jsonUrl = "https://innovo.net/repo/TP4/update_apps.json";
                 string jsonString;
 
                 using (HttpClient client = new HttpClient())
@@ -47,24 +51,112 @@ namespace Innovo_TP4_Updater
                 }
 
                 JObject jsonData = JObject.Parse(jsonString);
+                // Clear any existing controls
+                appsPanel.Controls.Clear();
+                _updateButtons.Clear();
+                _statusLabels.Clear();
+                // Loop through each app in the JSON
+                foreach (var prop in jsonData.Properties())
+                {
+                    string appName = prop.Name;
+                    var appInfo = (JObject)prop.Value;
+                    string latestVersion = appInfo["version"].ToString();
+                    string imageFileName = appInfo["image"].ToString(); // e.g. "Nice.jpeg"
+                    string packageName = appInfo["packageName"].ToString();
+                    int appCount = jsonData.Properties().Count();
+                    bool useLargeTiles = appCount <= 4;
+                    int buttonWidth = useLargeTiles ? 267 : 200;
+                    int buttonHeight = useLargeTiles ? 142 : 100;
 
-                // Check versions for each app and update UI
-                await CheckAndDisplayVersionStatus("Nice", jsonData, buttonUpdateNice, labelNiceStatus);
-                await CheckAndDisplayVersionStatus("Rako", jsonData, buttonUpdateRako, labelRakoStatus);
-                await CheckAndDisplayVersionStatus("Lutron", jsonData, buttonUpdateLutron, labelLutronStatus);
-                await CheckAndDisplayVersionStatus("Control4", jsonData, buttonUpdateControl4, labelControl4Status);
+                    var statusLabel = new Label
+                    {
+                        AutoSize = false,                         // ⇐ turn off autosizing
+                        Size = new Size(buttonWidth, 18),      // fix it to buttonWidth × 18px tall (adjust height as needed)
+                        Font = new Font("Segoe UI", 8F),
+                        ForeColor = SystemColors.Highlight,
+                        Margin = new Padding(2, 2, 2, 2),
+                        TextAlign = ContentAlignment.MiddleCenter,  // center the text horizontally (optional)
+                        Text = string.Empty
+                    };
+
+                    Image appIcon = await DownloadImageAsync(imageFileName);
+
+
+                    var btn = new Button
+                    {
+                        // keep the core settings
+                        Text = $"Update {appName}",
+                        Enabled = false,
+                        Tag = appName,
+                        Margin = new Padding(2),
+                        // fixed size matching your designer
+                        Size = new Size(buttonWidth, buttonHeight),   // ↓ shrink from 267×142 → 200×100
+
+                        // typography & colors
+                        Font = new Font("Segoe UI", 8F, FontStyle.Bold),
+                        ForeColor = Color.White,
+                        BackColor = SystemColors.Highlight,
+
+                        // image background
+                        BackgroundImage = appIcon,
+                        BackgroundImageLayout = ImageLayout.Stretch,
+
+                        // text positioning
+                        TextAlign = ContentAlignment.BottomCenter,
+                        TextImageRelation = TextImageRelation.ImageAboveText,
+
+                        // if you prefer the MaterialSkin look, swap Button → MaterialRaisedButton & drop BackColor/ForeColor
+                    };
+
+                    // Wire up click to your existing UpdateApp method
+                    btn.Click += async (s, ev) => {
+                        await UpdateApp(appName, packageName, btn);
+                    };
+
+                    appsPanel.Padding = new Padding(0);
+
+
+                    // Add both to a panel (or directly to FlowLayoutPanel)
+                    var appContainer = new FlowLayoutPanel
+                    {
+                        FlowDirection = FlowDirection.TopDown,
+                        AutoSize = true,
+                        WrapContents = false,
+                        Margin = new Padding(5)
+                    };
+                    appContainer.Controls.Add(btn);
+                    appContainer.Controls.Add(statusLabel);
+
+                    appsPanel.Controls.Add(appContainer);
+
+                    _updateButtons[appName] = btn;
+                    _statusLabels[appName] = statusLabel;
+
+                    // Kick off the version check for this app
+                    _ = CheckAndDisplayVersionStatus(appName, packageName, jsonData, btn, statusLabel);
+                }
             }
             catch (Exception ex)
             {
                 materialMultiLineTextBox3.AppendText($"Error: Unable to connect to the device. Details: {ex.Message}\n");
             }
         }
-        private async Task CheckAndDisplayVersionStatus(string appName, JObject jsonData, Button updateButton, Label statusLabel)
+        private async Task CheckAndDisplayVersionStatus(string appName, string packageName, JObject jsonData, Button updateButton, Label statusLabel)
         {
             try
             {
-                string currentVersion = await GetCurrentVersion(appName);
+                string currentVersion = await GetCurrentVersion(packageName);
                 string latestVersion = jsonData[appName]["version"].ToString();
+
+
+
+                // If GetCurrentVersion returned null/empty, the app isn't installed:
+                if (string.IsNullOrEmpty(currentVersion))
+                {
+                    statusLabel.Text = "App not Installed";
+                    updateButton.Enabled = true;   // allow the user to install it
+                    return;
+                }
 
                 // Parse versions to enable comparison
                 Version localVersion = new Version(currentVersion);
@@ -78,18 +170,23 @@ namespace Innovo_TP4_Updater
                 }
                 else
                 {
-                    statusLabel.Text = $"Update available: v{currentVersion} → v{latestVersion}";
+                    statusLabel.Text = $"Update available: (v{latestVersion})";
                     updateButton.Enabled = true;
                 }
             }
             catch (Exception ex)
             {
                 statusLabel.Text = "App not Installed";
+                updateButton.Enabled = true;
+
             }
         }
 
 
-        private async void UpdateApp(string appName, Button clickedButton)
+        private async 
+
+        Task
+UpdateApp(string appName,string packageName, Button clickedButton)
         {
             int maxAttempts = 3;
             int attempt = 0;
@@ -141,7 +238,7 @@ namespace Innovo_TP4_Updater
                     DisableOtherButtons(clickedButton);
 
                     loadingForm.UpdateMessage("Checking for available updates...");
-                    string jsonUrl = "https://innovo.net/repo/TP4/files.json";
+                    string jsonUrl = "https://innovo.net/repo/TP4/update_apps.json";
                     string jsonString;
 
                     using (HttpClient client = new HttpClient())
@@ -150,17 +247,29 @@ namespace Innovo_TP4_Updater
                     }
 
                     JObject jsonData = JObject.Parse(jsonString);
-                    string currentVersion = await GetCurrentVersion(appName);
+                    string currentVersion = await GetCurrentVersion(packageName);
                     string latestVersion = jsonData[appName]["version"].ToString();
 
-                    // Parse versions to enable comparison
-                    Version localVersion = new Version(currentVersion);
-                    Version jsonVersion = new Version(latestVersion);
 
-                    if (localVersion >= jsonVersion)
+                    if (string.IsNullOrEmpty(currentVersion))
                     {
-                        materialMultiLineTextBox3.AppendText($"{appName} is already up to date. Version: {latestVersion}\n");
-                        return;
+                        materialMultiLineTextBox3.AppendText($"{appName} is not installed. Proceeding to install v{latestVersion}...\n");
+                        //    // (Don’t return—let the code fall through to download/install below.)
+                    }
+                    else
+                    {
+                        // Now it’s safe to parse both versions
+                        Version localVersion = new Version(currentVersion);
+                        Version jsonVersion = new Version(latestVersion);
+
+                        if (localVersion >= jsonVersion)
+                        {
+                            materialMultiLineTextBox3.AppendText($"{appName} is already up to date. Version: {latestVersion}\n");
+                            return;
+                        }
+
+                        materialMultiLineTextBox3.AppendText(
+                            $"Update available: v{currentVersion} → v{latestVersion}\n");
                     }
 
                     string baseDirectory = Path.Combine(Application.StartupPath, "Downloads");  // Using relative path
@@ -186,8 +295,7 @@ namespace Innovo_TP4_Updater
                     materialMultiLineTextBox3.AppendText("Installing Update for " + appName + " this can take up to 2 minutes" + Environment.NewLine);
 
                     loadingForm.UpdateMessage("Downloading the update...");
-                    string downloadUrl = $"https://innovo.net/repo/TP4/{jsonData[appName]["filename"]}";
-
+                    string downloadUrl = $"https://innovo.net/repo/TP4/Apks/{jsonData[appName]["filename"]}";
                     using (WebClient client = new WebClient())
                     {
                         await client.DownloadFileTaskAsync(new Uri(downloadUrl), downloadDirectory);
@@ -217,8 +325,7 @@ namespace Innovo_TP4_Updater
                     }
 
                     loadingForm.UpdateMessage("Rebooting the device...");
-                    bool versionCompare = await RebootApp(appName, latestVersion);
-
+                    bool versionCompare = await RebootApp(appName, packageName, latestVersion);
                     success = versionCompare;
 
                     if (success)
@@ -262,6 +369,31 @@ namespace Innovo_TP4_Updater
         {
             string adjustResolutionCommand = $"adb shell wm size {resolution}";
             await parentForm.ExecuteAdbCommand(adjustResolutionCommand);
+        }
+
+        private async Task<Image> DownloadImageAsync(string imageFileName)
+        {
+            try
+            {
+                // Build the full URL
+                string imageUrl = $"https://innovo.net/repo/TP4/images/{imageFileName}";
+
+                using (var client = new HttpClient())
+                {
+                    byte[] data = await client.GetByteArrayAsync(imageUrl);
+
+                    using (var ms = new MemoryStream(data))
+                    {
+                        return Image.FromStream(ms);
+                    }
+                }
+            }
+            catch
+            {
+                // OPTIONAL: return a fallback if the download fails
+                // e.g. a single “not found” icon embedded in your Resources
+                return Resources.Nice;
+            }
         }
 
 
@@ -335,9 +467,8 @@ namespace Innovo_TP4_Updater
             return modelOutput.Trim();
         }
 
-        private async Task<string> GetCurrentVersion(string appName)
+        private async Task<string> GetCurrentVersion(string packageName)
         {
-            string packageName = GetPackageName(appName);
             if (string.IsNullOrEmpty(packageName))
             {
                 return null;
@@ -356,22 +487,6 @@ namespace Innovo_TP4_Updater
             return null;
         }
 
-        private string GetPackageName(string appName)
-        {
-            switch (appName)
-            {
-                case "Nice":
-                    return "com.homelogic";
-                case "Lutron":
-                    return "com.lutron.mmw";
-                case "Control4":
-                    return "com.control4.phoenix";
-                case "Rako":
-                    return "com.rakocontrols.android";
-                default:
-                    return null;
-            }
-        }
 
         private async Task InstallApk(string filePath)
         {
@@ -383,9 +498,9 @@ namespace Innovo_TP4_Updater
 
 
 
-        private async Task<bool> RebootApp(string appName, string latestVersion)
+        private async Task<bool> RebootApp(string appName, string packageName, string latestVersion)
         {
-            string currentVersion = await GetCurrentVersion(appName);
+            string currentVersion = await GetCurrentVersion(packageName);
 
             if (currentVersion == latestVersion)
             {
@@ -435,74 +550,77 @@ namespace Innovo_TP4_Updater
                 }
             }
         }
-
         private void DisableOtherButtons(Button clickedButton)
         {
-            clickedButton.Enabled = false;
-            clickedButton.Visible = true;
+            if (!(clickedButton.Tag is string clickedApp)) return;
 
-            buttonUpdateNice.Visible = clickedButton == buttonUpdateNice;
-            labelNiceStatus.Visible = clickedButton == buttonUpdateNice;
+            foreach (var kv in _updateButtons)
+            {
+                string appName = kv.Key;
+                Button eachBtn = kv.Value;
+                // Always disable all, but only keep the clicked button visible
+                eachBtn.Enabled = false;
+                eachBtn.Visible = (appName == clickedApp);
+            }
 
-            buttonUpdateRako.Visible = clickedButton == buttonUpdateRako;
-            labelRakoStatus.Visible = clickedButton == buttonUpdateRako;
-
-            buttonUpdateLutron.Visible = clickedButton == buttonUpdateLutron;
-            labelLutronStatus.Visible = clickedButton == buttonUpdateLutron;
-
-            buttonUpdateControl4.Visible = clickedButton == buttonUpdateControl4;
-            labelControl4Status.Visible = clickedButton == buttonUpdateControl4;
+            foreach (var kv in _statusLabels)
+            {
+                string appName = kv.Key;
+                Label eachLabel = kv.Value;
+                eachLabel.Visible = (appName == clickedApp);
+            }
         }
 
         private void EnableAllButtons()
         {
-            buttonUpdateNice.Visible = true;
-            labelNiceStatus.Visible = true;
+            foreach (var kv in _updateButtons)
+            {
+                string appName = kv.Key;
+                Button eachBtn = kv.Value;
 
-            buttonUpdateRako.Visible = true;
-            labelRakoStatus.Visible = true;
+                eachBtn.Visible = true;
 
-            buttonUpdateLutron.Visible = true;
-            labelLutronStatus.Visible = true;
+                if (_statusLabels.TryGetValue(appName, out var lbl))
+                {
+                    bool isUpToDate = lbl.Text.StartsWith("Up to date", StringComparison.OrdinalIgnoreCase);
+                    eachBtn.Enabled = !isUpToDate;
+                }
+                else
+                {
+                    eachBtn.Enabled = true;
+                }
+            }
 
-            buttonUpdateControl4.Visible = true;
-            labelControl4Status.Visible = true;
-
-            buttonUpdateNice.Enabled = labelNiceStatus.Text != "Up to date";
-            buttonUpdateRako.Enabled = labelRakoStatus.Text != "Up to date";
-            buttonUpdateLutron.Enabled = labelLutronStatus.Text != "Up to date";
-            buttonUpdateControl4.Enabled = labelControl4Status.Text != "Up to date";
+            foreach (var lbl in _statusLabels.Values)
+            {
+                lbl.Visible = true;
+            }
         }
 
         private void UpdateStatusLabel(string appName, Button clickedButton)
         {
-            string currentVersion = labelNiceStatus.Text.Contains("Update available") ? labelNiceStatus.Text.Split('→')[1].Trim() : string.Empty;
+            if (!_statusLabels.TryGetValue(appName, out var statusLabel)) return;
 
-            if (clickedButton == buttonUpdateNice) labelNiceStatus.Text = $"Up to date (v{currentVersion})";
-            else if (clickedButton == buttonUpdateRako) labelRakoStatus.Text = $"Up to date (v{currentVersion})";
-            else if (clickedButton == buttonUpdateLutron) labelLutronStatus.Text = $"Up to date (v{currentVersion})";
-            else if (clickedButton == buttonUpdateControl4) labelControl4Status.Text = $"Up to date (v{currentVersion})";
+            // If previous label text was “Update available: vX → vY”, extract vY
+            string previousText = statusLabel.Text;
+            string newVersion = "";
+            if (previousText.Contains("→"))
+            {
+                var parts = previousText.Split('→');
+                newVersion = parts[1].Trim(); // “vY”
+            }
+
+            statusLabel.Text = string.IsNullOrEmpty(newVersion)
+                ? "Up to date"
+                : $"Up to date ({newVersion})";
+
+            if (_updateButtons.TryGetValue(appName, out var btn))
+            {
+                btn.Enabled = false;
+            }
         }
 
-        private void buttonUpdateNice_Click(object sender, EventArgs e)
-        {
-            UpdateApp("Nice", buttonUpdateNice);
-        }
 
-        private void buttonUpdateRako_Click(object sender, EventArgs e)
-        {
-            UpdateApp("Rako", buttonUpdateRako);
-        }
-
-        private void buttonUpdateLutron_Click(object sender, EventArgs e)
-        {
-            UpdateApp("Lutron", buttonUpdateLutron);
-        }
-
-        private void buttonUpdateControl4_Click(object sender, EventArgs e)
-        {
-            UpdateApp("Control4", buttonUpdateControl4);
-        }
 
         private async Task<string> updateExecuteCommand(string command)
         {
