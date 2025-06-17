@@ -222,6 +222,9 @@
     <EmbeddedResource Include="DisplaySettingsForm.resx">
       <DependentUpon>DisplaySettingsForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="FactoryDefaultForm.resx">
+      <DependentUpon>FactoryDefaultForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>

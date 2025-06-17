@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Innovo_TP4_Updater.Properties;
 using MaterialSkin.Controls;
 using Newtonsoft.Json.Linq;
 
@@ -14,6 +17,7 @@ namespace Innovo_TP4_Updater
     {
         private readonly Form1 parentForm;
         private readonly SettingsForm settingsForm;
+        private readonly Dictionary<string, Button> _ResetButtons = new Dictionary<string, Button>();
 
         public FactoryDefaultForm(Form1 parent, SettingsForm settingsForm)
         {
@@ -21,49 +25,71 @@ namespace Innovo_TP4_Updater
             parentForm = parent;
             this.settingsForm = settingsForm;
 
-            // Subscribe to the Load event
-            this.Load += new EventHandler(ResetForm_Load);
+
         }
 
-        private async void ResetForm_Load(object sender, EventArgs e)
-        {
-            // Check if the device is connected
-            bool isConnected = await parentForm.IsConnected();
-            await settingsForm.TriggerConnectionStatusUpdate(isConnected);
 
-            if (!isConnected)
+
+
+        private async Task<Image> DownloadImageAsync(string imageFileName)
+        {
+            try
             {
-                MessageBox.Show("No device is currently connected. Please connect a device before using this form.", "Device Not Connected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                parentForm.clearMainPanel();
-                return;
+                // Build the full URL
+                string imageUrl = $"https://innovo.net/repo/TP4/images/{imageFileName}";
+
+                using (var client = new HttpClient())
+                {
+                    byte[] data = await client.GetByteArrayAsync(imageUrl);
+
+                    using (var ms = new MemoryStream(data))
+                    {
+                        return Image.FromStream(ms);
+                    }
+                }
+            }
+            catch
+            {
+                // OPTIONAL: return a fallback if the download fails
+                // e.g. a single “not found” icon embedded in your Resources
+                return Resources.Nice;
             }
         }
 
-        private async void btnApp1_Click(object sender, EventArgs e)
+
+        private void DisableOtherButtons(Button clickedButton)
         {
-            Guna.UI2.WinForms.Guna2Button button = sender as Guna.UI2.WinForms.Guna2Button;
-            await ResetApplication("Nice", button);
+            if (!(clickedButton.Tag is string clickedApp)) return;
+
+            foreach (var kv in _ResetButtons)
+            {
+                string appName = kv.Key;
+                Button eachBtn = kv.Value;
+                // Always disable all, but only keep the clicked button visible
+                eachBtn.Enabled = false;
+                eachBtn.Visible = (appName == clickedApp);
+            }
+
+
         }
 
-        private async void btnApp2_Click(object sender, EventArgs e)
+        private void EnableAllButtons()
         {
-            Guna.UI2.WinForms.Guna2Button button = sender as Guna.UI2.WinForms.Guna2Button;
-            await ResetApplication("Control4", button);
+            foreach (var kv in _ResetButtons)
+            {
+                string appName = kv.Key;
+                Button eachBtn = kv.Value;
+
+                eachBtn.Visible = true;
+
+
+                eachBtn.Enabled = true;
+
+            }
+
         }
 
-        private async void btnApp3_Click(object sender, EventArgs e)
-        {
-            Guna.UI2.WinForms.Guna2Button button = sender as Guna.UI2.WinForms.Guna2Button;
-            await ResetApplication("Rako", button);
-        }
-
-        private async void btnApp4_Click(object sender, EventArgs e)
-        {
-            Guna.UI2.WinForms.Guna2Button button = sender as Guna.UI2.WinForms.Guna2Button;
-            await ResetApplication("Lutron", button);
-        }
-
-        private async Task ResetApplication(string appName, Guna.UI2.WinForms.Guna2Button clickedButton)
+        private async Task ResetApplication(string appName,string packageName, Button clickedButton)
         {
             // Check if the device is connected
             bool isConnected = await parentForm.IsConnected();
@@ -75,7 +101,7 @@ namespace Innovo_TP4_Updater
             }
 
             // Get the package name using the app name
-            string packageName = GetPackageName(appName);
+       
             if (string.IsNullOrEmpty(packageName))
             {
                 MessageBox.Show($"No package found for the app: {appName}", "Package Not Found", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -96,7 +122,7 @@ namespace Innovo_TP4_Updater
                 try
                 {
                     // Disable and hide other buttons
-                    DisableAndHideButtons(clickedButton);
+                    DisableOtherButtons(clickedButton);
 
                     // Disable all buttons in the SettingsForm
                     settingsForm.DisableAllButtons();
@@ -156,7 +182,7 @@ namespace Innovo_TP4_Updater
                     string screenSize = await GetScreenSize();
 
                  
-                    await UpdateApp(appName,loadingForm,screenSize);
+                    await UpdateApp(appName,packageName,loadingForm,screenSize);
 
 
                     // Close the first loading form
@@ -177,15 +203,14 @@ namespace Innovo_TP4_Updater
 
                     // Re-enable all buttons in the SettingsForm and FactoryDefaultForm
                     settingsForm.EnableAllButtons();
-                    ShowAndEnableButtons();
+                    EnableAllButtons();
                 }
             }
 
         }
 
-        private async Task<string> GetCurrentVersion(string appName)
+        private async Task<string> GetCurrentVersion(string packageName)
         {
-            string packageName = GetPackageName(appName);
             if (string.IsNullOrEmpty(packageName))
             {
                 return null;
@@ -229,22 +254,7 @@ namespace Innovo_TP4_Updater
             }
         }
 
-        private string GetPackageName(string appName)
-        {
-            switch (appName)
-            {
-                case "Nice":
-                    return "com.homelogic";
-                case "Lutron":
-                    return "com.lutron.mmw";
-                case "Control4":
-                    return "com.control4.phoenix";
-                case "Rako":
-                    return "com.rakocontrols.android";
-                default:
-                    return null;
-            }
-        }
+
 
         private static string NormalizeVersion(string version)
         {
@@ -261,7 +271,7 @@ namespace Innovo_TP4_Updater
             return version;
         }
 
-        private async Task UpdateApp(string appName , LoadingForm loadingForm,string screenSize)
+        private async Task UpdateApp(string appName , string packageName, LoadingForm loadingForm,string screenSize)
         {
             string downloadDirectory = string.Empty;
             try
@@ -286,9 +296,7 @@ namespace Innovo_TP4_Updater
                     return;
                 }
 
-
-
-                string jsonUrl = "https://innovo.net/repo/TP4/files.json";
+                string jsonUrl = "https://innovo.net/repo/TP4/reset_apps.json";
                 string jsonString;
 
                 using (HttpClient client = new HttpClient())
@@ -297,18 +305,23 @@ namespace Innovo_TP4_Updater
                 }
 
                 JObject jsonData = JObject.Parse(jsonString);
-                string currentVersion = await GetCurrentVersion(appName);
+                string currentVersion = await GetCurrentVersion(packageName);
                 string latestVersion = jsonData[appName]["version"].ToString();
 
-                // Parse versions to enable comparison
-                Version localVersion = new Version(currentVersion);
-                Version jsonVersion = new Version(latestVersion);
 
-                if (localVersion >= jsonVersion)
+                if (!string.IsNullOrEmpty(currentVersion))
                 {
-                    return;
-                }
+                    // Now it’s safe to parse both versions
+                    Version localVersion = new Version(currentVersion);
+                    Version jsonVersion = new Version(latestVersion);
 
+                    if (localVersion >= jsonVersion)
+                    {
+                        return;
+                    }
+
+                }
+     
                 // Step 3: Set resolution for update
                 if (appName == "Control4" && lowerCaseModel.Contains("p4"))
                 {
@@ -343,7 +356,7 @@ namespace Innovo_TP4_Updater
                 loadingForm.UpdateMessage("Installing Update for " + appName + " this can take up to 2 minutes" + Environment.NewLine);
 
                 loadingForm.UpdateMessage("Downloading the update...");
-                string downloadUrl = $"https://innovo.net/repo/TP4/{jsonData[appName]["filename"]}";
+                string downloadUrl = $"https://innovo.net/repo/TP4/Apks/{jsonData[appName]["filename"]}";
 
                 using (WebClient client = new WebClient())
                 {
@@ -490,42 +503,108 @@ namespace Innovo_TP4_Updater
             }
         }
 
-            private void DisableAndHideButtons(Guna.UI2.WinForms.Guna2Button clickedButton)
+        private async void FactoryDefaultForm_Load(object sender, EventArgs e)
         {
-            // Disable and keep the clicked button visible
-            clickedButton.Enabled = false;
+            // Check if the device is connected
+            bool isConnected = await parentForm.IsConnected();
+            await settingsForm.TriggerConnectionStatusUpdate(isConnected);
 
-            // Hide the other buttons
-            if (clickedButton != btnApp1)
+            if (!isConnected)
             {
-                btnApp1.Visible = false;
+                MessageBox.Show("No device is currently connected. Please connect a device before using this form.", "Device Not Connected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                parentForm.clearMainPanel();
+                return;
             }
-            if (clickedButton != btnApp2)
-            {
-                btnApp2.Visible = false;
-            }
-            if (clickedButton != btnApp3)
-            {
-                btnApp3.Visible = false;
-            }
-            if (clickedButton != btnApp4)
-            {
-                btnApp4.Visible = false;
-            }
-        }
 
-        private void ShowAndEnableButtons()
-        {
-            // Show and enable all buttons
-            btnApp1.Visible = true;
-            btnApp2.Visible = true;
-            btnApp3.Visible = true;
-            btnApp4.Visible = true;
+            string jsonUrl = "https://innovo.net/repo/TP4/reset_apps.json";
+            string jsonString;
 
-            btnApp1.Enabled = true;
-            btnApp2.Enabled = true;
-            btnApp3.Enabled = true;
-            btnApp4.Enabled = true;
+            using (HttpClient client = new HttpClient())
+            {
+                jsonString = await client.GetStringAsync(jsonUrl);
+            }
+
+            JObject jsonData = JObject.Parse(jsonString);
+            // Clear any existing controls
+            appsPanel.Controls.Clear();
+            _ResetButtons.Clear();
+            // Loop through each app in the JSON
+            foreach (var prop in jsonData.Properties())
+            {
+                string appName = prop.Name;
+                var appInfo = (JObject)prop.Value;
+                string latestVersion = appInfo["version"].ToString();
+                string imageFileName = appInfo["image"].ToString(); // e.g. "Nice.jpeg"
+                string packageName = appInfo["packageName"].ToString();
+                int appCount = jsonData.Properties().Count();
+                bool useLargeTiles = appCount <= 4;
+                int buttonWidth = useLargeTiles ? 267 : 200;
+                int buttonHeight = useLargeTiles ? 142 : 100;
+
+                var statusLabel = new Label
+                {
+                    AutoSize = false,                         // ⇐ turn off autosizing
+                    Size = new Size(buttonWidth, 18),      // fix it to buttonWidth × 18px tall (adjust height as needed)
+                    Font = new Font("Segoe UI", 8F),
+                    ForeColor = SystemColors.Highlight,
+                    Margin = new Padding(2, 2, 2, 2),
+                    TextAlign = ContentAlignment.MiddleCenter,  // center the text horizontally (optional)
+                    Text = string.Empty
+                };
+
+                Image appIcon = await DownloadImageAsync(imageFileName);
+
+
+                var btn = new Button
+                {
+                    // keep the core settings
+                    Text = $"Factory Reset {appName}",
+                    Enabled = true,
+                    Tag = appName,
+                    Margin = new Padding(2),
+                    // fixed size matching your designer
+                    Size = new Size(buttonWidth, buttonHeight),   // ↓ shrink from 267×142 → 200×100
+
+                    // typography & colors
+                    Font = new Font("Segoe UI", 8F, FontStyle.Bold),
+                    ForeColor = Color.White,
+                    BackColor = SystemColors.Highlight,
+
+                    // image background
+                    BackgroundImage = appIcon,
+                    BackgroundImageLayout = ImageLayout.Stretch,
+
+                    // text positioning
+                    TextAlign = ContentAlignment.BottomCenter,
+                    TextImageRelation = TextImageRelation.ImageAboveText,
+
+                    // if you prefer the MaterialSkin look, swap Button → MaterialRaisedButton & drop BackColor/ForeColor
+                };
+
+                // Wire up click to your existing UpdateApp method
+                btn.Click += async (s, ev) =>
+                {
+                    await ResetApplication(appName, packageName, btn);
+                };
+
+                appsPanel.Padding = new Padding(0);
+
+
+                // Add both to a panel (or directly to FlowLayoutPanel)
+                var appContainer = new FlowLayoutPanel
+                {
+                    FlowDirection = FlowDirection.TopDown,
+                    AutoSize = true,
+                    WrapContents = false,
+                    Margin = new Padding(5)
+                };
+                appContainer.Controls.Add(btn);
+                appContainer.Controls.Add(statusLabel);
+
+                appsPanel.Controls.Add(appContainer);
+
+                _ResetButtons[appName] = btn;
+            }
         }
     }
 }
