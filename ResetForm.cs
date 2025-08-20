@@ -287,5 +287,36 @@ namespace Innovo_TP4_Updater
             }
         }
 
+        private async void btnControlApp_Click(object sender, EventArgs e)
+        {
+
+            // Helper to try launching and flip the flag on success
+            
+                try
+                {
+                string adbCommand = "adb shell am start -n com.innovo.controlapp/com.example.innovocontrolapp.MainActivity";
+
+                var result = await parentForm.ExecuteAdbCommand(adbCommand);
+                // You could inspect `result` for more detailed success-check
+
+                MessageBox.Show(
+    "Launched Control App",
+    "Success",
+    MessageBoxButtons.OK,
+    MessageBoxIcon.Information
+);
+            }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"launch failed: {ex.Message}");
+                MessageBox.Show(
+    "Unable to launch either Boot App (TP4 or TP5).",
+    "Error",
+    MessageBoxButtons.OK,
+    MessageBoxIcon.Error
+);
+            }
+            
+        }
     }
 }

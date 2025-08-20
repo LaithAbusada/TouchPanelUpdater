@@ -15,6 +15,7 @@ namespace Innovo_TP4_Updater
             InitializeComponent();
             parentForm = parent;
             this.btnBack.Visible = false;
+            this.btnPanelPatch.Visible = false;
             this.dealerID = dealerID;
         }
 
@@ -26,15 +27,31 @@ namespace Innovo_TP4_Updater
             if (Connected)
             {
                 // Add a small delay to ensure the device connection is fully established
-              
+
 
                 // Try to retrieve the IP and port information after the delay
-                string connectionDetails = await parentForm.GetDeviceIpAndPort();
-                UpdateConnectionStatusLabel($"Connected to Device at {connectionDetails}");
+                // after you’ve done your await parentForm.GetDeviceIpAndPort()
+                var connectionDetails = await parentForm.GetDeviceIpAndPort();
+
+                if (connectionDetails == "No Connected Device")
+                {
+                    // no IP/port → USB
+                    UpdateConnectionStatusLabel("Connected over USB");
+                }
+                else
+                {
+                    // TCP/IP ADB
+                    UpdateConnectionStatusLabel($"Connected to Device at {connectionDetails}");
+                }
             }
             else
             {
                 UpdateConnectionStatusLabel("No Connected Device");
+            }
+
+            if (dealerID == 568)
+            {
+                btnPanelPatch.Visible = true;
             }
         }
 
@@ -74,12 +91,14 @@ namespace Innovo_TP4_Updater
             btnReset.Enabled = state;
             btnTimeZone.Enabled = state;
             btnFactory.Enabled = state;
+            btnPanelPatch.Enabled = state;
         }
 
         private async void SettingsButton_Click(object sender, EventArgs e)
         {
             var button = sender as Guna.UI2.WinForms.Guna2Button;
 
+            Console.WriteLine(button.Text);
             if (button == btnSound)
             {
                 LoadFormIntoPanel(new SoundSettingsForm(parentForm, this));
@@ -94,8 +113,15 @@ namespace Innovo_TP4_Updater
             }
             else if (button == btnConnectDisconnect)
             {
-                if (Connected)
+                var isConnected = await parentForm.IsConnected();
+                if (isConnected && btnConnectDisconnect.Text != "Disconnect Device")
                 {
+                    MessageBox.Show("In here now");
+
+                    await TriggerConnectionStatusUpdate(isConnected);
+                }
+
+                else if(Connected){
                     // Directly disconnect the device without loading a new form
                     await DisconnectDevice();
                     LoadConnectDisconnectForm();
@@ -120,6 +146,10 @@ namespace Innovo_TP4_Updater
             else if (button == btnFactory)
             {
                 LoadFormIntoPanel(new FactoryDefaultForm(parentForm, this));
+            }
+            else if (button == btnPanelPatch)
+            {
+                LoadFormIntoPanel(new PatchPanelForm(parentForm, this));
             }
         }
 
@@ -233,8 +263,18 @@ namespace Innovo_TP4_Updater
 
             if (isConnected)
             {
-                string connectionDetails = await parentForm.GetDeviceIpAndPort();
-                UpdateConnectionStatusLabel($"Connected to {connectionDetails}");
+                var connectionDetails = await parentForm.GetDeviceIpAndPort();
+
+                if (connectionDetails == "No Connected Device")
+                {
+                    // no IP/port → USB
+                    UpdateConnectionStatusLabel("Connected over USB");
+                }
+                else
+                {
+                    // TCP/IP ADB
+                    UpdateConnectionStatusLabel($"Connected to Device at {connectionDetails}");
+                }
             }
             else
             {

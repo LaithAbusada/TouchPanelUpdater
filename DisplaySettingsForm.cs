@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -172,7 +173,7 @@ namespace Innovo_TP4_Updater
             {
                 string deviceModel = await parentForm.ExecuteAdbCommand("adb shell getprop ro.product.model");
 
-                if (deviceModel.ToLower().Contains("p4"))
+                if (deviceModel.ToLower().Contains("p4") || deviceModel.ToLower().Trim() == "rk3566_t")
                 {
                     guna2Button1.Visible = true;
                     guna2Button2.Visible = true;
@@ -568,8 +569,8 @@ namespace Innovo_TP4_Updater
             try
             {
                 string deviceModel = await parentForm.ExecuteAdbCommand("adb shell getprop ro.product.model");
-
-                if (deviceModel.ToLower().Contains("p4"))
+                string lowerCaseModel = deviceModel.ToLower();
+                if (parentForm.supportedModels.Any(s => lowerCaseModel.Contains(s)))
                 {
                     await parentForm.ExecuteAdbCommand($"adb shell wm size {size}");
                 }

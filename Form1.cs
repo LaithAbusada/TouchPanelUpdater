@@ -16,6 +16,7 @@ namespace Innovo_TP4_Updater
         private readonly string formname = "Touch Panel Updater";
         private bool isClosing = false;
         private int dealerID;
+        public readonly string[] supportedModels = { "p4", "p5", "rk3566_t" };
 
         public Form1(int dealerID)
         {

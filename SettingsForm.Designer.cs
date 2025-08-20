@@ -17,6 +17,7 @@ namespace Innovo_TP4_Updater
         private Guna.UI2.WinForms.Guna2Button btnReboot;
         private Guna.UI2.WinForms.Guna2Button btnFactory;
         private Guna.UI2.WinForms.Guna2HtmlLabel lblConnectionStatus; // Label for connection status
+        private Guna.UI2.WinForms.Guna2Button btnPanelPatch;
 
         protected override void Dispose(bool disposing)
         {
@@ -30,6 +31,7 @@ namespace Innovo_TP4_Updater
         private async void InitializeComponent()
         {
             this.settingsPanel = new System.Windows.Forms.Panel();
+            this.btnPanelPatch = new Guna.UI2.WinForms.Guna2Button();
             this.lblConnectionStatus = new Guna.UI2.WinForms.Guna2HtmlLabel();
             this.btnFactory = new Guna.UI2.WinForms.Guna2Button();
             this.btnBack = new Guna.UI2.WinForms.Guna2Button();
@@ -47,6 +49,7 @@ namespace Innovo_TP4_Updater
             // 
             this.settingsPanel.AutoScroll = true;
             this.settingsPanel.BackColor = System.Drawing.SystemColors.Highlight;
+            this.settingsPanel.Controls.Add(this.btnPanelPatch);
             this.settingsPanel.Controls.Add(this.lblConnectionStatus);
             this.settingsPanel.Controls.Add(this.btnFactory);
             this.settingsPanel.Controls.Add(this.btnBack);
@@ -61,17 +64,34 @@ namespace Innovo_TP4_Updater
             this.settingsPanel.Location = new System.Drawing.Point(0, 0);
             this.settingsPanel.Name = "settingsPanel";
             this.settingsPanel.Size = new System.Drawing.Size(898, 780);
+            this.settingsPanel.AutoScrollMargin = new System.Drawing.Size(0, 20);
+
             this.settingsPanel.TabIndex = 0;
             this.settingsPanel.Paint += new System.Windows.Forms.PaintEventHandler(this.settingsPanel_Paint);
+            // 
+            // btnPanelPatch
+            // 
+            this.btnPanelPatch.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.btnPanelPatch.ForeColor = System.Drawing.Color.White;
+            this.btnPanelPatch.Image = global::Innovo_TP4_Updater.Properties.Resources.patch;
+            this.btnPanelPatch.ImageAlign = System.Windows.Forms.HorizontalAlignment.Left;
+            this.btnPanelPatch.ImageSize = new System.Drawing.Size(40, 40);
+            this.btnPanelPatch.Location = new System.Drawing.Point(12, 648);
+            this.btnPanelPatch.Name = "btnPanelPatch";
+            this.btnPanelPatch.Size = new System.Drawing.Size(250, 60);
+            this.btnPanelPatch.TabIndex = 11;
+            this.btnPanelPatch.Text = "Patch Device";
+            this.btnPanelPatch.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.btnPanelPatch.Click += new System.EventHandler(this.SettingsButton_Click);
             // 
             // lblConnectionStatus
             // 
             this.lblConnectionStatus.BackColor = System.Drawing.Color.Transparent;
             this.lblConnectionStatus.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
             this.lblConnectionStatus.ForeColor = System.Drawing.Color.White;
-            this.lblConnectionStatus.Location = new System.Drawing.Point(12, 10);
+            this.lblConnectionStatus.Location = new System.Drawing.Point(12, 27);
             this.lblConnectionStatus.Name = "lblConnectionStatus";
-            this.lblConnectionStatus.Size = new System.Drawing.Size(143, 19);
+            this.lblConnectionStatus.Size = new System.Drawing.Size(184, 25);
             this.lblConnectionStatus.TabIndex = 0;
             this.lblConnectionStatus.Text = "Checking connection...";
             // 
@@ -82,7 +102,7 @@ namespace Innovo_TP4_Updater
             this.btnFactory.Image = global::Innovo_TP4_Updater.Properties.Resources.reset;
             this.btnFactory.ImageAlign = System.Windows.Forms.HorizontalAlignment.Left;
             this.btnFactory.ImageSize = new System.Drawing.Size(40, 40);
-            this.btnFactory.Location = new System.Drawing.Point(12, 555);
+            this.btnFactory.Location = new System.Drawing.Point(12, 501);
             this.btnFactory.Name = "btnFactory";
             this.btnFactory.Size = new System.Drawing.Size(250, 60);
             this.btnFactory.TabIndex = 10;
@@ -111,7 +131,7 @@ namespace Innovo_TP4_Updater
             this.btnUpdate.Image = global::Innovo_TP4_Updater.Properties.Resources.update;
             this.btnUpdate.ImageAlign = System.Windows.Forms.HorizontalAlignment.Left;
             this.btnUpdate.ImageSize = new System.Drawing.Size(40, 40);
-            this.btnUpdate.Location = new System.Drawing.Point(12, 156);
+            this.btnUpdate.Location = new System.Drawing.Point(12, 134);
             this.btnUpdate.Name = "btnUpdate";
             this.btnUpdate.Size = new System.Drawing.Size(250, 60);
             this.btnUpdate.TabIndex = 2;
@@ -126,7 +146,7 @@ namespace Innovo_TP4_Updater
             this.btnDisplay.Image = global::Innovo_TP4_Updater.Properties.Resources.display;
             this.btnDisplay.ImageAlign = System.Windows.Forms.HorizontalAlignment.Left;
             this.btnDisplay.ImageSize = new System.Drawing.Size(40, 40);
-            this.btnDisplay.Location = new System.Drawing.Point(12, 231);
+            this.btnDisplay.Location = new System.Drawing.Point(12, 207);
             this.btnDisplay.Name = "btnDisplay";
             this.btnDisplay.Size = new System.Drawing.Size(250, 60);
             this.btnDisplay.TabIndex = 3;
@@ -141,7 +161,7 @@ namespace Innovo_TP4_Updater
             this.btnConnectDisconnect.Image = global::Innovo_TP4_Updater.Properties.Resources.connection;
             this.btnConnectDisconnect.ImageAlign = System.Windows.Forms.HorizontalAlignment.Left;
             this.btnConnectDisconnect.ImageSize = new System.Drawing.Size(40, 40);
-            this.btnConnectDisconnect.Location = new System.Drawing.Point(12, 81);
+            this.btnConnectDisconnect.Location = new System.Drawing.Point(12, 58);
             this.btnConnectDisconnect.Name = "btnConnectDisconnect";
             this.btnConnectDisconnect.Size = new System.Drawing.Size(250, 60);
             this.btnConnectDisconnect.TabIndex = 4;
@@ -155,7 +175,7 @@ namespace Innovo_TP4_Updater
             this.btnSound.Image = global::Innovo_TP4_Updater.Properties.Resources.sound;
             this.btnSound.ImageAlign = System.Windows.Forms.HorizontalAlignment.Left;
             this.btnSound.ImageSize = new System.Drawing.Size(40, 40);
-            this.btnSound.Location = new System.Drawing.Point(12, 311);
+            this.btnSound.Location = new System.Drawing.Point(12, 281);
             this.btnSound.Name = "btnSound";
             this.btnSound.Size = new System.Drawing.Size(250, 60);
             this.btnSound.TabIndex = 5;
@@ -170,7 +190,7 @@ namespace Innovo_TP4_Updater
             this.btnTimeZone.Image = global::Innovo_TP4_Updater.Properties.Resources.timezone;
             this.btnTimeZone.ImageAlign = System.Windows.Forms.HorizontalAlignment.Left;
             this.btnTimeZone.ImageSize = new System.Drawing.Size(40, 40);
-            this.btnTimeZone.Location = new System.Drawing.Point(12, 398);
+            this.btnTimeZone.Location = new System.Drawing.Point(12, 354);
             this.btnTimeZone.Name = "btnTimeZone";
             this.btnTimeZone.Size = new System.Drawing.Size(250, 60);
             this.btnTimeZone.TabIndex = 6;
@@ -185,7 +205,7 @@ namespace Innovo_TP4_Updater
             this.btnReset.Image = global::Innovo_TP4_Updater.Properties.Resources.reset;
             this.btnReset.ImageAlign = System.Windows.Forms.HorizontalAlignment.Left;
             this.btnReset.ImageSize = new System.Drawing.Size(40, 40);
-            this.btnReset.Location = new System.Drawing.Point(12, 476);
+            this.btnReset.Location = new System.Drawing.Point(12, 427);
             this.btnReset.Name = "btnReset";
             this.btnReset.Size = new System.Drawing.Size(250, 60);
             this.btnReset.TabIndex = 7;
@@ -200,7 +220,7 @@ namespace Innovo_TP4_Updater
             this.btnReboot.Image = global::Innovo_TP4_Updater.Properties.Resources.reboot;
             this.btnReboot.ImageAlign = System.Windows.Forms.HorizontalAlignment.Left;
             this.btnReboot.ImageSize = new System.Drawing.Size(40, 40);
-            this.btnReboot.Location = new System.Drawing.Point(12, 639);
+            this.btnReboot.Location = new System.Drawing.Point(12, 574);
             this.btnReboot.Name = "btnReboot";
             this.btnReboot.Size = new System.Drawing.Size(250, 60);
             this.btnReboot.TabIndex = 9;
@@ -213,11 +233,12 @@ namespace Innovo_TP4_Updater
             this.ClientSize = new System.Drawing.Size(898, 780);
             this.Controls.Add(this.settingsPanel);
             this.Name = "SettingsForm";
+            this.Load += new System.EventHandler(this.SettingsForm_Load);
             this.settingsPanel.ResumeLayout(false);
             this.settingsPanel.PerformLayout();
             this.ResumeLayout(false);
-            this.Load += new System.EventHandler(this.SettingsForm_Load);
 
         }
+
     }
 }

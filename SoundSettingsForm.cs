@@ -19,6 +19,7 @@ namespace Innovo_TP4_Updater
             this.settingsForm = settingsForm;
         }
         bool isAndroid11;
+        bool isAndroid13;
         private async void SoundSettingsForm_Load_1(object sender, EventArgs e)
         {
             CenterControls();
@@ -41,6 +42,7 @@ namespace Innovo_TP4_Updater
                 string androidVersionOutput = await parentForm.ExecuteAdbCommand("adb shell getprop ro.build.version.release");
 
                  isAndroid11 = androidVersionOutput.Trim().StartsWith("11");
+                isAndroid13 = androidVersionOutput.Trim().StartsWith("13");
                 // Check if device model contains "p5"
                 string deviceModel = await parentForm.ExecuteAdbCommand("adb shell getprop ro.product.model");
                 isP5Device = deviceModel.ToLower().Contains("p5");
@@ -72,7 +74,7 @@ namespace Innovo_TP4_Updater
 
                 }
 
-                else if (isP5Device)
+                else if (isP5Device || isAndroid13)
                 {
                     // For P5 devices, use stream 4 instead of stream 3
                     mainVolumeOutput = await parentForm.ExecuteAdbCommand("adb shell cmd media_session volume --get --stream 3");
@@ -146,7 +148,7 @@ namespace Innovo_TP4_Updater
             {
                 lblMainVolume.Text = $"Main Volume: {mainTrackBar.Value}";
 
-                if (isP5Device)
+                if (isP5Device || isAndroid13)
                 {
                     // For P5 devices, set volume for streams 1, 3, and 4
                     await parentForm.ExecuteAdbCommand($"adb shell cmd  media_session volume --show --stream 1 --set {mainTrackBar.Value}");
@@ -183,7 +185,7 @@ namespace Innovo_TP4_Updater
             {
                 lblNotificationsVolume.Text = $"Notifications Volume: {notificationsTrackBar.Value}";
 
-                if (isP5Device)
+                if (isP5Device || isAndroid13)
                 {
                     // For P5 devices, set volume for stream 5
                     await parentForm.ExecuteAdbCommand($"adb shell cmd media_session volume --show --stream 5 --set {notificationsTrackBar.Value}");

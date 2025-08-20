@@ -216,7 +216,8 @@ UpdateApp(string appName,string packageName, Button clickedButton)
 
                     loadingForm.UpdateMessage("Retrieving device model...");
                     string deviceModel = await GetDeviceModel();
-                    if (!deviceModel.ToLower().Contains("p4") &&  !deviceModel.ToLower().Contains("p5"))
+                    string lowerCaseModel = deviceModel.ToLower();
+                    if (!parentForm.supportedModels.Any(s => lowerCaseModel.Contains(s)))
                     {
                         materialMultiLineTextBox3.AppendText($"Connected device is {deviceModel}, but only P4 or P5 devices are supported for updates.\n");
                         return;
@@ -229,11 +230,11 @@ UpdateApp(string appName,string packageName, Button clickedButton)
                         materialMultiLineTextBox3.AppendText("Adjusting screen resolution from 480x480 to 479x479...\n");
                         await AdjustScreenResolution("479x479");
                     }
-                    if (appName == "Control4" && deviceModel.ToLower().Contains("p4"))
+                    if (appName == "Control4" && (deviceModel.ToLower().Contains("p4") || deviceModel.ToLower() == "rk3566_t"))
                     {
                         await parentForm.ExecuteAdbCommand("adb shell wm size 720x720");
                     }
-                    else if (deviceModel.ToLower().Contains("p5")) { }
+                    else if (deviceModel.ToLower().Contains("p5")) { }8
              
                     DisableOtherButtons(clickedButton);
 

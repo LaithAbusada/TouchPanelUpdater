@@ -290,7 +290,7 @@ namespace Innovo_TP4_Updater
                 string deviceModel = await GetDeviceModel();
                 string lowerCaseModel = deviceModel.ToLower();
 
-                if (!lowerCaseModel.Contains("p4") && !lowerCaseModel.Contains("p5"))
+                if (!parentForm.supportedModels.Any(s => lowerCaseModel.Contains(s)))
                 {
                     MessageBox.Show($"Connected device is {deviceModel}, but only P4 or P5 devices are supported for updates.\n");
                     return;
@@ -323,7 +323,7 @@ namespace Innovo_TP4_Updater
                 }
      
                 // Step 3: Set resolution for update
-                if (appName == "Control4" && lowerCaseModel.Contains("p4"))
+                if (appName == "Control4" && (lowerCaseModel.Contains("p4") || lowerCaseModel == "rk3566_t"))
                 {
                     await parentForm.ExecuteAdbCommand("adb shell wm size 720x720");
                 }

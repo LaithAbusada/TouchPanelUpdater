@@ -91,7 +91,8 @@ namespace Innovo_TP4_Updater
                                 return;
                             }
 
-                            if (!deviceModel.ToLower().Contains("p4") && !deviceModel.ToLower().Contains("p5"))
+                            var lowerCaseModel = deviceModel.ToLower();
+                            if (!parentForm.supportedModels.Any(s => lowerCaseModel.Contains(s)))
                             {
                                 MessageBox.Show($"Connected device is {deviceModel}, but only P4 or P5 devices are supported. Disconnecting...");
                                 await DisconnectDevice();

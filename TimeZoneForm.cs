@@ -38,9 +38,14 @@ namespace Innovo_TP4_Updater
             {
                 // Retrieve the current timezone from the connected device
                 string deviceTimeZone = (await parentForm.ExecuteAdbCommand("adb shell getprop persist.sys.timezone")).Trim();
-
+                
                 if (!string.IsNullOrEmpty(deviceTimeZone))
                 {
+
+                    // after you read deviceTimeZone:
+                    if (string.Equals(deviceTimeZone, "GMT", StringComparison.OrdinalIgnoreCase))
+                        deviceTimeZone = "Etc/UTC"; 
+
                     if (timeZoneComboBox.Items.Cast<string>().Contains(deviceTimeZone))
                     {
                         timeZoneComboBox.SelectedItem = deviceTimeZone;
@@ -74,6 +79,7 @@ namespace Innovo_TP4_Updater
                     timeZoneComboBox.Items.Add(ianaTimeZone);
                 }
             }
+
 
             // Set the default selected timezone
             string defaultIanaTimezone = TZConvert.WindowsToIana(TimeZoneInfo.Local.Id);
