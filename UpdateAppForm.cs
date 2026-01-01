@@ -227,14 +227,14 @@ UpdateApp(string appName,string packageName, Button clickedButton)
                     string screenSize = await GetScreenSize();
                     if (screenSize == "480x480")
                     {
-                        materialMultiLineTextBox3.AppendText("Adjusting screen resolution from 480x480 to 479x479...\n");
-                        await AdjustScreenResolution("479x479");
+                        materialMultiLineTextBox3.AppendText("Adjusting screen resolution from 480x480 to 479x480...\n");
+                        await AdjustScreenResolution("479x480");
                     }
                     if (appName == "Control4" && (deviceModel.ToLower().Contains("p4") || deviceModel.ToLower() == "rk3566_t"))
                     {
                         await parentForm.ExecuteAdbCommand("adb shell wm size 720x720");
                     }
-                    else if (deviceModel.ToLower().Contains("p5")) { }8
+                    else if (deviceModel.ToLower().Contains("p5")) { }
              
                     DisableOtherButtons(clickedButton);
 
