@@ -1,17 +1,18 @@
-﻿using System;
+using System;
 using System.Windows.Forms;
 using RestSharp; // Ensure you have installed RestSharp via NuGet
 using Newtonsoft.Json;
 using System.Configuration;
-using System.Linq;
 using System.Drawing;
 
 namespace Innovo_TP4_Updater
 {
     public partial class PasswordForm : Form
     {
+        private const string StandardPin = "3526";
+        private const string DistributorPin = "4301";
+
         private readonly DateTime expiryDate;
-        private int dealerId; // Store the dealer ID
         private string link;
         public PasswordForm()
         {
@@ -52,133 +53,32 @@ namespace Innovo_TP4_Updater
                 updateAppLabel.LinkClicked += (s, ev) => System.Diagnostics.Process.Start(link);
 
                 // Disable form fields and prevent user actions
-                txtUsername.Enabled = false;
-                txtPassword.Enabled = false;
+                txtPin.Enabled = false;
                 button1.Enabled = false;
-                chkRememberMe.Enabled = false;
-            }
-
-            // Load saved credentials if "Remember Me" was previously checked
-            if (Properties.Settings.Default.RememberMe)
-            {
-                txtUsername.Text = Properties.Settings.Default.Username;
-                txtPassword.Text = Properties.Settings.Default.Password;
-                chkRememberMe.Checked = true;
             }
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            string username = txtUsername.Text;
-            string password = txtPassword.Text;
+            string pin = txtPin.Text.Trim();
 
-            if (AuthenticateUser(username, password))
+            if (pin == StandardPin || pin == DistributorPin)
             {
-                SaveCredentials(username, password); // Save credentials if login is successful
+                bool isDistributor = pin == DistributorPin;
 
-                // Fetch dealer ID
-                if (FetchDealerId(username))
-                {
-                    // Pass dealerId to Form1
-                    this.Hide();
-                    Form1 mainForm = new Form1(dealerId); // Pass the dealerId to Form1
-                    mainForm.ShowDialog();
-                    this.Close();
-                }
-                else
-                {
-                    this.Hide();
-                    Form1 mainForm = new Form1(-1); // Pass the dealerId to Form1
-                    mainForm.ShowDialog();
-                    this.Close();
-                }
+                this.Hide();
+                Form1 mainForm = new Form1(isDistributor);
+                mainForm.ShowDialog();
+                this.Close();
             }
             else
             {
-                // Display an error message for incorrect credentials
-                MessageBox.Show("Incorrect username or password. Please try again.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                txtPassword.Clear();
+                // Display an error message for an incorrect PIN
+                MessageBox.Show("Incorrect PIN code. Please try again.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                txtPin.Clear();
             }
         }
 
-        private bool AuthenticateUser(string username, string password)
-        {
-            var client = new RestClient("https://innovo.net/wp-json/api/v1/token");
-
-            var request = new RestRequest()
-            {
-                RequestFormat = DataFormat.Json,
-                Method = Method.Post
-            };
-            request.AddHeader("Content-Type", "application/json");
-
-            // Set the JSON body with username and password
-            request.AddJsonBody(new
-            {
-                username = username,
-                password = password
-            });
-
-
-
-            RestResponse response = client.Execute(request);
-
-            if (response.StatusCode == System.Net.HttpStatusCode.OK)
-            {
-                // Handle the response, e.g., extracting the token if needed
-                dynamic jsonResponse = JsonConvert.DeserializeObject(response.Content);
-                string token = jsonResponse.jwt_token;
-
-                // Store the token if needed for further API calls
-                // ...
-
-                return true;
-            }
-            else
-            {
-                // Handle error response
-                return false;
-            }
-        }
-
-        private bool FetchDealerId(string dealerUsername)
-        {
-            var client = new RestClient("https://showroom.innovo.net/LoginDealer.php");
-
-            var request = new RestRequest("", Method.Get);
-            request.AddParameter("dealer_username", dealerUsername);
-
-            RestResponse response = client.Execute(request);
-
-            if (response.StatusCode == System.Net.HttpStatusCode.OK)
-            {
-                dynamic jsonResponse = JsonConvert.DeserializeObject(response.Content);
-                if (jsonResponse.status == "success")
-                {
-                    dealerId = jsonResponse.dealer_id;
-                    return true;
-                }
-            }
-
-            return false; // Return false if unable to get dealer ID
-        }
-
-        private void SaveCredentials(string username, string password)
-        {
-            if (chkRememberMe.Checked)
-            {
-                Properties.Settings.Default.Username = username;
-                Properties.Settings.Default.Password = password;
-                Properties.Settings.Default.RememberMe = true;
-            }
-            else
-            {
-                Properties.Settings.Default.Username = string.Empty;
-                Properties.Settings.Default.Password = string.Empty;
-                Properties.Settings.Default.RememberMe = false;
-            }
-            Properties.Settings.Default.Save();
-        }
         private bool CheckForUpdates()
         {
             try
@@ -218,12 +118,6 @@ namespace Innovo_TP4_Updater
             }
 
             return true;
-        }
-
-
-        private void linkLabelHelp_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-        {
-            System.Diagnostics.Process.Start("https://innovo.net/my-account");
         }
 
         private bool IsExpired()

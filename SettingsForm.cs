@@ -8,15 +8,15 @@ namespace Innovo_TP4_Updater
     {
         private Form1 parentForm;
         private bool Connected;
-        private int dealerID;
+        private bool isDistributor;
 
-        public SettingsForm(Form1 parent, int dealerID)
+        public SettingsForm(Form1 parent, bool isDistributor)
         {
             InitializeComponent();
             parentForm = parent;
             this.btnBack.Visible = false;
             this.btnPanelPatch.Visible = false;
-            this.dealerID = dealerID;
+            this.isDistributor = isDistributor;
         }
 
         private async void SettingsForm_Load(object sender, EventArgs e)
@@ -49,7 +49,7 @@ namespace Innovo_TP4_Updater
                 UpdateConnectionStatusLabel("No Connected Device");
             }
 
-            if (dealerID == 568)
+            if (isDistributor)
             {
                 btnPanelPatch.Visible = true;
             }
@@ -247,7 +247,7 @@ namespace Innovo_TP4_Updater
 
         public void LoadConnectDisconnectForm()
         {
-            var connectDisconnectForm = new ConnectDisconnectForm(parentForm, Connected, this,dealerID);
+            var connectDisconnectForm = new ConnectDisconnectForm(parentForm, Connected, this);
 
             connectDisconnectForm.ConnectionStatusChanged += (isConnected) =>
             {

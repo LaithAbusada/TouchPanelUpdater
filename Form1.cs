@@ -15,12 +15,12 @@ namespace Innovo_TP4_Updater
     {
         private readonly string formname = "Touch Panel Updater";
         private bool isClosing = false;
-        private int dealerID;
+        private bool isDistributor;
         public readonly string[] supportedModels = { "p4", "p5", "rk3566_t" };
 
-        public Form1(int dealerID)
+        public Form1(bool isDistributor)
         {
-            this.dealerID = dealerID;
+            this.isDistributor = isDistributor;
             InitializeComponent();
             InitializeCustomComponents();
         }
@@ -42,7 +42,7 @@ namespace Innovo_TP4_Updater
 
 
 
-            var settingsForm = new SettingsForm(this,dealerID);
+            var settingsForm = new SettingsForm(this, isDistributor);
             LoadFormIntoSidebarPanel(settingsForm);
             // Always disconnect all devices when the form loads
             await Disconnect();
@@ -206,7 +206,7 @@ namespace Innovo_TP4_Updater
 
         private void button7_Click(object sender, EventArgs e)
         {
-            LoadFormIntoSidebarPanel(new SettingsForm(this,dealerID));
+            LoadFormIntoSidebarPanel(new SettingsForm(this, isDistributor));
         }
 
         public void LoadFormIntoSidebarPanel(Form form)
